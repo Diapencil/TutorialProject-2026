@@ -1,14 +1,30 @@
 namespace SheepSheepBurger.BurgerAssembly
 {
-    public enum BurgerIngredientId
+    public enum IngredientType
     {
         Patty,
-        Cheese,
-        Lettuce,
-        Tomato,
-        Onion,
-        Pickle,
-        Ketchup,
-        Mustard
+        BunBottom,
+        BunTop,
+        ToppingLettuce,
+        ToppingTomato,
+        ToppingCheese,
+        ToppingOnion,
+        ToppingPickle,
+        SauceKetchup,
+        SauceMustard
+    }
+
+    public enum CookingDragKind
+    {
+        Ingredient,
+        RawPatty,
+        CookedPatty,
+        Sauce
+    }
+
+    public enum CookingCameraZone
+    {
+        Grill,
+        Board
     }
 }

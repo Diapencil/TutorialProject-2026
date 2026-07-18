@@ -1,52 +1,154 @@
+using System;
+
 namespace SheepSheepBurger.BurgerAssembly
 {
     public enum PattyGrillPhase
     {
-        Empty,
-        Raw,
-        Cooked
+        RawDough,
+        Flattened,
+        CookingSide1,
+        ReadyToFlip,
+        Flipping,
+        CookingSide2,
+        Done,
+        Overcooked
     }
 
     public sealed class PattyGrillState
     {
-        public PattyGrillPhase Phase { get; private set; } = PattyGrillPhase.Empty;
+        private float phaseElapsed;
 
-        public bool TryLoadRawPatty()
+        public PattyGrillPhase Phase { get; private set; } = PattyGrillPhase.RawDough;
+
+        public float PhaseElapsed => phaseElapsed;
+
+        public bool CanDragToBoard => Phase == PattyGrillPhase.Done;
+
+        public event Action<PattyGrillPhase> PhaseChanged;
+
+        public bool TryPressDough()
         {
-            if (Phase != PattyGrillPhase.Empty)
+            if (Phase != PattyGrillPhase.RawDough)
             {
                 return false;
             }
 
-            Phase = PattyGrillPhase.Raw;
+            TransitionTo(PattyGrillPhase.Flattened);
             return true;
         }
 
-        public bool TryCook()
+        public bool TryFlip()
         {
-            if (Phase != PattyGrillPhase.Raw)
+            if (Phase != PattyGrillPhase.ReadyToFlip)
             {
                 return false;
             }
 
-            Phase = PattyGrillPhase.Cooked;
+            TransitionTo(PattyGrillPhase.Flipping);
             return true;
         }
 
-        public bool TryTakeCookedPatty()
+        public void Tick(float deltaTime)
         {
-            if (Phase != PattyGrillPhase.Cooked)
+            if (deltaTime < 0f)
             {
-                return false;
+                throw new ArgumentOutOfRangeException(nameof(deltaTime));
             }
 
-            Phase = PattyGrillPhase.Empty;
-            return true;
+            float remaining = deltaTime;
+            int safety = 0;
+            while (safety++ < 8)
+            {
+                switch (Phase)
+                {
+                    case PattyGrillPhase.Flattened:
+                        TransitionTo(PattyGrillPhase.CookingSide1);
+                        continue;
+                    case PattyGrillPhase.CookingSide1:
+                        if (!AdvanceTimedPhase(ref remaining, CookingPrototypeRules.FirstSideCookSeconds, PattyGrillPhase.ReadyToFlip))
+                        {
+                            return;
+                        }
+                        continue;
+                    case PattyGrillPhase.Flipping:
+                        if (!AdvanceTimedPhase(ref remaining, CookingPrototypeRules.FlipAnimationSeconds, PattyGrillPhase.CookingSide2))
+                        {
+                            return;
+                        }
+                        continue;
+                    case PattyGrillPhase.CookingSide2:
+                        if (!AdvanceTimedPhase(ref remaining, CookingPrototypeRules.SecondSideCookSeconds, PattyGrillPhase.Done))
+                        {
+                            return;
+                        }
+                        continue;
+                    case PattyGrillPhase.Done:
+                        if (!AdvanceTimedPhase(ref remaining, CookingPrototypeRules.DoneToOvercookedSeconds, PattyGrillPhase.Overcooked))
+                        {
+                            return;
+                        }
+                        continue;
+                    default:
+                        return;
+                }
+            }
+        }
+
+        public float GetNormalizedProgress()
+        {
+            switch (Phase)
+            {
+                case PattyGrillPhase.RawDough:
+                case PattyGrillPhase.Flattened:
+                    return 0f;
+                case PattyGrillPhase.CookingSide1:
+                    return 0.45f * Math.Min(1f, phaseElapsed / CookingPrototypeRules.FirstSideCookSeconds);
+                case PattyGrillPhase.ReadyToFlip:
+                case PattyGrillPhase.Flipping:
+                    return 0.5f;
+                case PattyGrillPhase.CookingSide2:
+                    return 0.5f + 0.45f * Math.Min(1f, phaseElapsed / CookingPrototypeRules.SecondSideCookSeconds);
+                case PattyGrillPhase.Done:
+                case PattyGrillPhase.Overcooked:
+                    return 1f;
+                default:
+                    return 0f;
+            }
+        }
+
+        public float GetDoneTimeRemaining()
+        {
+            return Phase == PattyGrillPhase.Done
+                ? Math.Max(0f, CookingPrototypeRules.DoneToOvercookedSeconds - phaseElapsed)
+                : 0f;
         }
 
         public void Reset()
         {
-            Phase = PattyGrillPhase.Empty;
+            TransitionTo(PattyGrillPhase.RawDough);
+        }
+
+        private bool AdvanceTimedPhase(ref float remaining, float duration, PattyGrillPhase nextPhase)
+        {
+            float needed = Math.Max(0f, duration - phaseElapsed);
+            float consumed = Math.Min(remaining, needed);
+            phaseElapsed += consumed;
+            remaining -= consumed;
+
+            if (phaseElapsed + 0.0001f < duration)
+            {
+                return false;
+            }
+
+            TransitionTo(nextPhase);
+            return true;
+        }
+
+        private void TransitionTo(PattyGrillPhase nextPhase)
+        {
+            Phase = nextPhase;
+            phaseElapsed = 0f;
+            PhaseChanged?.Invoke(Phase);
         }
     }
 }
