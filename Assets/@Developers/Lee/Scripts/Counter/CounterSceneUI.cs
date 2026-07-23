@@ -1,5 +1,4 @@
 using System;
-using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,10 +14,9 @@ namespace Lee.Counter
         [SerializeField] private TMP_Text progressText;
         [Header("Customer / Order")]
         [SerializeField] private TMP_Text speechBubbleText;
-        [SerializeField] private TMP_Text orderTitleText;
-        [SerializeField] private TMP_Text ingredientListText;
         [SerializeField] private TMP_Text patienceText;
         [SerializeField] private Button confirmOrderButton;
+        [SerializeField] private Button whatButton;
         [SerializeField] private Button serveButton;
         [SerializeField] private GameObject servingBurgerRoot;
         [Header("Result")]
@@ -28,34 +26,53 @@ namespace Lee.Counter
         public event Action ConfirmClicked;
         public event Action ServeClicked;
 
+        private string clarificationRequest;
+        private bool clarificationShown;
+
         private void Awake()
         {
             confirmOrderButton.onClick.AddListener(() => ConfirmClicked?.Invoke());
+            whatButton.onClick.AddListener(ShowClarification);
             serveButton.onClick.AddListener(() => ServeClicked?.Invoke());
         }
         private void OnDestroy()
         {
             confirmOrderButton.onClick.RemoveAllListeners();
+            whatButton.onClick.RemoveAllListeners();
             serveButton.onClick.RemoveAllListeners();
         }
 
         public void ShowOrder(OrderData order)
         {
-            orderTitleText.text = order.RequestedRecipe.RecipeName;
-            speechBubbleText.text = order.RequestedRecipe.CustomerRequest;
-            var builder = new StringBuilder();
-            foreach (var ingredient in order.RequestedRecipe.Ingredients) builder.AppendLine("- " + ingredient);
-            ingredientListText.text = builder.ToString();
+            speechBubbleText.text = order.CustomerRequest;
+            clarificationRequest = order.CustomerClarificationRequest;
+            clarificationShown = false;
+            confirmOrderButton.interactable = true;
+            whatButton.interactable = true;
             resultRoot.SetActive(false);
+        }
+
+        private void ShowClarification()
+        {
+            if (clarificationShown) return;
+
+            clarificationShown = true;
+            speechBubbleText.text = clarificationRequest;
+            whatButton.interactable = false;
+            confirmOrderButton.interactable = true;
         }
         public void SetTop(DayProgressRuntime day, int customersPerDay)
         {
             dayText.text = $"{day.CurrentDay}일차";
-            revenueText.text = $"수익: {day.DailyRevenue:N0}";
+            revenueText.text = $"수익: $ {day.DailyRevenue:N0}";
             progressText.text = $"손님: {day.ServedCustomerCount}/{customersPerDay}";
         }
         public void SetPatience(float seconds) => patienceText.text = $"남은 시간: {Mathf.CeilToInt(seconds)}초";
-        public void SetOrderConfirmed(bool confirmed) => confirmOrderButton.interactable = !confirmed;
+        public void SetOrderConfirmed(bool confirmed)
+        {
+            confirmOrderButton.interactable = !confirmed;
+            whatButton.interactable = !confirmed && !clarificationShown;
+        }
         public void SetCookedBurgerAvailable(bool available)
         {
             servingBurgerRoot.SetActive(available);

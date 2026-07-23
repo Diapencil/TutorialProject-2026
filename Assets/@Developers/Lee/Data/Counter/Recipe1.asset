@@ -13,6 +13,13 @@ MonoBehaviour:
   m_Name: Recipe1
   m_EditorClassIdentifier: Assembly-CSharp::Lee.Counter.RecipeData
   recipeName: "\uCE58\uC988\uBC84\uAC70"
-  customerRequest: "\uCE58\uC988 \uBC84\uAC70 \uD558\uB098 \uC8FC\uC138\uC694!"
+  customerRequestDialogues:
+  - initialRequest: "\uCE58\uC988 \uBC84\uAC70 \uD558\uB098 \uC8FC\uC138\uC694!"
+    clarificationRequest: "\uD328\uD2F0, \uADF8\uB9AC\uACE0 \uCE58\uC988\uC694."
+  - initialRequest: "\uCE58\uC988\uB85C \uBD80\uD0C1\uB4DC\uB824\uC694!"
+    clarificationRequest: "\uD328\uD2F0\uC640 \uCE58\uC988\uB97C \uB123\uC5B4\uC8FC\uC138\uC694."
+  legacyCustomerRequests:
+  - "\uCE58\uC988 \uBC84\uAC70 \uD558\uB098 \uC8FC\uC138\uC694!"
+  - "\uCE58\uC988 \uBC84\uAC70\uB85C \uBD80\uD0C1\uB4DC\uB824\uC694!"
   baseReward: 100
   ingredients: 00000000010000000200000007000000

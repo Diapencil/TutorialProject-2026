@@ -16,8 +16,8 @@ MonoBehaviour:
   patienceSeconds: 60
   reactionSeconds: 2
   cookingSceneName: Cooking_temp
-  availableRecipes:
-  - {fileID: 11400000, guid: 956a33a41b138dd45a0fb516b7a8d75f, type: 2}
+  availableCustomers:
+  - {fileID: 11400000, guid: e87a68e086b34280a9cbb4d524c65eb2, type: 2}
   perfectReaction: "\uC644\uBCBD\uD574\uC694! \uC815\uB9D0 \uB9DB\uC788\uC5B4\uC694!"
   goodReaction: "\uC870\uAE08 \uC544\uC27D\uC9C0\uB9CC \uB9DB\uC788\uAC8C \uBA39\uC744\uAC8C\uC694."
   badReaction: "\uC81C\uAC00 \uC8FC\uBB38\uD55C \uBC84\uAC70\uAC00 \uC544\uB2CC \uAC83

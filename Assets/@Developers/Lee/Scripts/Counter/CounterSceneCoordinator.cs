@@ -50,11 +50,36 @@ namespace Lee.Counter
 
         private void CreateNextCustomer()
         {
-            if (settings.AvailableRecipes.Count == 0) { Debug.LogError("CounterSettings에 레시피가 없습니다."); return; }
-            var recipe = settings.AvailableRecipes[Random.Range(0, settings.AvailableRecipes.Count)];
-            order = new OrderData(recipe, settings.PatienceSeconds);
+            if (!TryCreateOrder(out order)) return;
             CounterSceneSession.BeginOrder(order);
             SetupCustomer();
+        }
+        private bool TryCreateOrder(out OrderData nextOrder)
+        {
+            var eligibleCustomers = new System.Collections.Generic.List<CustomerData>();
+            foreach (var availableCustomer in settings.AvailableCustomers)
+            {
+                if (availableCustomer != null && availableCustomer.PreferredRecipes.Count > 0)
+                    eligibleCustomers.Add(availableCustomer);
+            }
+
+            if (eligibleCustomers.Count == 0)
+            {
+                Debug.LogError("CounterSettings에 선호 레시피가 설정된 손님이 없습니다.");
+                nextOrder = null;
+                return false;
+            }
+
+            var customerData = eligibleCustomers[Random.Range(0, eligibleCustomers.Count)];
+            if (!customerData.TryGetRandomPreferredRecipe(out var recipe))
+            {
+                Debug.LogError($"'{customerData.name}' 손님에게 유효한 선호 레시피가 없습니다.", customerData);
+                nextOrder = null;
+                return false;
+            }
+
+            nextOrder = new OrderData(customerData, recipe, settings.PatienceSeconds);
+            return true;
         }
         private void RestoreReturningCustomer()
         {
