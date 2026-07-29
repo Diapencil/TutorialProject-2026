@@ -7,14 +7,16 @@ namespace SheepSheepBurger.BurgerAssembly
     {
         Rectangle,
         Circle,
-        Triangle
+        Triangle,
+        RoundedRectangle
     }
 
     [RequireComponent(typeof(CanvasRenderer))]
-    public sealed class SimpleShapeGraphic : MaskableGraphic
+    public sealed class SimpleShapeGraphic : Image
     {
         [SerializeField] private SimpleShape shape = SimpleShape.Rectangle;
-        [SerializeField, Range(8, 64)] private int circleSegments = 32;
+        [SerializeField] private Sprite sourceSprite;
+        [SerializeField, Min(0f)] private float cornerRadius = 24f;
 
         public SimpleShape Shape
         {
@@ -22,81 +24,47 @@ namespace SheepSheepBurger.BurgerAssembly
             set
             {
                 shape = value;
-                SetVerticesDirty();
+                ApplySprite();
             }
         }
 
-        protected override void OnPopulateMesh(VertexHelper vertexHelper)
+        public Sprite SourceSprite
         {
-            vertexHelper.Clear();
-
-            switch (shape)
+            get => sourceSprite;
+            set
             {
-                case SimpleShape.Circle:
-                    PopulateCircle(vertexHelper);
-                    break;
-                case SimpleShape.Triangle:
-                    PopulateTriangle(vertexHelper);
-                    break;
-                default:
-                    PopulateRectangle(vertexHelper);
-                    break;
+                sourceSprite = value;
+                ApplySprite();
             }
         }
 
-        private void PopulateRectangle(VertexHelper vertexHelper)
+        public float CornerRadius
         {
-            Rect rect = GetPixelAdjustedRect();
-            var vertices = new UIVertex[4];
-            for (int index = 0; index < vertices.Length; index++)
+            get => cornerRadius;
+            set
             {
-                vertices[index] = UIVertex.simpleVert;
-                vertices[index].color = color;
-            }
-
-            vertices[0].position = new Vector2(rect.xMin, rect.yMin);
-            vertices[1].position = new Vector2(rect.xMin, rect.yMax);
-            vertices[2].position = new Vector2(rect.xMax, rect.yMax);
-            vertices[3].position = new Vector2(rect.xMax, rect.yMin);
-            vertexHelper.AddUIVertexQuad(vertices);
-        }
-
-        private void PopulateTriangle(VertexHelper vertexHelper)
-        {
-            Rect rect = GetPixelAdjustedRect();
-            AddVertex(vertexHelper, new Vector2(rect.xMin, rect.yMin));
-            AddVertex(vertexHelper, new Vector2(rect.center.x, rect.yMax));
-            AddVertex(vertexHelper, new Vector2(rect.xMax, rect.yMin));
-            vertexHelper.AddTriangle(0, 1, 2);
-        }
-
-        private void PopulateCircle(VertexHelper vertexHelper)
-        {
-            Rect rect = GetPixelAdjustedRect();
-            Vector2 center = rect.center;
-            float radiusX = rect.width * 0.5f;
-            float radiusY = rect.height * 0.5f;
-
-            AddVertex(vertexHelper, center);
-            for (int index = 0; index < circleSegments; index++)
-            {
-                float radians = index * Mathf.PI * 2f / circleSegments;
-                AddVertex(vertexHelper, center + new Vector2(Mathf.Cos(radians) * radiusX, Mathf.Sin(radians) * radiusY));
-            }
-
-            for (int index = 0; index < circleSegments; index++)
-            {
-                int next = (index + 1) % circleSegments;
-                vertexHelper.AddTriangle(0, index + 1, next + 1);
+                cornerRadius = Mathf.Max(0f, value);
+                ApplySprite();
             }
         }
 
-        private void AddVertex(VertexHelper vertexHelper, Vector2 position)
+        protected override void OnEnable()
         {
-            UIVertex vertex = UIVertex.simpleVert;
-            vertex.color = color;
-            vertex.position = position;
-            vertexHelper.AddVert(vertex);
+            base.OnEnable();
+            ApplySprite();
+        }
+
+        private void ApplySprite()
+        {
+            BurgerSpriteCatalog catalog = BurgerSpriteCatalog.Active;
+            sprite = sourceSprite != null
+                ? sourceSprite
+                : catalog != null
+                    ? catalog.GetShape(shape)
+                    : null;
+            type = Type.Simple;
+            preserveAspect = false;
+            SetAllDirty();
         }
     }
 }

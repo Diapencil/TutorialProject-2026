@@ -26,24 +26,65 @@ namespace SheepSheepBurger.BurgerAssembly
     }
 
     [Serializable]
-    public sealed class BurgerData
+    public sealed class SauceStrokeData
     {
-        public List<IngredientPlacement> ingredients = new List<IngredientPlacement>();
+        public IngredientType type;
+        public List<Vector2> points = new List<Vector2>();
+        public int layerOrder;
 
-        public BurgerData()
-        {
-        }
-
-        public BurgerData(IEnumerable<IngredientPlacement> source)
+        public SauceStrokeData(IngredientType type, IEnumerable<Vector2> source, int layerOrder)
         {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
+            this.type = type;
+            points = source.ToList();
+            this.layerOrder = layerOrder;
+        }
+
+        public SauceStrokeData Clone()
+        {
+            return new SauceStrokeData(type, points, layerOrder);
+        }
+    }
+
+    [Serializable]
+    public sealed class BurgerData
+    {
+        public List<IngredientPlacement> ingredients = new List<IngredientPlacement>();
+        public List<SauceStrokeData> sauceStrokes = new List<SauceStrokeData>();
+
+        public BurgerData()
+        {
+        }
+
+        public BurgerData(IEnumerable<IngredientPlacement> source)
+            : this(source, Array.Empty<SauceStrokeData>())
+        {
+        }
+
+        public BurgerData(
+            IEnumerable<IngredientPlacement> source,
+            IEnumerable<SauceStrokeData> sauceSource)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+            if (sauceSource == null)
+            {
+                throw new ArgumentNullException(nameof(sauceSource));
+            }
+
             ingredients = source
                 .OrderBy(placement => placement.layerOrder)
                 .Select(placement => placement.Clone())
+                .ToList();
+            sauceStrokes = sauceSource
+                .OrderBy(stroke => stroke.layerOrder)
+                .Select(stroke => stroke.Clone())
                 .ToList();
         }
     }
@@ -68,9 +109,28 @@ namespace SheepSheepBurger.BurgerAssembly
 
         public bool IsCompleted { get; private set; }
 
+        public bool HasBottomBun { get; private set; }
+
+        public bool HasTopBun { get; private set; }
+
         public bool CanPlace(IngredientType type)
         {
-            return !IsCompleted && (!IsTopping(type) || ToppingCount < MaximumToppings);
+            if (IsCompleted)
+            {
+                return false;
+            }
+
+            if (type == IngredientType.BunBottom)
+            {
+                return !HasBottomBun;
+            }
+
+            if (!HasBottomBun || (type == IngredientType.BunTop && HasTopBun))
+            {
+                return false;
+            }
+
+            return !IsTopping(type) || ToppingCount < MaximumToppings;
         }
 
         public bool TryRegisterPlacement(IngredientType type, out int layerOrder)
@@ -84,6 +144,14 @@ namespace SheepSheepBurger.BurgerAssembly
             if (IsTopping(type))
             {
                 ToppingCount++;
+            }
+            else if (type == IngredientType.BunBottom)
+            {
+                HasBottomBun = true;
+            }
+            else if (type == IngredientType.BunTop)
+            {
+                HasTopBun = true;
             }
 
             layerOrder = nextLayerOrder++;
@@ -103,7 +171,7 @@ namespace SheepSheepBurger.BurgerAssembly
         public bool TryComplete(IEnumerable<IngredientPlacement> placements, out BurgerData burgerData)
         {
             burgerData = null;
-            if (IsCompleted)
+            if (IsCompleted || !HasBottomBun || !HasTopBun)
             {
                 return false;
             }
@@ -122,22 +190,14 @@ namespace SheepSheepBurger.BurgerAssembly
         {
             ToppingCount = 0;
             IsCompleted = false;
+            HasBottomBun = false;
+            HasTopBun = false;
             nextLayerOrder = 0;
         }
 
         public static bool IsTopping(IngredientType type)
         {
-            switch (type)
-            {
-                case IngredientType.ToppingLettuce:
-                case IngredientType.ToppingTomato:
-                case IngredientType.ToppingCheese:
-                case IngredientType.ToppingOnion:
-                case IngredientType.ToppingPickle:
-                    return true;
-                default:
-                    return false;
-            }
+            return BurgerIngredientCatalog.IsTopping(type);
         }
     }
 }

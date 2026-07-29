@@ -18,6 +18,20 @@ namespace SheepSheepBurger.BurgerAssembly
     {
         private float phaseElapsed;
 
+        public PattyGrillState(IngredientType ingredientType = IngredientType.Patty)
+        {
+            if (!BurgerIngredientCatalog.IsGrillIngredient(ingredientType))
+            {
+                throw new ArgumentOutOfRangeException(nameof(ingredientType));
+            }
+
+            IngredientType = ingredientType;
+        }
+
+        public IngredientType IngredientType { get; }
+
+        public bool RequiresFlip => BurgerIngredientCatalog.RequiresFlip(IngredientType);
+
         public PattyGrillPhase Phase { get; private set; } = PattyGrillPhase.RawDough;
 
         public float PhaseElapsed => phaseElapsed;
@@ -65,7 +79,18 @@ namespace SheepSheepBurger.BurgerAssembly
                         TransitionTo(PattyGrillPhase.CookingSide1);
                         continue;
                     case PattyGrillPhase.CookingSide1:
-                        if (!AdvanceTimedPhase(ref remaining, CookingPrototypeRules.FirstSideCookSeconds, PattyGrillPhase.ReadyToFlip))
+                        {
+                            PattyGrillPhase firstSideResult = RequiresFlip
+                                ? PattyGrillPhase.ReadyToFlip
+                                : PattyGrillPhase.Done;
+                            if (!AdvanceTimedPhase(ref remaining, CookingPrototypeRules.FirstSideCookSeconds, firstSideResult))
+                            {
+                                return;
+                            }
+                            continue;
+                        }
+                    case PattyGrillPhase.ReadyToFlip:
+                        if (!AdvanceTimedPhase(ref remaining, CookingPrototypeRules.ReadyToFlipBurnSeconds, PattyGrillPhase.Overcooked))
                         {
                             return;
                         }
@@ -120,6 +145,13 @@ namespace SheepSheepBurger.BurgerAssembly
         {
             return Phase == PattyGrillPhase.Done
                 ? Math.Max(0f, CookingPrototypeRules.DoneToOvercookedSeconds - phaseElapsed)
+                : 0f;
+        }
+
+        public float GetFlipTimeRemaining()
+        {
+            return Phase == PattyGrillPhase.ReadyToFlip
+                ? Math.Max(0f, CookingPrototypeRules.ReadyToFlipBurnSeconds - phaseElapsed)
                 : 0f;
         }
 

@@ -7,13 +7,19 @@ using UnityEngine.UI;
 namespace SheepSheepBurger.BurgerAssembly
 {
     [RequireComponent(typeof(RectTransform), typeof(CanvasGroup))]
-    public sealed class CookingTrayDragSource : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+    public sealed class CookingTrayDragSource :
+        MonoBehaviour,
+        IBeginDragHandler,
+        IDragHandler,
+        IEndDragHandler,
+        IPointerClickHandler
     {
         private BurgerAssemblyController controller;
         private CanvasGroup canvasGroup;
         private SimpleShape ghostShape;
         private Color ghostColor;
         private Vector2 ghostSize;
+        private Sprite ghostSprite;
         private bool ownsActiveDrag;
 
         public CookingDragKind Kind { get; private set; }
@@ -26,7 +32,8 @@ namespace SheepSheepBurger.BurgerAssembly
             IngredientType ingredientType,
             SimpleShape shape,
             Color color,
-            Vector2 size)
+            Vector2 size,
+            Sprite sourceSprite)
         {
             controller = targetController;
             Kind = kind;
@@ -34,6 +41,7 @@ namespace SheepSheepBurger.BurgerAssembly
             ghostShape = shape;
             ghostColor = color;
             ghostSize = size;
+            ghostSprite = sourceSprite;
             canvasGroup = GetComponent<CanvasGroup>();
             RefreshAppearance();
         }
@@ -45,18 +53,43 @@ namespace SheepSheepBurger.BurgerAssembly
                 canvasGroup = GetComponent<CanvasGroup>();
             }
 
-            bool available = controller != null && controller.CanBeginTrayDrag(Kind, IngredientType);
-            canvasGroup.alpha = available ? 1f : 0.48f;
+            bool isSauceTool = Kind == CookingDragKind.Sauce;
+            bool available = controller != null &&
+                (isSauceTool
+                    ? controller.CanUseSauceTool(IngredientType)
+                    : controller.CanBeginTrayDrag(Kind, IngredientType));
+            bool selected = isSauceTool &&
+                controller != null &&
+                controller.IsSauceToolSelected(IngredientType);
+            canvasGroup.alpha = selected ? 1f : available ? 0.86f : 0.48f;
+
+            Outline outline = GetComponent<Outline>();
+            if (outline != null)
+            {
+                outline.effectColor = selected
+                    ? BurgerPrototypeTheme.Success
+                    : BurgerPrototypeTheme.Border;
+                outline.effectDistance = selected
+                    ? new Vector2(4f, -4f)
+                    : new Vector2(1.5f, -1.5f);
+            }
         }
 
         public void OnBeginDrag(PointerEventData eventData)
         {
+            if (Kind == CookingDragKind.Sauce)
+            {
+                ownsActiveDrag = false;
+                return;
+            }
+
             ownsActiveDrag = controller != null && controller.TryBeginTrayDrag(
                 Kind,
                 IngredientType,
                 ghostShape,
                 ghostColor,
                 ghostSize,
+                ghostSprite,
                 eventData.position);
         }
 
@@ -78,94 +111,107 @@ namespace SheepSheepBurger.BurgerAssembly
             ownsActiveDrag = false;
             controller.EndTrayDrag(eventData.position);
         }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (Kind == CookingDragKind.Sauce &&
+                eventData.button == PointerEventData.InputButton.Left)
+            {
+                controller?.ToggleSauceTool(IngredientType);
+            }
+        }
     }
 
-    [RequireComponent(typeof(RectTransform), typeof(CanvasGroup))]
-    public sealed class PlacedIngredientView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+    [RequireComponent(typeof(RectTransform))]
+    public sealed class PlacedIngredientView : MonoBehaviour
     {
-        private BurgerAssemblyController controller;
         private RectTransform rectTransform;
-        private bool isMoving;
 
         public IngredientType IngredientType { get; private set; }
 
         public int LayerOrder { get; private set; }
 
-        public void Configure(BurgerAssemblyController targetController, IngredientType type, int layerOrder)
+        public void Configure(IngredientType type, int layerOrder)
         {
-            controller = targetController;
             IngredientType = type;
             LayerOrder = layerOrder;
             rectTransform = GetComponent<RectTransform>();
         }
 
-        public void SetLayerOrder(int layerOrder)
+        public IngredientPlacement Capture(RectTransform coordinateRoot)
         {
-            LayerOrder = layerOrder;
-            transform.SetAsLastSibling();
-        }
+            if (coordinateRoot == null)
+            {
+                throw new ArgumentNullException(nameof(coordinateRoot));
+            }
 
-        public IngredientPlacement Capture()
+            Vector3 local = coordinateRoot.InverseTransformPoint(rectTransform.position);
+            return new IngredientPlacement(IngredientType, new Vector2(local.x, local.y), LayerOrder);
+        }
+    }
+
+    [RequireComponent(typeof(RectTransform), typeof(Image))]
+    public sealed class CompletedBurgerDragView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+    {
+        private BurgerAssemblyController controller;
+        private bool ownsActiveDrag;
+
+        public void Configure(BurgerAssemblyController targetController)
         {
-            return new IngredientPlacement(IngredientType, rectTransform.anchoredPosition, LayerOrder);
+            controller = targetController;
         }
 
         public void OnBeginDrag(PointerEventData eventData)
         {
-            isMoving = controller != null && controller.TryBeginPlacedIngredientMove(this, eventData.position);
+            ownsActiveDrag = controller != null && controller.TryBeginCompletedBurgerDrag(eventData.position);
         }
 
         public void OnDrag(PointerEventData eventData)
         {
-            if (isMoving)
+            if (ownsActiveDrag)
             {
-                controller.MovePlacedIngredient(this, eventData.position);
+                controller.UpdateCompletedBurgerDrag(eventData.position);
             }
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            if (!isMoving)
+            if (!ownsActiveDrag)
             {
                 return;
             }
 
-            isMoving = false;
-            controller.EndPlacedIngredientMove(this, eventData.position);
+            ownsActiveDrag = false;
+            controller.EndCompletedBurgerDrag(eventData.position);
         }
     }
 
     [RequireComponent(typeof(RectTransform), typeof(CanvasGroup))]
-    public sealed class CookablePattyView : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
+    public sealed class CookableGrillItemView : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         private BurgerAssemblyController controller;
         private SimpleShapeGraphic graphic;
         private Text phaseText;
-        private Color rawColor;
-        private Color cookedColor;
-        private Color burntColor;
         private bool isHeld;
         private bool ownsActiveDrag;
 
         public PattyGrillState State { get; private set; }
 
+        public IngredientType GrillIngredientType { get; private set; }
+
         public bool IsHeld => isHeld;
 
         public void Configure(
             BurgerAssemblyController targetController,
+            IngredientType ingredientType,
             SimpleShapeGraphic targetGraphic,
-            Text targetPhaseText,
-            Color raw,
-            Color cooked,
-            Color burnt)
+            Text targetPhaseText)
         {
             controller = targetController;
+            GrillIngredientType = ingredientType;
             graphic = targetGraphic;
             phaseText = targetPhaseText;
-            rawColor = raw;
-            cookedColor = cooked;
-            burntColor = burnt;
-            State = new PattyGrillState();
+            State = new PattyGrillState(ingredientType);
             State.PhaseChanged += _ => RefreshAppearance();
             RefreshAppearance();
         }
@@ -183,17 +229,17 @@ namespace SheepSheepBurger.BurgerAssembly
             }
 
             RefreshAppearance();
-            controller?.UpdatePattyStatus(this);
+            controller?.UpdateGrillItemStatus(this);
         }
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            controller?.HandlePattyTap(this);
+            controller?.HandleGrillItemTap(this);
         }
 
         public void OnBeginDrag(PointerEventData eventData)
         {
-            ownsActiveDrag = controller != null && controller.TryBeginCookedPattyDrag(this, eventData.position);
+            ownsActiveDrag = controller != null && controller.TryBeginCookedGrillItemDrag(this, eventData.position);
             isHeld = ownsActiveDrag;
         }
 
@@ -205,7 +251,7 @@ namespace SheepSheepBurger.BurgerAssembly
             }
 
             controller.UpdatePointerDrag(eventData.position);
-            controller.RequestPattyTransfer(eventData.position);
+            controller.RequestGrillItemTransfer(eventData.position);
         }
 
         public void OnEndDrag(PointerEventData eventData)
@@ -216,7 +262,7 @@ namespace SheepSheepBurger.BurgerAssembly
             }
 
             ownsActiveDrag = false;
-            controller.EndCookedPattyDrag(this, eventData.position);
+            controller.EndCookedGrillItemDrag(this, eventData.position);
             isHeld = false;
         }
 
@@ -228,19 +274,19 @@ namespace SheepSheepBurger.BurgerAssembly
             }
 
             PattyGrillPhase phase = State.Phase;
-            graphic.Shape = phase == PattyGrillPhase.RawDough ? SimpleShape.Circle : SimpleShape.Rectangle;
-            graphic.rectTransform.sizeDelta = phase == PattyGrillPhase.RawDough
-                ? new Vector2(150f, 150f)
-                : new Vector2(260f, 105f);
-
-            if (phase == PattyGrillPhase.Overcooked)
-            {
-                graphic.color = burntColor;
-            }
-            else
-            {
-                graphic.color = Color.Lerp(rawColor, cookedColor, State.GetNormalizedProgress());
-            }
+            BurgerSpriteCatalog sprites = BurgerSpriteCatalog.RequireActive();
+            graphic.Shape = GrillIngredientType == IngredientType.Bacon
+                ? SimpleShape.Rectangle
+                : SimpleShape.Circle;
+            graphic.SourceSprite = phase == PattyGrillPhase.Overcooked
+                ? sprites.GetBurntGrillIngredient(GrillIngredientType)
+                : phase == PattyGrillPhase.Flipping || phase == PattyGrillPhase.CookingSide2 || phase == PattyGrillPhase.Done
+                    ? sprites.GetCookedGrillIngredient(GrillIngredientType)
+                    : phase == PattyGrillPhase.RawDough
+                        ? sprites.GetInitialGrillIngredient(GrillIngredientType)
+                        : sprites.GetRawGrillIngredient(GrillIngredientType);
+            graphic.rectTransform.sizeDelta = GetGrillSize(GrillIngredientType, phase);
+            graphic.color = Color.white;
 
             if (phase == PattyGrillPhase.Flipping)
             {
@@ -254,18 +300,40 @@ namespace SheepSheepBurger.BurgerAssembly
 
             if (phaseText != null)
             {
-                phaseText.text = GetPhaseLabel(phase);
+                phaseText.text = GetPhaseLabel(GrillIngredientType, phase);
             }
         }
 
-        public static string GetPhaseLabel(PattyGrillPhase phase)
+        public static string GetPhaseLabel(IngredientType type, PattyGrillPhase phase)
         {
+            string itemName;
+            switch (type)
+            {
+                case IngredientType.Patty:
+                    itemName = "패티";
+                    break;
+                case IngredientType.Bacon:
+                    itemName = "베이컨";
+                    break;
+                case IngredientType.Egg:
+                    itemName = "계란";
+                    break;
+                default:
+                    itemName = BurgerIngredientCatalog.GetDisplayName(type);
+                    break;
+            }
+
             switch (phase)
             {
-                case PattyGrillPhase.RawDough: return "고기반죽\n탭해서 누르기";
-                case PattyGrillPhase.Flattened: return "패티를 눌렀습니다";
-                case PattyGrillPhase.CookingSide1: return "1면 조리 중";
-                case PattyGrillPhase.ReadyToFlip: return "뒤집기 가능!\n패티를 탭하세요";
+                case PattyGrillPhase.RawDough:
+                    return type == IngredientType.Patty
+                        ? "패티볼\n탭해서 누르기"
+                        : itemName + "\n탭해서 굽기";
+                case PattyGrillPhase.Flattened:
+                    return type == IngredientType.Patty ? "패티를 눌렀습니다" : "조리 시작";
+                case PattyGrillPhase.CookingSide1:
+                    return type == IngredientType.Egg ? "계란 조리 중" : "1면 조리 중";
+                case PattyGrillPhase.ReadyToFlip: return "뒤집기 가능!\n5초 안에 탭하세요";
                 case PattyGrillPhase.Flipping: return "뒤집는 중";
                 case PattyGrillPhase.CookingSide2: return "2면 조리 중";
                 case PattyGrillPhase.Done: return "완료!\n오른쪽 끝으로 드래그";
@@ -273,16 +341,34 @@ namespace SheepSheepBurger.BurgerAssembly
                 default: return phase.ToString();
             }
         }
+
+        private static Vector2 GetGrillSize(IngredientType type, PattyGrillPhase phase)
+        {
+            switch (type)
+            {
+                case IngredientType.Patty:
+                    return phase == PattyGrillPhase.RawDough
+                        ? new Vector2(150f, 150f)
+                        : new Vector2(240f, 160f);
+                case IngredientType.Bacon:
+                    return new Vector2(330f, 180f);
+                case IngredientType.Egg:
+                    return new Vector2(270f, 170f);
+                default:
+                    return new Vector2(240f, 150f);
+            }
+        }
     }
 
     [RequireComponent(typeof(RectTransform), typeof(Image))]
     public sealed class CookingCameraSlider : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
-        private Camera targetCamera;
+        private RectTransform targetContent;
         private float grillX;
         private float boardX;
+        private float packagingX;
         private Vector2 dragStartScreen;
-        private float dragStartCameraX;
+        private float dragStartContentX;
         private CookingCameraZone dragStartZone;
         private Coroutine tweenRoutine;
 
@@ -294,45 +380,64 @@ namespace SheepSheepBurger.BurgerAssembly
 
         public float BoardX => boardX;
 
+        public float PackagingX => packagingX;
+
+        public float CurrentContentX =>
+            targetContent != null ? targetContent.anchoredPosition.x : 0f;
+
+        public Func<CookingCameraZone, bool> CanMoveToZone { get; set; }
+
         public event Action<CookingCameraZone> ZoneChanged;
 
-        public void Configure(Camera camera, float grillCameraX, float boardCameraX)
+        public void Configure(
+            RectTransform content,
+            float grillPageX,
+            float boardPageX,
+            float packagingPageX)
         {
-            targetCamera = camera;
-            grillX = grillCameraX;
-            boardX = boardCameraX;
+            targetContent = content != null
+                ? content
+                : throw new ArgumentNullException(nameof(content));
+            grillX = grillPageX;
+            boardX = boardPageX;
+            packagingX = packagingPageX;
             SetImmediate(CookingCameraZone.Grill);
         }
 
         public void OnBeginDrag(PointerEventData eventData)
         {
-            if (targetCamera == null)
+            if (targetContent == null)
             {
                 return;
             }
 
             CancelTween();
             dragStartScreen = eventData.position;
-            dragStartCameraX = targetCamera.transform.position.x;
-            dragStartZone = NearestZone(dragStartCameraX);
+            dragStartContentX = targetContent.anchoredPosition.x;
+            dragStartZone = NearestZone(-dragStartContentX);
         }
 
         public void OnDrag(PointerEventData eventData)
         {
-            if (targetCamera == null)
+            if (targetContent == null)
             {
                 return;
             }
 
             float screenWidth = Mathf.Max(1f, Screen.width);
             float screenDelta = eventData.position.x - dragStartScreen.x;
-            float worldDelta = -(screenDelta / screenWidth) * Mathf.Abs(boardX - grillX);
-            SetCameraX(Mathf.Clamp(dragStartCameraX + worldDelta, Mathf.Min(grillX, boardX), Mathf.Max(grillX, boardX)));
+            float contentDelta = (screenDelta / screenWidth) * Mathf.Abs(boardX - grillX);
+            float minimumContentX = CanAccess(CookingCameraZone.Packaging) ? -packagingX : -boardX;
+            float maximumContentX = -grillX;
+            SetContentX(Mathf.Clamp(
+                dragStartContentX + contentDelta,
+                minimumContentX,
+                maximumContentX));
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            if (targetCamera == null)
+            if (targetContent == null)
             {
                 return;
             }
@@ -342,13 +447,27 @@ namespace SheepSheepBurger.BurgerAssembly
             CookingCameraZone target = dragStartZone;
             if (Mathf.Abs(screenDelta) >= threshold)
             {
-                if (dragStartZone == CookingCameraZone.Grill && screenDelta < 0f)
+                if (screenDelta < 0f)
                 {
-                    target = CookingCameraZone.Board;
+                    if (dragStartZone == CookingCameraZone.Grill)
+                    {
+                        target = CookingCameraZone.Board;
+                    }
+                    else if (dragStartZone == CookingCameraZone.Board)
+                    {
+                        target = CookingCameraZone.Packaging;
+                    }
                 }
-                else if (dragStartZone == CookingCameraZone.Board && screenDelta > 0f)
+                else if (screenDelta > 0f)
                 {
-                    target = CookingCameraZone.Grill;
+                    if (dragStartZone == CookingCameraZone.Packaging)
+                    {
+                        target = CookingCameraZone.Board;
+                    }
+                    else if (dragStartZone == CookingCameraZone.Board)
+                    {
+                        target = CookingCameraZone.Grill;
+                    }
                 }
             }
 
@@ -365,11 +484,21 @@ namespace SheepSheepBurger.BurgerAssembly
             MoveTo(CookingCameraZone.Grill);
         }
 
+        public void MoveToPackaging()
+        {
+            MoveTo(CookingCameraZone.Packaging);
+        }
+
         public void MoveTo(CookingCameraZone zone)
         {
-            if (targetCamera == null)
+            if (targetContent == null)
             {
                 return;
+            }
+
+            if (!CanAccess(zone))
+            {
+                zone = NearestAccessibleZone(-targetContent.anchoredPosition.x);
             }
 
             DestinationZone = zone;
@@ -382,25 +511,45 @@ namespace SheepSheepBurger.BurgerAssembly
             CancelTween();
             DestinationZone = zone;
             CurrentZone = zone;
-            SetCameraX(zone == CookingCameraZone.Grill ? grillX : boardX);
+            SetContentX(GetContentX(zone));
             ZoneChanged?.Invoke(zone);
+        }
+
+        public float GetZoneX(CookingCameraZone zone)
+        {
+            switch (zone)
+            {
+                case CookingCameraZone.Grill:
+                    return grillX;
+                case CookingCameraZone.Board:
+                    return boardX;
+                case CookingCameraZone.Packaging:
+                    return packagingX;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(zone), zone, null);
+            }
+        }
+
+        public float GetContentX(CookingCameraZone zone)
+        {
+            return -GetZoneX(zone);
         }
 
         private IEnumerator TweenCamera(CookingCameraZone zone)
         {
-            float start = targetCamera.transform.position.x;
-            float end = zone == CookingCameraZone.Grill ? grillX : boardX;
+            float start = targetContent.anchoredPosition.x;
+            float end = GetContentX(zone);
             float elapsed = 0f;
             while (elapsed < CookingPrototypeRules.CameraTweenSeconds)
             {
                 elapsed += Time.unscaledDeltaTime;
                 float t = Mathf.Clamp01(elapsed / CookingPrototypeRules.CameraTweenSeconds);
                 t = t * t * (3f - 2f * t);
-                SetCameraX(Mathf.Lerp(start, end, t));
+                SetContentX(Mathf.Lerp(start, end, t));
                 yield return null;
             }
 
-            SetCameraX(end);
+            SetContentX(end);
             CurrentZone = zone;
             DestinationZone = zone;
             tweenRoutine = null;
@@ -418,18 +567,41 @@ namespace SheepSheepBurger.BurgerAssembly
             tweenRoutine = null;
         }
 
-        private void SetCameraX(float x)
+        private void SetContentX(float x)
         {
-            Vector3 position = targetCamera.transform.position;
+            Vector2 position = targetContent.anchoredPosition;
             position.x = x;
-            targetCamera.transform.position = position;
+            targetContent.anchoredPosition = position;
         }
 
         private CookingCameraZone NearestZone(float x)
         {
-            return Mathf.Abs(x - grillX) <= Mathf.Abs(x - boardX)
-                ? CookingCameraZone.Grill
-                : CookingCameraZone.Board;
+            CookingCameraZone nearest = CookingCameraZone.Grill;
+            float nearestDistance = Mathf.Abs(x - grillX);
+            float boardDistance = Mathf.Abs(x - boardX);
+            if (boardDistance < nearestDistance)
+            {
+                nearest = CookingCameraZone.Board;
+                nearestDistance = boardDistance;
+            }
+
+            if (Mathf.Abs(x - packagingX) < nearestDistance)
+            {
+                nearest = CookingCameraZone.Packaging;
+            }
+
+            return nearest;
+        }
+
+        private CookingCameraZone NearestAccessibleZone(float x)
+        {
+            CookingCameraZone nearest = NearestZone(x);
+            return CanAccess(nearest) ? nearest : CookingCameraZone.Board;
+        }
+
+        private bool CanAccess(CookingCameraZone zone)
+        {
+            return CanMoveToZone == null || CanMoveToZone(zone);
         }
     }
 }
