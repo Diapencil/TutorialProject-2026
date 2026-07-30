@@ -63,9 +63,9 @@ namespace Lee.Counter
         }
         public void SetTop(DayProgressRuntime day, int customersPerDay)
         {
-            dayText.text = $"{day.CurrentDay}일차";
-            revenueText.text = $"수익: $ {day.DailyRevenue:N0}";
-            progressText.text = $"손님: {day.ServedCustomerCount}/{customersPerDay}";
+            dayText.text = $"D + {day.CurrentDay}";
+            revenueText.text = $"{day.DailyRevenue:N0} C";
+            progressText.text = $"{day.ServedCustomerCount} / {customersPerDay}";
         }
         public void SetPatience(float seconds) => patienceText.text = $"남은 시간: {Mathf.CeilToInt(seconds)}초";
         public void SetOrderConfirmed(bool confirmed)
