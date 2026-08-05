@@ -12,7 +12,13 @@ namespace SheepSheepBurger.Economy
     {
         private const float ReferenceWidth = 1600f;
         private const float ReferenceHeight = 900f;
-        private const string ShopBackgroundResourcePath = "Shop/ShopBackground";
+        private const string ShopBackgroundResourcePath = "Shop/ShopBackgroundFull";
+        private const string ShopCardResourcePath = "Shop/ShopItemCard";
+        private const string ShopCategoryButtonResourcePath = "Shop/ShopCategoryButton";
+        private const string ShopCardButtonResourcePath = "Shop/ShopCardButton";
+        private static readonly Rect ShopCardSpriteRect = new Rect(401f, 125f, 252f, 366f);
+        private static readonly Rect ShopCategoryButtonSpriteRect = new Rect(36f, 932f, 365f, 150f);
+        private static readonly Rect ShopCardButtonSpriteRect = new Rect(0f, 0f, 320f, 137f);
 
         private readonly Dictionary<ShopCategory, Button> categoryButtons = new Dictionary<ShopCategory, Button>();
         private readonly List<GameObject> itemCards = new List<GameObject>();
@@ -27,6 +33,7 @@ namespace SheepSheepBurger.Economy
         private PlayerEconomyState state;
         private RectTransform canvasRoot;
         private RectTransform cardRoot;
+        private RectTransform cardContent;
         private Text moneyText;
         private Text statusText;
         private InputField debtInput;
@@ -56,12 +63,15 @@ namespace SheepSheepBurger.Economy
         public void MoveSelection(int direction)
         {
             List<ShopItemData> items = catalog.GetItems(selectedCategory);
-            if (items.Count <= 1)
+            if (items.Count <= 3)
             {
                 return;
             }
 
-            selectedItemIndex = (selectedItemIndex + direction + items.Count) % items.Count;
+            int pageCount = Mathf.CeilToInt(items.Count / 3f);
+            int currentPage = Mathf.Clamp(selectedItemIndex / 3, 0, pageCount - 1);
+            int nextPage = (currentPage + direction + pageCount) % pageCount;
+            selectedItemIndex = nextPage * 3;
             Refresh();
         }
 
@@ -196,19 +206,42 @@ namespace SheepSheepBurger.Economy
             GameObject cardRootObject = new GameObject("ShopCardRoot", typeof(RectTransform));
             cardRoot = cardRootObject.GetComponent<RectTransform>();
             cardRoot.SetParent(canvasRoot, false);
-            SetRect(cardRoot, hasShopArt ? new Vector2(-80f, -40f) : new Vector2(135f, -20f), hasShopArt ? new Vector2(380f, 500f) : new Vector2(1260f, 560f));
+            SetRect(cardRoot, hasShopArt ? new Vector2(175f, -35f) : new Vector2(135f, -20f), hasShopArt ? new Vector2(1240f, 720f) : new Vector2(1260f, 720f));
+
+            Image viewportImage = cardRootObject.AddComponent<Image>();
+            viewportImage.color = new Color(1f, 1f, 1f, 0.01f);
+            viewportImage.raycastTarget = true;
+            Mask mask = cardRootObject.AddComponent<Mask>();
+            mask.showMaskGraphic = false;
+            ScrollRect scrollRect = cardRootObject.AddComponent<ScrollRect>();
+            scrollRect.horizontal = false;
+            scrollRect.vertical = false;
+            scrollRect.movementType = ScrollRect.MovementType.Clamped;
+            scrollRect.scrollSensitivity = 36f;
+
+            GameObject contentObject = new GameObject("ShopCardContent", typeof(RectTransform));
+            cardContent = contentObject.GetComponent<RectTransform>();
+            cardContent.SetParent(cardRoot, false);
+            cardContent.anchorMin = new Vector2(0.5f, 1f);
+            cardContent.anchorMax = new Vector2(0.5f, 1f);
+            cardContent.pivot = new Vector2(0.5f, 1f);
+            cardContent.anchoredPosition = Vector2.zero;
+            cardContent.sizeDelta = cardRoot.sizeDelta;
+            scrollRect.viewport = cardRoot;
+            scrollRect.content = cardContent;
 
             CreateEventSystem();
         }
 
         private void BuildCategoryButton(RectTransform parent, ShopCategory category, string label, Vector2 position)
         {
-            RectTransform rect = CreateImage(category + "Button", parent, Hex("#81DB8F"), position, new Vector2(220f, 80f), true);
+            RectTransform rect = CreateImage(category + "Button", parent, Hex("#81DB8F"), position, new Vector2(225f, 92f), true);
+            TryApplyShopCategoryButton(rect.GetComponent<Image>());
             Button button = rect.gameObject.AddComponent<Button>();
             button.targetGraphic = rect.GetComponent<Image>();
             ShopCategory targetCategory = category;
             button.onClick.AddListener(() => SelectCategory(targetCategory));
-            CreateText(category + "Label", rect, label, 24, FontStyle.Bold, Hex("#173820"), Vector2.zero, rect.sizeDelta);
+            CreateText(category + "Label", rect, label, 23, FontStyle.Bold, Hex("#3B2A18"), Vector2.zero, new Vector2(185f, 56f));
             categoryButtons[category] = button;
         }
 
@@ -224,7 +257,7 @@ namespace SheepSheepBurger.Economy
             foreach (KeyValuePair<ShopCategory, Button> pair in categoryButtons)
             {
                 Image image = pair.Value.GetComponent<Image>();
-                image.color = pair.Key == selectedCategory ? Hex("#BFF0C5") : Hex("#81DB8F");
+                image.color = pair.Key == selectedCategory ? Hex("#FFF1C8") : Color.white;
             }
 
             RebuildCards();
@@ -238,6 +271,7 @@ namespace SheepSheepBurger.Economy
             }
             itemCards.Clear();
             debtInput = null;
+            ResetCardContent(cardRoot.sizeDelta.y);
 
             if (selectedCategory == ShopCategory.Repair)
             {
@@ -254,25 +288,28 @@ namespace SheepSheepBurger.Economy
             List<ShopItemData> items = catalog.GetItems(selectedCategory);
             if (items.Count == 0)
             {
-                Text empty = CreateText("EmptyCategory", cardRoot, "Coming soon", 30, FontStyle.Bold, Hex("#1F3B22"), Vector2.zero, new Vector2(330f, 80f));
+                Text empty = CreateText("EmptyCategory", cardContent, "Coming soon", 30, FontStyle.Bold, Hex("#1F3B22"), Vector2.zero, new Vector2(330f, 80f));
                 itemCards.Add(empty.gameObject);
                 return;
             }
 
-            selectedItemIndex = Mathf.Clamp(selectedItemIndex, 0, items.Count - 1);
-            CreateItemCard(items[selectedItemIndex], Vector2.zero, selectedItemIndex + 1, items.Count);
-            if (items.Count > 1)
+            selectedItemIndex = Mathf.Clamp(selectedItemIndex, 0, Mathf.Max(0, items.Count - 1));
+            int pageStartIndex = (selectedItemIndex / 3) * 3;
+            CreateItemGrid(items, pageStartIndex);
+            if (items.Count > 3)
             {
-                CreatePagerButton("PreviousItem", "<", new Vector2(-270f, -10f), -1);
-                CreatePagerButton("NextItem", ">", new Vector2(270f, -10f), 1);
+                CreatePagerButton("PreviousPage", "<", new Vector2(-600f, 0f), -1);
+                CreatePagerButton("NextPage", ">", new Vector2(600f, 0f), 1);
             }
         }
 
         private void CreateRepairPanel()
         {
-            RectTransform panel = CreateImage("RepairPanel", cardRoot, new Color(1f, 1f, 1f, 0.9f), Vector2.zero, new Vector2(340f, 470f), false);
+            ResetCardContent(cardRoot.sizeDelta.y);
+            RectTransform panel = CreateImage("RepairPanel", cardContent, new Color(1f, 1f, 1f, 0.9f), Vector2.zero, new Vector2(476f, 686f), false);
+            TryApplyShopCardFrame(panel.GetComponent<Image>());
             itemCards.Add(panel.gameObject);
-            CreateText("RepairTitle", panel, "Repair / Medical", 28, FontStyle.Bold, Color.black, new Vector2(0f, 170f), new Vector2(310f, 54f));
+            CreateText("RepairTitle", panel, "Repair / Medical", 28, FontStyle.Bold, Color.black, new Vector2(0f, 238f), new Vector2(410f, 54f));
             CreateText(
                 "RepairSummary",
                 panel,
@@ -282,20 +319,21 @@ namespace SheepSheepBurger.Economy
                 20,
                 FontStyle.Bold,
                 Color.black,
-                new Vector2(0f, 65f),
-                new Vector2(310f, 130f));
+                new Vector2(0f, 132f),
+                new Vector2(410f, 112f));
 
-            CreateRepairButton(panel, RepairDamageSeverity.Minor, new Vector2(-80f, -55f));
-            CreateRepairButton(panel, RepairDamageSeverity.Moderate, new Vector2(80f, -55f));
-            CreateRepairButton(panel, RepairDamageSeverity.Major, new Vector2(-80f, -135f));
-            CreateRepairButton(panel, RepairDamageSeverity.Severe, new Vector2(80f, -135f));
-            CreateMedicalButton(panel, new Vector2(0f, -210f));
+            CreateRepairButton(panel, RepairDamageSeverity.Minor, new Vector2(-118f, -70f));
+            CreateRepairButton(panel, RepairDamageSeverity.Moderate, new Vector2(118f, -70f));
+            CreateRepairButton(panel, RepairDamageSeverity.Major, new Vector2(-118f, -170f));
+            CreateRepairButton(panel, RepairDamageSeverity.Severe, new Vector2(118f, -170f));
+            CreateMedicalButton(panel, new Vector2(0f, -272f));
         }
 
         private void CreateRepairButton(RectTransform parent, RepairDamageSeverity severity, Vector2 position)
         {
             float cost = EconomyRules.GetRepairCost(severity);
             RectTransform rect = CreateImage(severity + "RepairButton", parent, Hex("#F08A5C"), position, new Vector2(140f, 74f), true);
+            TryApplyShopCardButton(rect.GetComponent<Image>());
             Button button = rect.gameObject.AddComponent<Button>();
             button.targetGraphic = rect.GetComponent<Image>();
             RepairDamageSeverity targetSeverity = severity;
@@ -306,6 +344,7 @@ namespace SheepSheepBurger.Economy
         private void CreateMedicalButton(RectTransform parent, Vector2 position)
         {
             RectTransform rect = CreateImage("MedicalCareButton", parent, Hex("#F08A5C"), position, new Vector2(180f, 58f), true);
+            TryApplyShopCardButton(rect.GetComponent<Image>());
             Button button = rect.gameObject.AddComponent<Button>();
             button.targetGraphic = rect.GetComponent<Image>();
             button.onClick.AddListener(() => TryBuy(ShopItemId.MedicalCare));
@@ -314,11 +353,13 @@ namespace SheepSheepBurger.Economy
 
         private void CreateDebtPanel()
         {
-            RectTransform panel = CreateImage("DebtPanel", cardRoot, new Color(1f, 1f, 1f, 0.9f), Vector2.zero, new Vector2(340f, 470f), false);
+            ResetCardContent(cardRoot.sizeDelta.y);
+            RectTransform panel = CreateImage("DebtPanel", cardContent, new Color(1f, 1f, 1f, 0.9f), Vector2.zero, new Vector2(476f, 686f), false);
+            TryApplyShopCardFrame(panel.GetComponent<Image>());
             itemCards.Add(panel.gameObject);
 
             int daysLeft = Mathf.Max(0, EconomyRules.DebtDeadlineDays - state.dayNumber + 1);
-            CreateText("DebtTitle", panel, "Debt Repayment", 28, FontStyle.Bold, Color.black, new Vector2(0f, 170f), new Vector2(310f, 54f));
+            CreateText("DebtTitle", panel, "Debt Repayment", 28, FontStyle.Bold, Color.black, new Vector2(0f, 238f), new Vector2(410f, 54f));
             CreateText(
                 "DebtSummary",
                 panel,
@@ -328,19 +369,20 @@ namespace SheepSheepBurger.Economy
                 21,
                 FontStyle.Bold,
                 Color.black,
-                new Vector2(0f, 75f),
-                new Vector2(310f, 110f));
+                new Vector2(0f, 138f),
+                new Vector2(410f, 112f));
 
-            debtInput = CreateInputField("DebtAmountInput", panel, "Amount", new Vector2(0f, -25f), new Vector2(230f, 58f));
+            debtInput = CreateInputField("DebtAmountInput", panel, "Amount", new Vector2(0f, -40f), new Vector2(230f, 58f));
             FillDebtInputWithMax();
 
-            CreateDebtActionButton(panel, "PayDebtButton", "Pay Debt", new Vector2(0f, -110f), new Vector2(220f, 62f), TryPayDebtFromInput);
-            CreateDebtActionButton(panel, "MaxDebtButton", "Max", new Vector2(0f, -185f), new Vector2(150f, 50f), FillDebtInputWithMax);
+            CreateDebtActionButton(panel, "PayDebtButton", "Pay Debt", new Vector2(0f, -160f), new Vector2(220f, 62f), TryPayDebtFromInput);
+            CreateDebtActionButton(panel, "MaxDebtButton", "Max", new Vector2(0f, -270f), new Vector2(150f, 50f), FillDebtInputWithMax);
         }
 
         private void CreateDebtActionButton(RectTransform parent, string name, string label, Vector2 position, Vector2 size, UnityEngine.Events.UnityAction action)
         {
             RectTransform rect = CreateImage(name, parent, Hex("#F08A5C"), position, size, true);
+            TryApplyShopCardButton(rect.GetComponent<Image>());
             Button button = rect.gameObject.AddComponent<Button>();
             button.targetGraphic = rect.GetComponent<Image>();
             button.onClick.AddListener(action);
@@ -349,11 +391,50 @@ namespace SheepSheepBurger.Economy
 
         private void CreateItemCard(ShopItemData item, Vector2 position, int itemNumber, int itemCount)
         {
-            RectTransform card = CreateImage(item.id + "Card", cardRoot, new Color(1f, 1f, 1f, 0.9f), position, new Vector2(340f, 470f), false);
+            CreateItemCard(item, position, itemNumber, itemCount, new Vector2(238f, 342f), true);
+        }
+
+        private void CreateItemGrid(List<ShopItemData> items, int pageStartIndex)
+        {
+            int visibleCount = Mathf.Min(3, items.Count - pageStartIndex);
+            int columns = Mathf.Min(3, visibleCount);
+            int rows = 1;
+            float cardWidth = 378f;
+            float cardHeight = 543f;
+            float horizontalGap = 20f;
+            float verticalGap = 0f;
+            float totalWidth = (columns * cardWidth) + ((columns - 1) * horizontalGap);
+            float totalHeight = (rows * cardHeight) + ((rows - 1) * verticalGap);
+            float viewportHeight = cardRoot.sizeDelta.y;
+            float contentHeight = viewportHeight;
+            float topPadding = (contentHeight - totalHeight) * 0.5f;
+            Vector2 cardSize = new Vector2(cardWidth, cardHeight);
+            ResetCardContent(contentHeight);
+
+            for (int index = 0; index < visibleCount; index++)
+            {
+                int column = index % columns;
+                int row = index / columns;
+                float x = (-totalWidth * 0.5f) + (cardWidth * 0.5f) + (column * (cardWidth + horizontalGap));
+                float y = (contentHeight * 0.5f) - topPadding - (cardHeight * 0.5f) - (row * (cardHeight + verticalGap));
+                int itemIndex = pageStartIndex + index;
+                CreateItemCard(items[itemIndex], new Vector2(x, y), itemIndex + 1, items.Count, cardSize, false);
+            }
+        }
+
+        private void CreateItemCard(ShopItemData item, Vector2 position, int itemNumber, int itemCount, Vector2 size, bool showCounter)
+        {
+            RectTransform card = CreateImage(item.id + "Card", cardContent, new Color(1f, 1f, 1f, 0.9f), position, size, false);
+            bool hasCardFrame = TryApplyShopCardFrame(card.GetComponent<Image>());
             itemCards.Add(card.gameObject);
-            CreateText(item.id + "Counter", card, itemNumber + " / " + itemCount, 18, FontStyle.Bold, Hex("#637064"), new Vector2(0f, 200f), new Vector2(300f, 34f));
-            CreateText(item.id + "Name", card, item.displayName, 30, FontStyle.Bold, Color.black, new Vector2(0f, 135f), new Vector2(300f, 60f));
-            CreateText(item.id + "Flavor", card, item.flavorText, 20, FontStyle.Normal, Color.black, new Vector2(0f, 45f), new Vector2(290f, 95f));
+            float scale = 1f;
+            if (showCounter)
+            {
+                CreateText(item.id + "Counter", card, itemNumber + " / " + itemCount, Mathf.RoundToInt(18 * scale), FontStyle.Bold, Hex("#637064"), new Vector2(0f, 205f * scale), new Vector2(300f * scale, 34f * scale));
+            }
+
+            CreateText(item.id + "Name", card, item.displayName, Mathf.RoundToInt((hasCardFrame ? 26 : 30) * scale), FontStyle.Bold, Color.black, hasCardFrame ? new Vector2(0f, 30f * scale) : new Vector2(0f, 135f * scale), new Vector2(260f * scale, 62f * scale));
+            CreateText(item.id + "Flavor", card, item.flavorText, Mathf.RoundToInt(19 * scale), FontStyle.Bold, Hex("#3B2A18"), hasCardFrame ? new Vector2(0f, -52f * scale) : new Vector2(0f, 45f * scale), new Vector2(260f * scale, 88f * scale));
 
             float displayPrice = GetDisplayPrice(item);
             bool complete = IsItemComplete(item);
@@ -361,23 +442,24 @@ namespace SheepSheepBurger.Economy
             bool canAfford = state.money >= displayPrice && !complete && !blockedByDebt;
             string buttonText = GetPurchaseButtonText(item, complete, blockedByDebt, displayPrice);
             Color buttonColor = complete ? Hex("#C9D2CA") : (canAfford ? Hex("#F08A5C") : Hex("#E5E5E5"));
-            RectTransform buyRect = CreateImage(item.id + "Buy", card, buttonColor, new Vector2(0f, -165f), new Vector2(220f, 68f), true);
+            RectTransform buyRect = CreateImage(item.id + "Buy", card, buttonColor, new Vector2(0f, -165f * scale), new Vector2(220f * scale, 94f * scale), true);
+            TryApplyShopCardButton(buyRect.GetComponent<Image>());
             Button buyButton = buyRect.gameObject.AddComponent<Button>();
             buyButton.targetGraphic = buyRect.GetComponent<Image>();
             buyButton.interactable = canAfford;
             ShopItemId targetItem = item.id;
             buyButton.onClick.AddListener(() => TryBuy(targetItem));
-            CreateText(item.id + "BuyLabel", buyRect, buttonText, 21, FontStyle.Bold, Color.black, Vector2.zero, buyRect.sizeDelta);
+            CreateText(item.id + "BuyLabel", buyRect, buttonText, Mathf.RoundToInt(21 * scale), FontStyle.Bold, Color.black, Vector2.zero, buyRect.sizeDelta);
         }
 
         private void CreatePagerButton(string name, string label, Vector2 position, int direction)
         {
-            RectTransform rect = CreateImage(name, cardRoot, Hex("#F08A5C"), position, new Vector2(58f, 58f), true);
+            RectTransform rect = CreateImage(name, cardRoot, new Color(1f, 1f, 1f, 0f), position, new Vector2(78f, 90f), true);
             itemCards.Add(rect.gameObject);
             Button button = rect.gameObject.AddComponent<Button>();
             button.targetGraphic = rect.GetComponent<Image>();
             button.onClick.AddListener(() => MoveSelection(direction));
-            CreateText(name + "Label", rect, label, 30, FontStyle.Bold, Color.black, Vector2.zero, rect.sizeDelta);
+            CreateText(name + "Label", rect, label, 44, FontStyle.Bold, Hex("#3B2A18"), Vector2.zero, rect.sizeDelta);
         }
 
         private float GetDisplayPrice(ShopItemData item)
@@ -442,13 +524,34 @@ namespace SheepSheepBurger.Economy
 
         private static bool TryApplyShopBackground(Image image)
         {
-            Texture2D texture = Resources.Load<Texture2D>(ShopBackgroundResourcePath);
+            return TryApplyResourceSprite(image, ShopBackgroundResourcePath, new Rect(), false);
+        }
+
+        private static bool TryApplyShopCardFrame(Image image)
+        {
+            return TryApplyResourceSprite(image, ShopCardResourcePath, ShopCardSpriteRect, true);
+        }
+
+        private static bool TryApplyShopCategoryButton(Image image)
+        {
+            return TryApplyResourceSprite(image, ShopCategoryButtonResourcePath, ShopCategoryButtonSpriteRect, true);
+        }
+
+        private static bool TryApplyShopCardButton(Image image)
+        {
+            return TryApplyResourceSprite(image, ShopCardButtonResourcePath, ShopCardButtonSpriteRect, true);
+        }
+
+        private static bool TryApplyResourceSprite(Image image, string resourcePath, Rect sourceRect, bool useSourceRect)
+        {
+            Texture2D texture = Resources.Load<Texture2D>(resourcePath);
             if (texture == null)
             {
                 return false;
             }
 
-            image.sprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100f);
+            Rect spriteRect = useSourceRect ? sourceRect : new Rect(0f, 0f, texture.width, texture.height);
+            image.sprite = Sprite.Create(texture, spriteRect, new Vector2(0.5f, 0.5f), 100f);
             image.color = Color.white;
             image.preserveAspect = false;
             return true;
@@ -498,7 +601,10 @@ namespace SheepSheepBurger.Economy
             text.text = value;
             text.alignment = TextAnchor.MiddleCenter;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
-            text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.verticalOverflow = VerticalWrapMode.Truncate;
+            text.resizeTextForBestFit = true;
+            text.resizeTextMinSize = Mathf.Max(10, size - 8);
+            text.resizeTextMaxSize = size;
             text.raycastTarget = false;
             return text;
         }
@@ -568,6 +674,17 @@ namespace SheepSheepBurger.Economy
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
+        }
+
+        private void ResetCardContent(float height)
+        {
+            if (cardContent == null)
+            {
+                return;
+            }
+
+            cardContent.anchoredPosition = Vector2.zero;
+            cardContent.sizeDelta = new Vector2(cardRoot.sizeDelta.x, Mathf.Max(cardRoot.sizeDelta.y, height));
         }
 
         private static Color Hex(string value)
