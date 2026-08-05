@@ -11,10 +11,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c7d90a9e-043d-4fac-85b6-48a84da04955" name="변경" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.TutorialProject 2026/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.TutorialProject 2026/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/@Developers/Lee/Prefabs/Customer.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/@Developers/Lee/Prefabs/Customer.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.TutorialProject 2026/.idea/indexLayout.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/@Developers/Lee/Scenes/Counter.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/@Developers/Lee/Scenes/Counter.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/@Developers/Lee/Scripts/Counter/CounterSceneUI.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/@Developers/Lee/Scripts/Counter/CounterSceneUI.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ProjectSettings/ShaderGraphSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/ShaderGraphSettings.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -23,7 +21,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="22" />
+    <option name="cachedIndexableFilesCount" value="18" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -183,6 +181,8 @@
       <workItem from="1784765124633" duration="4927000" />
       <workItem from="1784780634531" duration="7975000" />
       <workItem from="1785335988344" duration="1472000" />
+      <workItem from="1785680064751" duration="1390000" />
+      <workItem from="1785853822232" duration="586000" />
     </task>
     <servers />
   </component>
