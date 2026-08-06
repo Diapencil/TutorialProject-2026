@@ -8,9 +8,9 @@ namespace SheepSheepBurger.Core
     [Serializable]
     public class RecipeIngredient
     {
-        public int recipeId;
-        public int ingredientId;
-        public int layerOrder;
+        // public int recipeId;
+        public IngredientData ingredient;
+        // public int layerOrder;
         public int quantity;
     }
 }

@@ -7,8 +7,8 @@ namespace SheepSheepBurger.Core
     public class Dialogue : ScriptableObject
     {
         public int id;
-        public int recipeId;
-        public List<string> lines;
-        public string hintLine;
+        // public int recipeId;
+        [TextArea] public List<string> lines;
+        [TextArea] public string hintLine;
     }
 }

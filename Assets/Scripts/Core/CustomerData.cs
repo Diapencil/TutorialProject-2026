@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SheepSheepBurger.Core
@@ -6,7 +7,8 @@ namespace SheepSheepBurger.Core
     public class CustomerData : ScriptableObject
     {
         public int id;
-        public string name;
+        public List<OrderData> availableOrders;
+        public string customerName;
         public string spritePath;
         public float patienceTime;
         public float attackChance;

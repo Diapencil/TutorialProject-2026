@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c446cb8211755a24a936ecd3b816979c, type: 3}
-  m_Name: Wolf
+  m_Name: Cash_1st
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.CustomerData
-  id: 1
+  id: 0
   availableOrders:
-  - {fileID: 11400000, guid: 4c47f096558cc6943b940db2ed1fae53, type: 2}
-  customerName: "\uB291\uB300"
+  - {fileID: 11400000, guid: 094f8eb87f005cd41914959723781a62, type: 2}
+  customerName: "\uCE90\uC2DC"
   spritePath: 
-  patienceTime: 60
-  attackChance: 0.1
-  tipMultiplier: 1
+  patienceTime: 999
+  attackChance: 0
+  tipMultiplier: 0
   unlockDay: 1
