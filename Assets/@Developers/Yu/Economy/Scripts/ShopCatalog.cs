@@ -24,20 +24,64 @@ namespace SheepSheepBurger.Economy
         {
             return new ShopCatalog(new[]
             {
-                new ShopItemData(ShopItemId.Bacon, ShopCategory.Topping, "Bacon", "Sorry, pig!", EconomyRules.DefaultShopItemPrice, true, IngredientType.ToppingBacon),
-                new ShopItemData(ShopItemId.FriedEgg, ShopCategory.Topping, "Fried Egg", "Sorry, chicken!", EconomyRules.DefaultShopItemPrice, true, IngredientType.ToppingFriedEgg),
-                new ShopItemData(ShopItemId.Pickle, ShopCategory.Topping, "Pickle", "Not sorry, pickle!", EconomyRules.DefaultShopItemPrice, true, IngredientType.ToppingPickle),
-                new ShopItemData(ShopItemId.Jalapeno, ShopCategory.Topping, "Jalapeno", "Not sorry, jalapeno!", EconomyRules.DefaultShopItemPrice, true, IngredientType.ToppingJalapeno),
-                new ShopItemData(ShopItemId.Tomato, ShopCategory.Topping, "Tomato", "Unlock tomato.", EconomyRules.DefaultShopItemPrice, true, IngredientType.ToppingTomato),
-                new ShopItemData(ShopItemId.Onion, ShopCategory.Topping, "Onion", "Unlock onion.", EconomyRules.DefaultShopItemPrice, true, IngredientType.ToppingOnion),
-                new ShopItemData(ShopItemId.FryerUpgrade, ShopCategory.Upgrade, "Fryer Upgrade", "Faster fried items, four levels.", EconomyRules.GetToolUpgradeCost(ToolUpgradeType.Fryer, 0), false, IngredientType.Patty),
-                new ShopItemData(ShopItemId.GrillPlateUpgrade, ShopCategory.Upgrade, "Grill Plate Upgrade", "Faster grill and lower burn chance.", EconomyRules.GetToolUpgradeCost(ToolUpgradeType.GrillPlate, 0), false, IngredientType.Patty),
-                new ShopItemData(ShopItemId.StoreRepair, ShopCategory.Repair, "Store Repair", "Full shop repair.", EconomyRules.FullStoreRepairCost, false, IngredientType.Patty),
-                new ShopItemData(ShopItemId.MedicalCare, ShopCategory.Repair, "Medical Care", "Treatment fee.", EconomyRules.MedicalCareCost, false, IngredientType.Patty),
-                new ShopItemData(ShopItemId.DecorationSmall, ShopCategory.Decoration, "Small Decoration", "For debt-free players.", 100f, false, IngredientType.Patty),
-                new ShopItemData(ShopItemId.DecorationMedium, ShopCategory.Decoration, "Medium Decoration", "For debt-free players.", 300f, false, IngredientType.Patty),
-                new ShopItemData(ShopItemId.DecorationLarge, ShopCategory.Decoration, "Large Decoration", "For debt-free players.", 500f, false, IngredientType.Patty)
+                Topping(ShopItemId.Bacon, "Bacon", "Sorry, pig!", IngredientType.ToppingBacon),
+                Topping(ShopItemId.FriedEgg, "Fried Egg", "Sorry, chicken!", IngredientType.ToppingFriedEgg),
+                Topping(ShopItemId.Pickle, "Pickle", "Not sorry, pickle!", IngredientType.ToppingPickle),
+                Topping(ShopItemId.Jalapeno, "Jalapeno", "Not sorry, jalapeno!", IngredientType.ToppingJalapeno),
+                Topping(ShopItemId.Tomato, "Tomato", "Unlock tomato.", IngredientType.ToppingTomato),
+                Topping(ShopItemId.Onion, "Onion", "Unlock onion.", IngredientType.ToppingOnion),
+                Upgrade(ShopItemId.FryerUpgrade, ToolUpgradeType.Fryer, "Fryer Upgrade", "Faster fried items, four levels."),
+                Upgrade(ShopItemId.GrillPlateUpgrade, ToolUpgradeType.GrillPlate, "Grill Plate Upgrade", "Faster grill and lower burn chance."),
+                RepairItem(ShopItemId.StoreRepair, "Store Repair", "Full shop repair.", EconomyRules.FullStoreRepairCost),
+                RepairItem(ShopItemId.MedicalCare, "Medical Care", "Treatment fee.", EconomyRules.MedicalCareCost),
+                Decoration(ShopItemId.DecorationSmall, "Small Decoration", "For debt-free players.", 100f),
+                Decoration(ShopItemId.DecorationMedium, "Medium Decoration", "For debt-free players.", 300f),
+                Decoration(ShopItemId.DecorationLarge, "Large Decoration", "For debt-free players.", 500f)
             });
+        }
+
+        private static ShopItemData Topping(
+            ShopItemId id,
+            string displayName,
+            string flavorText,
+            IngredientType ingredientType,
+            float price = EconomyRules.DefaultShopItemPrice)
+        {
+            return new ShopItemData(id, ShopCategory.Topping, displayName, flavorText, price, true, ingredientType);
+        }
+
+        private static ShopItemData Upgrade(
+            ShopItemId id,
+            ToolUpgradeType type,
+            string displayName,
+            string flavorText)
+        {
+            return new ShopItemData(
+                id,
+                ShopCategory.Upgrade,
+                displayName,
+                flavorText,
+                EconomyRules.GetToolUpgradeCost(type, 0),
+                false,
+                IngredientType.Patty);
+        }
+
+        private static ShopItemData RepairItem(
+            ShopItemId id,
+            string displayName,
+            string flavorText,
+            float price)
+        {
+            return new ShopItemData(id, ShopCategory.Repair, displayName, flavorText, price, false, IngredientType.Patty);
+        }
+
+        private static ShopItemData Decoration(
+            ShopItemId id,
+            string displayName,
+            string flavorText,
+            float price)
+        {
+            return new ShopItemData(id, ShopCategory.Decoration, displayName, flavorText, price, false, IngredientType.Patty);
         }
 
         public bool TryGetItem(ShopItemId itemId, out ShopItemData item)
