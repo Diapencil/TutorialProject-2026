@@ -6,7 +6,7 @@ namespace SheepSheepBurger.Core
     public class OrderData : ScriptableObject
     {
         public int id;
-        public CustomerData customer;
+        // public CustomerData customer;
         public RecipeData recipe;
         public Dialogue dialogue;
     }

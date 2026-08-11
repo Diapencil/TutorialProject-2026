@@ -10,8 +10,8 @@ namespace SheepSheepBurger.Core
         public string recipeName;
         public List<RecipeIngredient> ingredients;
         public int basePrice;
-        public Dialogue dialogue;
-        // public int difficulty;
+        // public Dialogue dialogue;
+        public int difficulty;
         public string unlockCondition;
     }
 }
