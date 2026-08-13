@@ -9,7 +9,6 @@ namespace SheepSheepBurger.Core
         public string ingredientName;
         public IngredientType type;
         public int unlockCost;
-        public bool isUnlocked;
         public bool grillable;
         public float cookTimeMin;
         public float cookTimeMax;

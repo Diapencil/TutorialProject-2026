@@ -6,11 +6,9 @@ namespace SheepSheepBurger.Core
     /// Connects a recipe to one required ingredient. layerOrder is zero-based.
     /// </summary>
     [Serializable]
-    public class RecipeIngredient
+    public class RecipeLayer
     {
-        // public int recipeId;
         public IngredientData ingredient;
-        // public int layerOrder;
         public int quantity;
     }
 }

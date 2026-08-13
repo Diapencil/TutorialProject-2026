@@ -6,9 +6,7 @@ namespace SheepSheepBurger.Core
     [CreateAssetMenu(menuName = "SheepSheepBurger/Data/Dialogue")]
     public class Dialogue : ScriptableObject
     {
-        public int id;
-        // public int recipeId;
-        [TextArea] public List<string> lines;
+        [TextArea] public List<string> orderLines;
         [TextArea] public string hintLine;
         [TextArea] public string perfectLine;
         [TextArea] public string goodLine;

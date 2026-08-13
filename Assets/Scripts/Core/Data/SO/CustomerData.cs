@@ -7,10 +7,11 @@ namespace SheepSheepBurger.Core
     public class CustomerData : ScriptableObject
     {
         public int id;
-        public List<OrderData> availableOrders;
+        // public List<OrderData> availableOrders;
         public string customerName;
-        public string spritePath;
-        public float patienceTime;
+        public List<string> spritePath;
+        public float appearWeight;
+        public int patienceTime;
         public float attackChance;
         public float tipMultiplier;
         public int unlockDay;
