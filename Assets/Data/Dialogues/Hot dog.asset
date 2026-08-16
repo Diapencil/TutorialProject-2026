@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76e52d79f05fec84da88b585a329c43e, type: 3}
+  m_Name: Hot dog
+  m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.Dialogue
+  orderLines: []
+  hintLine: "\uC554\uC5B4 \uD56B \uB3C4\uADF8"
+  perfectLine: "\uB09C \uD654\uB048\uD55C \uB291\uB300\uC5D0\uC694!"
+  goodLine: "\uC800 \uBA40\uB9AC \uC544\uBA54\uB9AC\uCE74\uB77C\uB294 \uACF3\uC5D0\uC120
+    \uC139\uC2DC\uD55C \uAC1C\uB97C \uC0B4 \uC218 \uC788\uB300\uC694!"
+  normalLine: 
+  badLine: 

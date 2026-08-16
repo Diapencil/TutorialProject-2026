@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b2021cfa38c4ae5449311b5b4a2945bc, type: 3}
-  m_Name: Patty
+  m_Name: Tomato
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.IngredientData
-  id: 3
-  ingredientName: "\uD328\uD2F0"
-  type: 1
+  id: 11
+  ingredientName: "\uD1A0\uB9C8\uD1A0"
+  type: 2
   unlockCost: 0
-  grillable: 1
-  cookTimeMin: 10
-  cookTimeMax: 15
+  grillable: 0
+  cookTimeMin: -1
+  cookTimeMax: -1

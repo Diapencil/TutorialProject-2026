@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76e52d79f05fec84da88b585a329c43e, type: 3}
+  m_Name: Forest Burger
+  m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.Dialogue
+  orderLines: []
+  hintLine: "\u201C\uC232 \uC18D\uC758 \uBAA8\uB4E0 \uC7AC\uB8CC\uB97C \uB2E4 \uB123\uC5B4\uC8FC\uC138\uC694!\u201D"
+  perfectLine: "\uC591\uC0C1\uCD94 \uCE68\uB300\uC640 \uD1A0\uB9C8\uD1A0 \uB9E4\uD2B8\uB9AC\uC2A4,
+    \uD53C\uD074 \uBC30\uAC8C\uC640 \uCE58\uC988 \uC774\uBD88 \uC704\uC5D0 \uBAA8\uC154\uC9C4
+    \uD328\uD2F0\uB97C \uD55C \uC785\uC5D0 \uBA39\uACE0 \uC2F6\uC5B4\uC694!"
+  goodLine: "\uC232\uC744 \uD45C\uD604\uD574\uC8FC\uC138\uC694."
+  normalLine: 
+  badLine: 
