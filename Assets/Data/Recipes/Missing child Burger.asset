@@ -10,10 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4eb6c15b4d87b2a4da2e338b5bd6985a, type: 3}
-  m_Name: Missing child Burger
+  m_Name: Missing Child Burger
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.RecipeData
   id: 4
   recipeName: "\uBBF8\uC544\uBC84\uAC70"
-  layers: []
+  layers:
+  - ingredient: {fileID: 11400000, guid: 4e9590c32cef09b48b2efc1fbd675d58, type: 2}
+    quantity: 1
+    cookRequirement: 0
+  - ingredient: {fileID: 11400000, guid: 151c86a4dcfc6c64bbbfa2043195c5fc, type: 2}
+    quantity: 1
+    cookRequirement: 0
   basePrice: 100
-  unlockCondition: "\uCE90\uC2DC\uC758 \uCCAB \uC8FC\uBB38"
+  unlockCondition: "\uB291\uB300\uC758 \uC8FC\uBB38"

@@ -14,6 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.RecipeData
   id: 9
   recipeName: "\uB450\uCAC0\uCFE0\uBC84\uAC70"
-  layers: []
+  layers:
+  - ingredient: {fileID: 11400000, guid: b0de1025bc5310e4d90fba051ab4ac01, type: 2}
+    quantity: 1
+    cookRequirement: 3
   basePrice: 100
-  unlockCondition: "\uCE90\uC2DC\uC758 \uCCAB \uC8FC\uBB38"
+  unlockCondition: "???\uC758 \uC8FC\uBB38"

@@ -9,6 +9,7 @@ namespace SheepSheepBurger.Core
     public class RecipeLayer
     {
         public IngredientData ingredient;
-        public int quantity;
+        public int quantity = 1;
+        public CookState cookRequirement;
     }
 }

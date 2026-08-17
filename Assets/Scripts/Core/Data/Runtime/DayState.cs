@@ -8,6 +8,7 @@ namespace SheepSheepBurger.Core
     {
         public int customersServed;
         public int dailyRevenue;
+        public int dailyIngredientCost;
         public List<int> count;
         public bool wasAttackedToday;
     }

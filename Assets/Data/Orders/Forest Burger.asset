@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9ea9e2b0870e2014088880a5ac7ab508, type: 3}
-  m_Name: TutorialOrder
+  m_Name: Forest Burger
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.OrderData
-  id: 101
-  recipe: {fileID: 11400000, guid: 89619c7190b051d4c965e137bc33e560, type: 2}
-  dialogue: {fileID: 11400000, guid: 1c04252696897e1449035aa5cb648726, type: 2}
+  id: 2
+  recipe: {fileID: 11400000, guid: 87b5753cd7a3ca04da2f9f93ff02cf2e, type: 2}
+  dialogue: {fileID: 11400000, guid: edcf2f38fe64222488df7bff5288824a, type: 2}

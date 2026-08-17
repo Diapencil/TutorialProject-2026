@@ -12,7 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76e52d79f05fec84da88b585a329c43e, type: 3}
   m_Name: Tutorial
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.Dialogue
-  id: 1
-  lines:
+  orderLines:
   - "\uD29C\uD1A0\uB9AC\uC5BC \uB300\uC0AC 1"
   hintLine: "\uD29C\uD1A0\uB9AC\uC5BC \uB300\uC0AC 2"
+  perfectLine: 
+  goodLine: 
+  normalLine: 
+  badLine: 

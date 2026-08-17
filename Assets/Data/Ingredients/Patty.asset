@@ -16,6 +16,8 @@ MonoBehaviour:
   ingredientName: "\uD328\uD2F0"
   type: 1
   unlockCost: 0
+  costPerUse: 0
+  isDefaultUnlocked: 1
   grillable: 1
   cookTimeMin: 10
   cookTimeMax: 15

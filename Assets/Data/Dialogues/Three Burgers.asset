@@ -12,11 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76e52d79f05fec84da88b585a329c43e, type: 3}
   m_Name: Three Burgers
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.Dialogue
-  orderLines: []
+  orderLines:
+  - "\uC544\uAE30 \uB3FC\uC9C0 \uC0BC\uD615\uC81C\u2026. \uB9C9\uB0B4\uB97C \uC544\uC9C1
+    \uB9DB\uBCF4\uC9C0 \uBABB\uD588\uC5B4\uC694."
+  - "\uD53C\uC640 \uACE0\uAE43\uB369\uC774\uC758 \uD5A5\uC5F0!!"
   hintLine: "\uD558\uB098\uB97C \uBA39\uC5B4\uB3C4 \uB9DB\uC788\uB294\uB370, \uC138\uB9C8\uB9AC\uB97C
     \uB3D9\uC2DC\uC5D0 \uBA39\uC73C\uBA74 \uC5BC\uB9C8\uB098 \uB9DB\uC788\uC744\uAE4C?"
-  perfectLine: "\uC544\uAE30 \uB3FC\uC9C0 \uC0BC\uD615\uC81C\u2026. \uB9C9\uB0B4\uB97C
-    \uC544\uC9C1 \uB9DB\uBCF4\uC9C0 \uBABB\uD588\uC5B4\uC694."
-  goodLine: "\uD53C\uC640 \uACE0\uAE43\uB369\uC774\uC758 \uD5A5\uC5F0!!"
+  perfectLine: 
+  goodLine: 
   normalLine: 
   badLine: 
