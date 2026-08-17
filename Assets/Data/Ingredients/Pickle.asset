@@ -16,7 +16,8 @@ MonoBehaviour:
   ingredientName: "\uD53C\uD074"
   type: 2
   unlockCost: 0
-  isUnlocked: 0
+  costPerUse: 0
+  isDefaultUnlocked: 1
   grillable: 0
   cookTimeMin: -1
   cookTimeMax: -1

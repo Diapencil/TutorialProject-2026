@@ -16,16 +16,20 @@ MonoBehaviour:
   - grade: 0
     maxErrors: 0
     tipAmount: 5
+    requireNoHint: 1
     paysBasePrice: 1
   - grade: 1
     maxErrors: 2
     tipAmount: 3
+    requireNoHint: 1
     paysBasePrice: 1
   - grade: 2
     maxErrors: 4
     tipAmount: 0
+    requireNoHint: 0
     paysBasePrice: 1
   - grade: 3
     maxErrors: 6
     tipAmount: 0
+    requireNoHint: 0
     paysBasePrice: 0
