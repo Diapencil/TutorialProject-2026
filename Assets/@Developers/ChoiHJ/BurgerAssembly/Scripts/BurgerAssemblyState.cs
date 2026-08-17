@@ -11,17 +11,37 @@ namespace SheepSheepBurger.BurgerAssembly
         public IngredientType type;
         public Vector2 position;
         public int layerOrder;
+        public bool hasGrillState;
+        public PattyGrillPhase grillPhase;
+        public float grillPhaseElapsed;
 
         public IngredientPlacement(IngredientType type, Vector2 position, int layerOrder)
+            : this(type, position, layerOrder, null)
+        {
+        }
+
+        public IngredientPlacement(
+            IngredientType type,
+            Vector2 position,
+            int layerOrder,
+            PattyGrillState grillState)
         {
             this.type = type;
             this.position = position;
             this.layerOrder = layerOrder;
+            hasGrillState = grillState != null;
+            grillPhase = grillState != null ? grillState.Phase : PattyGrillPhase.RawDough;
+            grillPhaseElapsed = grillState != null ? grillState.PhaseElapsed : 0f;
         }
 
         public IngredientPlacement Clone()
         {
-            return new IngredientPlacement(type, position, layerOrder);
+            return new IngredientPlacement(type, position, layerOrder)
+            {
+                hasGrillState = hasGrillState,
+                grillPhase = grillPhase,
+                grillPhaseElapsed = grillPhaseElapsed
+            };
         }
     }
 
@@ -92,6 +112,8 @@ namespace SheepSheepBurger.BurgerAssembly
     public sealed class BurgerAssemblyState
     {
         private int nextLayerOrder;
+        private IngredientType? lastLayerType;
+        private int lastLayerOrder = -1;
 
         public BurgerAssemblyState(int maximumToppings = CookingPrototypeRules.MaximumToppings)
         {
@@ -154,7 +176,41 @@ namespace SheepSheepBurger.BurgerAssembly
                 HasTopBun = true;
             }
 
-            layerOrder = nextLayerOrder++;
+            if (lastLayerType.HasValue && lastLayerType.Value == type)
+            {
+                layerOrder = lastLayerOrder;
+            }
+            else
+            {
+                layerOrder = nextLayerOrder++;
+                lastLayerType = type;
+                lastLayerOrder = layerOrder;
+            }
+            return true;
+        }
+
+        public bool TryUnregisterPlacement(IngredientType type)
+        {
+            if (IsCompleted || type == IngredientType.BunBottom)
+            {
+                return false;
+            }
+
+            if (IsTopping(type))
+            {
+                ToppingCount = Math.Max(0, ToppingCount - 1);
+            }
+            else if (type == IngredientType.BunTop)
+            {
+                HasTopBun = false;
+            }
+
+            // Moving an ingredient out of the stack interrupts the placement
+            // sequence. A later placement therefore starts a fresh layer even
+            // when it has the same type as the previous visible ingredient.
+            lastLayerType = null;
+            lastLayerOrder = -1;
+
             return true;
         }
 
@@ -165,6 +221,8 @@ namespace SheepSheepBurger.BurgerAssembly
                 return -1;
             }
 
+            lastLayerType = null;
+            lastLayerOrder = -1;
             return nextLayerOrder++;
         }
 
@@ -193,6 +251,8 @@ namespace SheepSheepBurger.BurgerAssembly
             HasBottomBun = false;
             HasTopBun = false;
             nextLayerOrder = 0;
+            lastLayerType = null;
+            lastLayerOrder = -1;
         }
 
         public static bool IsTopping(IngredientType type)

@@ -22,6 +22,7 @@ namespace SheepSheepBurger.BurgerAssembly
         Ingredient,
         RawGrillItem,
         CookedGrillItem,
+        BoardIngredient,
         Sauce
     }
 

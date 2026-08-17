@@ -43,6 +43,12 @@ namespace SheepSheepBurger.BurgerAssembly
         private const float ReferenceWidth = 1920f;
         private const float ReferenceHeight = 1080f;
         private const float CanvasWorldScale = 0.01f;
+        // The source station art is 3397 x 1440. Fitting it to the reference
+        // height keeps the top and bottom of the kitchen visible on wide screens.
+        private const float PanoramaWidth = ReferenceHeight * (3397f / 1440f);
+        private const float GrillViewX = -315f;
+        private const float BoardViewX = 0f;
+        private const float PackagingViewX = 315f;
 
         private readonly BurgerAssemblyController controller;
         private readonly Action resetPrototype;
@@ -87,11 +93,13 @@ namespace SheepSheepBurger.BurgerAssembly
             canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             canvasScaler.referenceResolution = new Vector2(ReferenceWidth, ReferenceHeight);
             canvasScaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            canvasScaler.matchWidthOrHeight = 0.5f;
+            // Height matching guarantees that the full top and bottom of the
+            // station remain visible on displays wider than 16:9.
+            canvasScaler.matchWidthOrHeight = 1f;
 
             canvasRoot = canvasObject.GetComponent<RectTransform>();
             Image swipeSurface = canvasObject.GetComponent<Image>();
-            swipeSurface.color = new Color(1f, 1f, 1f, 0.001f);
+            swipeSurface.color = BurgerPrototypeTheme.Background;
             swipeSurface.raycastTarget = true;
 
             var pageStripObject = new GameObject("CookingPageStrip", typeof(RectTransform));
@@ -100,18 +108,20 @@ namespace SheepSheepBurger.BurgerAssembly
             BurgerUiFactory.SetRect(
                 pageStrip,
                 Vector2.zero,
-                new Vector2(ReferenceWidth * 3f, ReferenceHeight));
+                new Vector2(PanoramaWidth, ReferenceHeight));
+            CreateEnvironmentBackground();
 
             view.CameraSlider = canvasObject.GetComponent<CookingCameraSlider>();
-            view.CameraSlider.Configure(pageStrip, -ReferenceWidth, 0f, ReferenceWidth);
+            view.CameraSlider.Configure(pageStrip, GrillViewX, BoardViewX, PackagingViewX);
 
-            RectTransform grillPage = CreatePage("GrillPage", BurgerPrototypeTheme.GrillZone, new Vector2(-ReferenceWidth, 0f));
-            RectTransform boardPage = CreatePage("BoardPage", BurgerPrototypeTheme.BoardZone, Vector2.zero);
-            RectTransform packagingPage = CreatePage("PackagingPage", BurgerPrototypeTheme.PackagingZone, new Vector2(ReferenceWidth, 0f));
+            RectTransform grillPage = CreatePage("GrillPage", new Vector2(GrillViewX, 0f));
+            RectTransform boardPage = CreatePage("BoardPage", new Vector2(BoardViewX, 0f));
+            RectTransform packagingPage = CreatePage("PackagingPage", new Vector2(PackagingViewX, 0f));
             BuildGrillPage(grillPage);
             BuildBoardPage(boardPage);
             view.PackagingController = packagingPage.gameObject.AddComponent<BurgerPackagingController>();
             view.PackagingController.Configure(packagingPage, view.UiFont);
+            BuildTrashResetHotspots();
 
             GameObject dragLayerObject = new GameObject("DragLayer", typeof(RectTransform));
             view.DragLayer = dragLayerObject.GetComponent<RectTransform>();
@@ -126,89 +136,92 @@ namespace SheepSheepBurger.BurgerAssembly
             return view;
         }
 
+        private void BuildTrashResetHotspots()
+        {
+            CreateTrashResetHotspot(
+                "LeftTrashReset",
+                new Vector2(-1195f, -40f),
+                new Vector2(120f, 380f));
+            CreateTrashResetHotspot(
+                "RightTrashReset",
+                new Vector2(835f, -55f),
+                new Vector2(120f, 380f));
+        }
+
+        private void CreateTrashResetHotspot(string name, Vector2 position, Vector2 size)
+        {
+            RectTransform rect = CreateRoundedPanel(
+                name,
+                pageStrip,
+                Color.clear,
+                position,
+                size,
+                true,
+                0f);
+            Button button = rect.gameObject.AddComponent<Button>();
+            button.targetGraphic = rect.GetComponent<Graphic>();
+            button.onClick.AddListener(() => resetPrototype());
+        }
+
         private void BuildGrillPage(RectTransform page)
         {
-            CreateText("GrillTitle", page, "요리 화면 · 불판 구역", 42, FontStyle.Bold, BurgerPrototypeTheme.Ink, new Vector2(-470f, 485f), new Vector2(850f, 70f));
-            RectTransform swipeHint = CreateRoundedPanel(
-                "GrillSwipeHintPanel",
+            // Positions are registered against the artwork itself. The illustrated
+            // shelf is the source tray and the dark plate is the cooking surface.
+            RectTransform tray = CreateStationTray(
+                "RawGrillTray",
                 page,
-                BurgerPrototypeTheme.Panel,
-                new Vector2(0f, 415f),
-                new Vector2(980f, 54f),
-                false,
-                24f);
-            CreateText("GrillSwipeHint", swipeHint, "← 왼쪽으로 20% 이상 스와이프하면 도마 구역으로 이동", 20, FontStyle.Bold, BurgerPrototypeTheme.Ink, Vector2.zero, swipeHint.sizeDelta);
-
-            RectTransform tray = CreatePanel("RawGrillTray", page, "굽기 재료 트레이 · 무한 공급", new Vector2(0f, 230f), new Vector2(1660f, 250f));
+                new Vector2(-225f, 300f),
+                new Vector2(470f, 130f));
             CreateTrayCard(
                 tray,
                 "RawPattySource",
-                "패티볼",
                 CookingDragKind.RawGrillItem,
                 IngredientType.Patty,
-                new Vector2(-420f, -12f),
-                new Vector2(280f, 145f));
+                new Vector2(-140f, 0f),
+                new Vector2(110f, 90f));
             CreateTrayCard(
                 tray,
                 "RawBaconSource",
-                "베이컨",
                 CookingDragKind.RawGrillItem,
                 IngredientType.Bacon,
-                new Vector2(0f, -12f),
-                new Vector2(280f, 145f));
+                Vector2.zero,
+                new Vector2(110f, 90f));
             CreateTrayCard(
                 tray,
                 "RawEggSource",
-                "계란",
                 CookingDragKind.RawGrillItem,
                 IngredientType.Egg,
-                new Vector2(420f, -12f),
-                new Vector2(280f, 145f));
-            CreateText("RawTrayHelp", tray, "한 번에 하나씩 불판으로 드래그 · 재료를 탭해 조리 시작", 17, FontStyle.Bold, BurgerPrototypeTheme.Ink, new Vector2(0f, -108f), new Vector2(1000f, 30f));
+                new Vector2(140f, 0f),
+                new Vector2(110f, 90f));
 
-            RectTransform grillFrame = CreateRoundedPanel("GrillFrame", page, BurgerPrototypeTheme.BoardEdge, new Vector2(0f, -170f), new Vector2(1660f, 590f), false, 32f);
-            view.GrillDropArea = CreateRoundedPanel("GrillDropArea", grillFrame, BurgerPrototypeTheme.Grill, new Vector2(-260f, 0f), new Vector2(1060f, 530f), true, 28f);
-            for (int index = -5; index <= 5; index++)
-            {
-                BurgerUiFactory.CreateImage("GrillBar" + index, view.GrillDropArea, BurgerPrototypeTheme.GrillBar, new Vector2(index * 85f, 0f), new Vector2(16f, 470f), false);
-            }
-
-            CreateText("GrillAreaLabel", view.GrillDropArea, "불판 · 패티, 베이컨 또는 계란을 여기에 드롭", 23, FontStyle.Bold, BurgerPrototypeTheme.Hex("#F5FCFF"), new Vector2(0f, 225f), new Vector2(760f, 45f));
-
-            RectTransform guide = CreateRoundedPanel("CookingGuide", grillFrame, BurgerPrototypeTheme.Guide, new Vector2(570f, 0f), new Vector2(470f, 530f), false, 28f);
-            CreateText("CookingGuideTitle", guide, "재료를 탭하면 조리 시작", 24, FontStyle.Bold, BurgerPrototypeTheme.Ink, new Vector2(0f, 210f), new Vector2(420f, 55f));
-            view.GrillStatusText = CreateText("GrillStatus", guide, "패티·베이컨·계란 중 하나를 불판에 놓아 주세요.", 22, FontStyle.Bold, BurgerPrototypeTheme.Ink, new Vector2(0f, 115f), new Vector2(410f, 115f));
-            CreateText(
-                "CookingGuideRules",
-                guide,
-                "패티·베이컨: 1면 3초 → 5초 안에 뒤집기 → 2면 3초\n\n계란: 3초 단면 조리\n\n완료 후 5초 방치 시 탐 · 완성 재료는 오른쪽 끝으로 드래그",
-                19,
-                FontStyle.Bold,
-                BurgerPrototypeTheme.Ink,
-                new Vector2(0f, -90f),
-                new Vector2(410f, 260f));
-            CreateDebugResetButton(page, new Vector2(805f, 475f));
+            view.GrillDropArea = CreateRoundedPanel(
+                "GrillDropArea",
+                page,
+                GetTemporaryInteractionAreaColor("#E74C3C4D"),
+                new Vector2(-225f, -70f),
+                new Vector2(680f, 580f),
+                true,
+                0f);
         }
 
         private void BuildBoardPage(RectTransform page)
         {
-            CreateText("BoardTitle", page, "요리 화면 · 도마 구역", 42, FontStyle.Bold, BurgerPrototypeTheme.Ink, new Vector2(-470f, 485f), new Vector2(850f, 70f));
-            RectTransform swipeHint = CreateRoundedPanel(
-                "BoardSwipeHintPanel",
+            // Ingredient sources sit directly inside the bins painted in the art.
+            RectTransform tray = CreateStationTray(
+                "IngredientTray",
                 page,
-                BurgerPrototypeTheme.Panel,
-                new Vector2(0f, 415f),
-                new Vector2(980f, 54f),
-                false,
-                24f);
-            CreateText("BoardSwipeHint", swipeHint, "→ 오른쪽: 불판 복귀 · 왼쪽: 포장대로 이동 ←", 20, FontStyle.Bold, BurgerPrototypeTheme.Ink, Vector2.zero, swipeHint.sizeDelta);
-
-            RectTransform tray = CreatePanel("IngredientTray", page, "재료 트레이 · 무한 공급", new Vector2(0f, 200f), new Vector2(1660f, 320f));
+                new Vector2(240f, 160f),
+                new Vector2(900f, 400f));
             CreateBoardTrayCards(tray);
 
-            RectTransform boardFrame = CreateRoundedPanel("BoardFrame", page, BurgerPrototypeTheme.BoardEdge, new Vector2(0f, -240f), new Vector2(1660f, 430f), false, 32f);
-            RectTransform boardDropArea = CreateRoundedPanel("BoardDropArea", boardFrame, BurgerPrototypeTheme.Board, Vector2.zero, new Vector2(1600f, 370f), true, 28f);
-            CreateText("BoardAreaLabel", boardDropArea, "도마 · 하단 번을 놓으면 이후 재료가 자동으로 쌓입니다", 22, FontStyle.Bold, BurgerPrototypeTheme.Ink, new Vector2(0f, 155f), new Vector2(900f, 40f));
+            RectTransform boardDropArea = CreateRoundedPanel(
+                "BoardDropArea",
+                page,
+                GetTemporaryInteractionAreaColor("#18A9994D"),
+                new Vector2(250f, -245f),
+                new Vector2(900f, 280f),
+                true,
+                0f);
 
             GameObject layerRootObject = new GameObject("BoardIngredientLayer", typeof(RectTransform));
             view.BoardLayerRoot = layerRootObject.GetComponent<RectTransform>();
@@ -216,14 +229,21 @@ namespace SheepSheepBurger.BurgerAssembly
             BurgerUiFactory.SetRect(view.BoardLayerRoot, Vector2.zero, boardDropArea.sizeDelta);
             view.SauceDrawingController = boardDropArea.gameObject.AddComponent<BurgerSauceDrawingController>();
 
-            RectTransform statusPanel = CreateRoundedPanel("BoardStatusPanel", page, BurgerPrototypeTheme.Panel, new Vector2(0f, 10f), new Vector2(1100f, 52f), false, 23f);
-            view.BoardStatusText = CreateText("BoardStatus", statusPanel, "먼저 하단 번을 도마의 원하는 위치에 놓으세요.", 21, FontStyle.Bold, BurgerPrototypeTheme.Ink, Vector2.zero, statusPanel.sizeDelta);
-            view.BoardSummaryText = CreateText("BoardSummary", page, "배치 0개 · 토핑 0/8 · 소스 0획", 21, FontStyle.Bold, BurgerPrototypeTheme.Ink, new Vector2(0f, -485f), new Vector2(1400f, 45f));
-            RectTransform toastPanel = CreateRoundedPanel("Toast", page, new Color(0.55f, 0.12f, 0.08f, 0.92f), new Vector2(0f, -230f), new Vector2(650f, 70f), false, 28f);
-            view.ToastText = CreateText("ToastText", toastPanel, string.Empty, 24, FontStyle.Bold, Color.white, Vector2.zero, toastPanel.sizeDelta);
-            view.ToastObject = toastPanel.gameObject;
+            // Keep only transient feedback. It has no panel or explanatory copy.
+            view.ToastText = CreateText(
+                "ToastText",
+                page,
+                string.Empty,
+                24,
+                FontStyle.Bold,
+                Color.white,
+                new Vector2(250f, 460f),
+                new Vector2(620f, 54f));
+            Outline toastOutline = view.ToastText.gameObject.AddComponent<Outline>();
+            toastOutline.effectColor = new Color(0f, 0f, 0f, 0.85f);
+            toastOutline.effectDistance = new Vector2(2f, -2f);
+            view.ToastObject = view.ToastText.gameObject;
             view.ToastObject.SetActive(false);
-            CreateDebugResetButton(page, new Vector2(805f, 475f));
         }
 
         private void CreateBoardTrayCards(RectTransform tray)
@@ -233,13 +253,11 @@ namespace SheepSheepBurger.BurgerAssembly
                 CreateTrayCard(
                     tray,
                     item.ObjectName,
-                    item.Label,
                     item.Kind,
                     item.Type,
                     item.Position,
                     item.CardSize);
             }
-            CreateText("TrayLimit", tray, "토핑 최대 8개 · 구운 패티/베이컨/계란/번/소스 제외", 16, FontStyle.Bold, BurgerPrototypeTheme.Ink, new Vector2(0f, -142f), new Vector2(900f, 28f));
         }
 
         private Camera EnsureCamera()
@@ -259,31 +277,55 @@ namespace SheepSheepBurger.BurgerAssembly
             return mainCamera;
         }
 
-        private RectTransform CreatePage(string name, Color color, Vector2 position)
+        private void CreateEnvironmentBackground()
         {
-            return BurgerUiFactory.CreateImage(name, pageStrip, color, position, new Vector2(ReferenceWidth, ReferenceHeight), false);
+            Sprite background = controller.SpriteCatalog.KitchenStationBackground;
+            BurgerUiFactory.CreateShape(
+                "KitchenStationBackground",
+                pageStrip,
+                SimpleShape.Rectangle,
+                Color.white,
+                Vector2.zero,
+                new Vector2(PanoramaWidth, ReferenceHeight),
+                false,
+                background);
         }
 
-        private RectTransform CreatePanel(string name, RectTransform parent, string title, Vector2 position, Vector2 size)
+        private RectTransform CreatePage(string name, Vector2 position)
         {
-            RectTransform panel = CreateRoundedPanel(name, parent, BurgerPrototypeTheme.Panel, position, size, false, 28f);
-            CreateText(name + "Title", panel, title, 25, FontStyle.Bold, BurgerPrototypeTheme.Ink, new Vector2(0f, size.y * 0.5f - 38f), new Vector2(size.x - 24f, 45f));
-            return panel;
+            return BurgerUiFactory.CreateImage(
+                name,
+                pageStrip,
+                new Color(1f, 1f, 1f, 0f),
+                position,
+                new Vector2(ReferenceWidth, ReferenceHeight),
+                false);
+        }
+
+        private RectTransform CreateStationTray(string name, RectTransform parent, Vector2 position, Vector2 size)
+        {
+            return CreateRoundedPanel(
+                name,
+                parent,
+                new Color(1f, 1f, 1f, 0f),
+                position,
+                size,
+                false,
+                0f);
         }
 
         private CookingTrayDragSource CreateTrayCard(
             RectTransform parent,
             string name,
-            string label,
             CookingDragKind kind,
             IngredientType type,
             Vector2 position,
             Vector2 size)
         {
             BurgerIngredientVisual visual = BurgerIngredientCatalog.GetTrayVisual(type);
-            RectTransform card = CreateRoundedPanel(name, parent, BurgerPrototypeTheme.Card, position, size, true, 20f);
+            RectTransform card = CreateRoundedPanel(name, parent, Color.clear, position, size, true, 0f);
             card.gameObject.AddComponent<CanvasGroup>();
-            float iconLimit = Mathf.Min(58f, size.y * 0.42f);
+            float iconLimit = Mathf.Min(78f, size.y * 0.72f);
             float iconScale = Mathf.Min(
                 iconLimit / Mathf.Max(1f, visual.Size.x),
                 iconLimit / Mathf.Max(1f, visual.Size.y));
@@ -293,11 +335,10 @@ namespace SheepSheepBurger.BurgerAssembly
                 card,
                 visual.Shape,
                 visual.Color,
-                new Vector2(0f, size.y * 0.18f),
+                Vector2.zero,
                 iconSize,
                 false,
                 visual.SourceSprite);
-            CreateText(name + "Label", card, label, size.x < 130f ? 16 : 20, FontStyle.Bold, BurgerPrototypeTheme.Ink, new Vector2(0f, -size.y * 0.25f), new Vector2(size.x - 8f, size.y * 0.42f));
             CookingTrayDragSource source = card.gameObject.AddComponent<CookingTrayDragSource>();
             source.Configure(
                 controller,
@@ -309,15 +350,6 @@ namespace SheepSheepBurger.BurgerAssembly
                 visual.SourceSprite);
             view.TraySources.Add(source);
             return source;
-        }
-
-        private void CreateDebugResetButton(RectTransform parent, Vector2 position)
-        {
-            RectTransform rect = CreateRoundedPanel("PrototypeReset", parent, BurgerPrototypeTheme.Accent, position, new Vector2(220f, 58f), true, 24f);
-            Button button = rect.gameObject.AddComponent<Button>();
-            button.targetGraphic = rect.GetComponent<Graphic>();
-            button.onClick.AddListener(() => resetPrototype());
-            CreateText("PrototypeResetLabel", rect, "프로토타입 리셋", 18, FontStyle.Bold, Color.white, Vector2.zero, rect.sizeDelta);
         }
 
         private RectTransform CreateRoundedPanel(
@@ -332,7 +364,9 @@ namespace SheepSheepBurger.BurgerAssembly
             SimpleShapeGraphic graphic = BurgerUiFactory.CreateShape(name, parent, SimpleShape.RoundedRectangle, color, position, size, raycastTarget);
             graphic.CornerRadius = cornerRadius;
             Outline outline = graphic.gameObject.AddComponent<Outline>();
-            outline.effectColor = BurgerPrototypeTheme.Border;
+            Color border = BurgerPrototypeTheme.Border;
+            border.a = color.a <= 0.01f ? 0f : border.a;
+            outline.effectColor = border;
             outline.effectDistance = new Vector2(1.5f, -1.5f);
             outline.useGraphicAlpha = true;
             return graphic.rectTransform;
@@ -349,6 +383,13 @@ namespace SheepSheepBurger.BurgerAssembly
             Vector2 dimensions)
         {
             return BurgerUiFactory.CreateText(name, parent, view.UiFont, value, size, style, color, position, dimensions);
+        }
+
+        private static Color GetTemporaryInteractionAreaColor(string color)
+        {
+            return CookingPrototypeRules.ShowTemporaryInteractionAreas
+                ? BurgerPrototypeTheme.Hex(color)
+                : Color.clear;
         }
 
         private static void EnsureEventSystem()

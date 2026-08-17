@@ -122,20 +122,117 @@ namespace SheepSheepBurger.BurgerAssembly
         }
     }
 
-    [RequireComponent(typeof(RectTransform))]
-    public sealed class PlacedIngredientView : MonoBehaviour
+    [RequireComponent(typeof(RectTransform), typeof(CanvasGroup))]
+    public sealed class PlacedIngredientView :
+        MonoBehaviour,
+        IPointerDownHandler,
+        IBeginDragHandler,
+        IDragHandler,
+        IEndDragHandler,
+        IPointerUpHandler
     {
+        private BurgerAssemblyController controller;
         private RectTransform rectTransform;
+        private CanvasGroup canvasGroup;
+        private bool ownsActiveDrag;
+        private bool forwardsSauceGesture;
 
         public IngredientType IngredientType { get; private set; }
 
         public int LayerOrder { get; private set; }
 
-        public void Configure(IngredientType type, int layerOrder)
+        public bool IsStacked { get; private set; }
+
+        public PattyGrillState CookingState { get; private set; }
+
+        public RectTransform RectTransform => rectTransform;
+
+        public void Configure(
+            BurgerAssemblyController targetController,
+            IngredientType type,
+            int layerOrder,
+            bool isStacked,
+            PattyGrillState cookingState = null)
         {
+            controller = targetController;
             IngredientType = type;
             LayerOrder = layerOrder;
+            IsStacked = isStacked;
+            CookingState = cookingState;
             rectTransform = GetComponent<RectTransform>();
+            canvasGroup = GetComponent<CanvasGroup>();
+            RefreshCookingAppearance();
+        }
+
+        public void SetPlacement(int layerOrder, bool isStacked)
+        {
+            LayerOrder = layerOrder;
+            IsStacked = isStacked;
+        }
+
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            forwardsSauceGesture = controller != null && controller.HasSelectedSauce;
+            if (forwardsSauceGesture)
+            {
+                controller.ForwardSaucePointerDown(eventData);
+            }
+        }
+
+        public void OnBeginDrag(PointerEventData eventData)
+        {
+            if (forwardsSauceGesture)
+            {
+                return;
+            }
+
+            ownsActiveDrag = controller != null &&
+                controller.TryBeginBoardIngredientDrag(this, eventData.position);
+            if (ownsActiveDrag && canvasGroup != null)
+            {
+                canvasGroup.alpha = 0.35f;
+            }
+        }
+
+        public void OnDrag(PointerEventData eventData)
+        {
+            if (forwardsSauceGesture)
+            {
+                controller?.ForwardSauceDrag(eventData);
+                return;
+            }
+
+            if (!ownsActiveDrag)
+            {
+                return;
+            }
+
+            controller.UpdatePointerDrag(eventData.position);
+            controller.RequestBoardIngredientTransfer(this, eventData.position);
+        }
+
+        public void OnEndDrag(PointerEventData eventData)
+        {
+            if (forwardsSauceGesture || !ownsActiveDrag)
+            {
+                return;
+            }
+
+            ownsActiveDrag = false;
+            if (canvasGroup != null)
+            {
+                canvasGroup.alpha = 1f;
+            }
+            controller.EndBoardIngredientDrag(this, eventData.position);
+        }
+
+        public void OnPointerUp(PointerEventData eventData)
+        {
+            if (forwardsSauceGesture)
+            {
+                controller?.ForwardSaucePointerUp(eventData);
+            }
+            forwardsSauceGesture = false;
         }
 
         public IngredientPlacement Capture(RectTransform coordinateRoot)
@@ -146,7 +243,38 @@ namespace SheepSheepBurger.BurgerAssembly
             }
 
             Vector3 local = coordinateRoot.InverseTransformPoint(rectTransform.position);
-            return new IngredientPlacement(IngredientType, new Vector2(local.x, local.y), LayerOrder);
+            return new IngredientPlacement(
+                IngredientType,
+                new Vector2(local.x, local.y),
+                LayerOrder,
+                CookingState);
+        }
+
+        private void RefreshCookingAppearance()
+        {
+            if (CookingState == null)
+            {
+                return;
+            }
+
+            SimpleShapeGraphic graphic = GetComponent<SimpleShapeGraphic>();
+            if (graphic == null)
+            {
+                return;
+            }
+
+            BurgerSpriteCatalog sprites = BurgerSpriteCatalog.RequireActive();
+            PattyGrillPhase phase = CookingState.Phase;
+            graphic.SourceSprite = phase == PattyGrillPhase.Overcooked
+                ? sprites.GetBurntGrillIngredient(IngredientType)
+                : phase == PattyGrillPhase.Flipping ||
+                    phase == PattyGrillPhase.CookingSide2 ||
+                    phase == PattyGrillPhase.Done
+                    ? sprites.GetCookedGrillIngredient(IngredientType)
+                    : phase == PattyGrillPhase.RawDough
+                        ? sprites.GetInitialGrillIngredient(IngredientType)
+                        : sprites.GetRawGrillIngredient(IngredientType);
+            graphic.color = Color.white;
         }
     }
 
@@ -205,15 +333,28 @@ namespace SheepSheepBurger.BurgerAssembly
             BurgerAssemblyController targetController,
             IngredientType ingredientType,
             SimpleShapeGraphic targetGraphic,
-            Text targetPhaseText)
+            Text targetPhaseText,
+            PattyGrillState existingState = null)
         {
+            if (State != null)
+            {
+                State.PhaseChanged -= HandlePhaseChanged;
+            }
             controller = targetController;
             GrillIngredientType = ingredientType;
             graphic = targetGraphic;
             phaseText = targetPhaseText;
-            State = new PattyGrillState(ingredientType);
-            State.PhaseChanged += _ => RefreshAppearance();
+            State = existingState ?? new PattyGrillState(ingredientType);
+            State.PhaseChanged += HandlePhaseChanged;
             RefreshAppearance();
+        }
+
+        private void OnDestroy()
+        {
+            if (State != null)
+            {
+                State.PhaseChanged -= HandlePhaseChanged;
+            }
         }
 
         private void Update()
@@ -342,7 +483,7 @@ namespace SheepSheepBurger.BurgerAssembly
             }
         }
 
-        private static Vector2 GetGrillSize(IngredientType type, PattyGrillPhase phase)
+        public static Vector2 GetGrillSize(IngredientType type, PattyGrillPhase phase)
         {
             switch (type)
             {
@@ -357,6 +498,11 @@ namespace SheepSheepBurger.BurgerAssembly
                 default:
                     return new Vector2(240f, 150f);
             }
+        }
+
+        private void HandlePhaseChanged(PattyGrillPhase phase)
+        {
+            RefreshAppearance();
         }
     }
 

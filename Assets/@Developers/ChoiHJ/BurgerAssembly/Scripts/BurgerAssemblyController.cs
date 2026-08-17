@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,6 +16,8 @@ namespace SheepSheepBurger.BurgerAssembly
         private readonly BurgerCompletionPublisher completionPublisher = new BurgerCompletionPublisher();
         private readonly BurgerStackAssembler stackAssembler = new BurgerStackAssembler();
         private readonly List<CookingTrayDragSource> traySources = new List<CookingTrayDragSource>();
+        private readonly List<CookableGrillItemView> grillItems = new List<CookableGrillItemView>();
+        private readonly List<PlacedIngredientView> looseBoardIngredients = new List<PlacedIngredientView>();
 
         private Camera mainCamera;
         private RectTransform dragLayer;
@@ -23,7 +26,7 @@ namespace SheepSheepBurger.BurgerAssembly
         private CookingCameraSlider cameraSlider;
         private BurgerSauceDrawingController sauceDrawingController;
         private BurgerPackagingController packagingController;
-        private CookableGrillItemView activeGrillItem;
+        private CookableGrillItemView focusedGrillItem;
         private Text grillStatusText;
         private Text boardStatusText;
         private Text boardSummaryText;
@@ -38,6 +41,7 @@ namespace SheepSheepBurger.BurgerAssembly
         private RectTransform dragGhost;
         private Vector2 lastPointerScreen;
         private CookableGrillItemView draggedGrillItem;
+        private PlacedIngredientView draggedBoardIngredient;
         private bool isDraggingCompletedBurger;
         private Vector2 completedBurgerDragOffset;
         private Vector2 completedBurgerBoardPosition;
@@ -72,9 +76,27 @@ namespace SheepSheepBurger.BurgerAssembly
                 sauceDrawingController.IsSelected(type);
         }
 
+        public bool HasSelectedSauce => sauceDrawingController != null &&
+            sauceDrawingController.HasSelectedSauce;
+
         public void ToggleSauceTool(IngredientType type)
         {
             sauceDrawingController?.Toggle(type);
+        }
+
+        public void ForwardSaucePointerDown(UnityEngine.EventSystems.PointerEventData eventData)
+        {
+            sauceDrawingController?.OnPointerDown(eventData);
+        }
+
+        public void ForwardSauceDrag(UnityEngine.EventSystems.PointerEventData eventData)
+        {
+            sauceDrawingController?.OnDrag(eventData);
+        }
+
+        public void ForwardSaucePointerUp(UnityEngine.EventSystems.PointerEventData eventData)
+        {
+            sauceDrawingController?.OnPointerUp(eventData);
         }
 
         private void Awake()
@@ -118,8 +140,7 @@ namespace SheepSheepBurger.BurgerAssembly
 
             if (kind == CookingDragKind.RawGrillItem)
             {
-                return BurgerIngredientCatalog.IsGrillIngredient(type) &&
-                    activeGrillItem == null;
+                return BurgerIngredientCatalog.IsGrillIngredient(type);
             }
 
             if (kind == CookingDragKind.Sauce)
@@ -127,7 +148,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 return false;
             }
 
-            return stackAssembler.CanPlace(type);
+            return CanCreateNewBoardIngredient(type);
         }
 
         public bool TryBeginTrayDrag(
@@ -178,8 +199,7 @@ namespace SheepSheepBurger.BurgerAssembly
             bool reachedValidDropArea = false;
             if (activeDragKind == CookingDragKind.RawGrillItem)
             {
-                if (cameraSlider.DestinationZone == CookingCameraZone.Grill &&
-                    TryGetLocalPoint(grillDropArea, screenPosition, CookingCameraZone.Grill, out Vector2 grillLocal))
+                if (TryGetLocalPoint(grillDropArea, screenPosition, out Vector2 grillLocal))
                 {
                     reachedValidDropArea = true;
                     SpawnRawGrillItem(activeDragType, grillLocal);
@@ -188,8 +208,7 @@ namespace SheepSheepBurger.BurgerAssembly
             }
             else if (activeDragKind == CookingDragKind.Ingredient)
             {
-                if (cameraSlider.DestinationZone == CookingCameraZone.Board &&
-                    TryGetLocalPoint(boardLayerRoot, screenPosition, CookingCameraZone.Board, out Vector2 boardLocal))
+                if (TryGetLocalPoint(boardLayerRoot, screenPosition, out Vector2 boardLocal))
                 {
                     reachedValidDropArea = true;
                     placed = TryPlaceIngredient(activeDragType, boardLocal);
@@ -213,10 +232,12 @@ namespace SheepSheepBurger.BurgerAssembly
 
         public void HandleGrillItemTap(CookableGrillItemView grillItem)
         {
-            if (grillItem == null || grillItem != activeGrillItem)
+            if (grillItem == null || !grillItems.Contains(grillItem))
             {
                 return;
             }
+
+            focusedGrillItem = grillItem;
 
             IngredientType type = grillItem.GrillIngredientType;
             string itemName = GetGrillItemName(type);
@@ -246,48 +267,35 @@ namespace SheepSheepBurger.BurgerAssembly
                     SetGrillStatus("2면을 조리하고 있습니다.", false);
                     break;
                 case PattyGrillPhase.Done:
-                    SetGrillStatus(
-                        stackAssembler.HasBottomBun
-                            ? "완료된 " + itemName + "을(를) 오른쪽 화면 끝으로 드래그하세요."
-                            : "도마 구역에 하단 번을 먼저 놓은 뒤 " + itemName + "을(를) 옮겨 주세요.",
-                        !stackAssembler.HasBottomBun);
+                    SetGrillStatus("완료된 " + itemName + "을 원하는 위치로 옮길 수 있습니다.", false);
                     break;
                 case PattyGrillPhase.Overcooked:
-                    SetGrillStatus(itemName + "이(가) 타서 이동할 수 없습니다. 프로토타입 리셋을 사용해 주세요.", true);
+                    SetGrillStatus(itemName + "이(가) 탔지만 원하는 위치로 옮길 수 있습니다.", true);
                     break;
             }
         }
 
         public bool TryBeginCookedGrillItemDrag(CookableGrillItemView grillItem, Vector2 screenPosition)
         {
-            if (grillItem == null || grillItem != activeGrillItem || hasActivePointerDrag || stackAssembler.IsCompleted)
+            if (grillItem == null || !grillItems.Contains(grillItem) ||
+                hasActivePointerDrag || stackAssembler.IsCompleted)
             {
-                return false;
-            }
-
-            if (!grillItem.State.CanDragToBoard)
-            {
-                ExplainBlockedGrillItemDrag(grillItem.GrillIngredientType, grillItem.State.Phase);
                 return false;
             }
 
             string itemName = GetGrillItemName(grillItem.GrillIngredientType);
-            if (!stackAssembler.HasBottomBun)
-            {
-                SetGrillStatus("도마 구역에 하단 번을 먼저 놓은 뒤 " + itemName + "을(를) 옮겨 주세요.", true);
-                ShowToast("하단 번을 먼저 놓아 주세요");
-                return false;
-            }
-
-            BurgerIngredientVisual visual = BurgerIngredientCatalog.GetVisual(grillItem.GrillIngredientType);
+            BurgerIngredientVisual visual = GetBoardVisual(
+                grillItem.GrillIngredientType,
+                grillItem.State);
             hasActivePointerDrag = true;
             activeDragKind = CookingDragKind.CookedGrillItem;
             activeDragType = grillItem.GrillIngredientType;
             draggedGrillItem = grillItem;
+            focusedGrillItem = grillItem;
             lastPointerScreen = screenPosition;
             CreateDragGhost(visual.Shape, visual.Color, visual.Size, visual.SourceSprite);
             PositionDragGhost(screenPosition);
-            SetGrillStatus(itemName + "을(를) 화면 오른쪽 끝으로 옮기면 도마로 전환됩니다.", false);
+            SetGrillStatus(itemName + "을(를) 이동합니다. 오른쪽 끝으로 옮기면 도마로 전환됩니다.", false);
             return true;
         }
 
@@ -320,25 +328,126 @@ namespace SheepSheepBurger.BurgerAssembly
             IngredientType placedType = grillItem.GrillIngredientType;
             bool placed = false;
             bool reachedBoard = false;
-            if (cameraSlider.DestinationZone == CookingCameraZone.Board &&
-                TryGetLocalPoint(boardLayerRoot, screenPosition, CookingCameraZone.Board, out Vector2 boardLocal))
+            if (TryGetLocalPoint(boardLayerRoot, screenPosition, out Vector2 boardLocal))
             {
                 reachedBoard = true;
-                placed = TryPlaceIngredient(placedType, boardLocal);
+                placed = TryPlaceBoardIngredient(placedType, boardLocal, grillItem.State, false);
+            }
+            else if (TryGetLocalPoint(grillDropArea, screenPosition, out Vector2 grillLocal))
+            {
+                RectTransform rect = grillItem.GetComponent<RectTransform>();
+                rect.anchoredPosition = BurgerUiFactory.ClampInside(
+                    grillDropArea.rect,
+                    grillLocal,
+                    rect.sizeDelta);
+                placed = true;
             }
 
             CleanupPointerDrag();
-            if (placed)
+            if (placed && reachedBoard)
             {
-                activeGrillItem = null;
-                Destroy(grillItem.gameObject);
-                SetBoardStatus(BurgerIngredientCatalog.GetDisplayName(placedType) + "을(를) 도마에 놓았습니다.", false);
+                grillItems.Remove(grillItem);
+                if (focusedGrillItem == grillItem)
+                {
+                    focusedGrillItem = grillItems.Count > 0 ? grillItems[grillItems.Count - 1] : null;
+                }
+                DestroyControllerObject(grillItem.gameObject);
+                SetBoardStatus(
+                    BurgerIngredientCatalog.GetDisplayName(placedType) +
+                    "을(를) 도마에 놓았습니다. 다시 구우려면 화면 왼쪽 끝으로 드래그하세요.",
+                    false);
             }
-            else if (!reachedBoard)
+            else if (!reachedBoard && cameraSlider.DestinationZone == CookingCameraZone.Board)
             {
                 SetBoardStatus(BurgerIngredientCatalog.GetDisplayName(placedType) + "을(를) 도마 영역 안에 놓아 주세요.", true);
+                cameraSlider.MoveToGrill();
             }
 
+            RefreshControls();
+            return placed;
+        }
+
+        public bool TryBeginBoardIngredientDrag(PlacedIngredientView ingredient, Vector2 screenPosition)
+        {
+            if (ingredient == null || hasActivePointerDrag || stackAssembler.IsCompleted ||
+                (!stackAssembler.Contains(ingredient) && !looseBoardIngredients.Contains(ingredient)))
+            {
+                return false;
+            }
+
+            BurgerIngredientVisual visual = GetBoardVisual(
+                ingredient.IngredientType,
+                ingredient.CookingState);
+            hasActivePointerDrag = true;
+            activeDragKind = CookingDragKind.BoardIngredient;
+            activeDragType = ingredient.IngredientType;
+            draggedBoardIngredient = ingredient;
+            lastPointerScreen = screenPosition;
+            CreateDragGhost(visual.Shape, visual.Color, visual.Size, visual.SourceSprite);
+            PositionDragGhost(screenPosition);
+            return true;
+        }
+
+        public void RequestBoardIngredientTransfer(PlacedIngredientView ingredient, Vector2 screenPosition)
+        {
+            if (!hasActivePointerDrag || draggedBoardIngredient != ingredient ||
+                ingredient == null || ingredient.CookingState == null)
+            {
+                return;
+            }
+
+            if (screenPosition.x <= Screen.width * CookingPrototypeRules.BoardToGrillTransferScreenRatio &&
+                cameraSlider.DestinationZone == CookingCameraZone.Board)
+            {
+                cameraSlider.MoveToGrill();
+                SetGrillStatus(
+                    BurgerIngredientCatalog.GetDisplayName(ingredient.IngredientType) +
+                    "을(를) 불판에 놓으면 기존 조리 상태에서 이어서 굽습니다.",
+                    false);
+            }
+        }
+
+        public bool EndBoardIngredientDrag(PlacedIngredientView ingredient, Vector2 screenPosition)
+        {
+            if (!hasActivePointerDrag || draggedBoardIngredient != ingredient || ingredient == null)
+            {
+                return false;
+            }
+
+            IngredientType ingredientType = ingredient.IngredientType;
+            PattyGrillState cookingState = ingredient.CookingState;
+            bool placed = false;
+            bool transferredToGrill = false;
+            if (cookingState != null &&
+                TryGetLocalPoint(grillDropArea, screenPosition, out Vector2 grillLocal))
+            {
+                placed = RemoveBoardIngredient(ingredient);
+                transferredToGrill = placed;
+                if (placed)
+                {
+                    SpawnGrillItem(ingredientType, grillLocal, cookingState);
+                }
+            }
+            else if (TryGetLocalPoint(boardLayerRoot, screenPosition, out Vector2 boardLocal))
+            {
+                placed = MoveBoardIngredient(ingredient, boardLocal);
+            }
+
+            CleanupPointerDrag();
+            if (!placed && cameraSlider.DestinationZone == CookingCameraZone.Grill)
+            {
+                cameraSlider.MoveToBoard();
+                SetBoardStatus("재료를 불판 영역 안에 놓아 주세요.", true);
+            }
+            else if (transferredToGrill)
+            {
+                SetGrillStatus(
+                    BurgerIngredientCatalog.GetDisplayName(ingredientType) +
+                    "을(를) 불판으로 옮겼습니다.",
+                    false);
+            }
+
+            RefreshBoardSummary();
             RefreshControls();
             return placed;
         }
@@ -351,7 +460,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 return false;
             }
 
-            if (!TryGetLocalPoint(boardLayerRoot, screenPosition, CookingCameraZone.Board, out Vector2 local))
+            if (!TryGetLocalPoint(boardLayerRoot, screenPosition, out Vector2 local))
             {
                 return false;
             }
@@ -402,13 +511,11 @@ namespace SheepSheepBurger.BurgerAssembly
             }
 
             UpdateCompletedBurgerDrag(screenPosition);
-            bool reachedPackaging = cameraSlider.DestinationZone == CookingCameraZone.Packaging;
+            bool reachedPackaging = TryGetLocalPoint(
+                packagingController.BurgerTray,
+                screenPosition,
+                out Vector2 trayLocal);
             bool placed = reachedPackaging &&
-                TryGetLocalPoint(
-                    packagingController.BurgerTray,
-                    screenPosition,
-                    CookingCameraZone.Packaging,
-                    out Vector2 trayLocal) &&
                 PlaceCompletedBurgerOnPackagingTray(trayLocal);
             isDraggingCompletedBurger = false;
 
@@ -431,7 +538,7 @@ namespace SheepSheepBurger.BurgerAssembly
 
         public void UpdateGrillItemStatus(CookableGrillItemView grillItem)
         {
-            if (grillItem == null || grillItem != activeGrillItem || grillStatusText == null)
+            if (grillItem == null || grillItem != focusedGrillItem || grillStatusText == null)
             {
                 return;
             }
@@ -454,12 +561,8 @@ namespace SheepSheepBurger.BurgerAssembly
                     grillStatusText.color = BurgerPrototypeTheme.Ink;
                     break;
                 case PattyGrillPhase.Done:
-                    grillStatusText.text = stackAssembler.HasBottomBun
-                        ? $"{itemName} 조리 완료 — {grillItem.State.GetDoneTimeRemaining():0.0}초 뒤 탐"
-                        : $"{itemName} 조리 완료 — {grillItem.State.GetDoneTimeRemaining():0.0}초 안에 도마에 하단 번을 놓으세요";
-                    grillStatusText.color = stackAssembler.HasBottomBun
-                        ? BurgerPrototypeTheme.Success
-                        : BurgerPrototypeTheme.Attention;
+                    grillStatusText.text = $"{itemName} 조리 완료 — {grillItem.State.GetDoneTimeRemaining():0.0}초 뒤 탐 · 언제든 이동 가능";
+                    grillStatusText.color = BurgerPrototypeTheme.Success;
                     break;
                 case PattyGrillPhase.Overcooked:
                     grillStatusText.text = "조리 실패: " + itemName + "이(가) 탔습니다.";
@@ -518,9 +621,9 @@ namespace SheepSheepBurger.BurgerAssembly
             if (zone == CookingCameraZone.Grill)
             {
                 SetGrillStatus(
-                    activeGrillItem == null
-                        ? "패티·베이컨·계란 중 하나를 불판에 놓아 주세요."
-                        : GetGrillItemName(activeGrillItem.GrillIngredientType) + " 조리를 계속해 주세요.",
+                    focusedGrillItem == null
+                        ? "패티·베이컨·계란을 불판에 놓아 주세요. 여러 재료를 동시에 올릴 수 있습니다."
+                        : GetGrillItemName(focusedGrillItem.GrillIngredientType) + " 조리를 계속하거나 원하는 위치로 옮기세요.",
                     false);
             }
             else if (zone == CookingCameraZone.Board)
@@ -539,13 +642,13 @@ namespace SheepSheepBurger.BurgerAssembly
                 {
                     SetBoardStatus("조립 완료! 햄버거 전체를 오른쪽 끝으로 드래그하세요.", false);
                 }
-                else if (!stackAssembler.HasBottomBun)
-                {
-                    SetBoardStatus("먼저 하단 번을 도마의 원하는 위치에 놓으세요.", false);
-                }
                 else
                 {
-                    SetBoardStatus("재료를 놓으면 하단 번 위에 자동으로 쌓입니다.", false);
+                    SetBoardStatus(
+                        stackAssembler.HasBottomBun
+                            ? "하단 번 가까이에 놓으면 쌓이고, 멀리 놓으면 도마에 남습니다."
+                            : "재료를 자유롭게 놓을 수 있습니다. 하단 번을 놓으면 근처 재료를 쌓을 수 있습니다.",
+                        false);
                 }
             }
             else if (zone == CookingCameraZone.Packaging && packagingController != null)
@@ -556,26 +659,21 @@ namespace SheepSheepBurger.BurgerAssembly
 
         private void SpawnRawGrillItem(IngredientType type, Vector2 localPosition)
         {
-            if (activeGrillItem != null || !BurgerIngredientCatalog.IsGrillIngredient(type))
+            SpawnGrillItem(type, localPosition, null);
+        }
+
+        private void SpawnGrillItem(
+            IngredientType type,
+            Vector2 localPosition,
+            PattyGrillState existingState)
+        {
+            if (!BurgerIngredientCatalog.IsGrillIngredient(type))
             {
                 return;
             }
 
-            Vector2 size;
-            switch (type)
-            {
-                case IngredientType.Patty:
-                    size = new Vector2(150f, 150f);
-                    break;
-                case IngredientType.Bacon:
-                    size = new Vector2(330f, 180f);
-                    break;
-                case IngredientType.Egg:
-                    size = new Vector2(270f, 170f);
-                    break;
-                default:
-                    return;
-            }
+            PattyGrillState state = existingState ?? new PattyGrillState(type);
+            Vector2 size = CookableGrillItemView.GetGrillSize(type, state.Phase);
 
             localPosition = BurgerUiFactory.ClampInside(grillDropArea.rect, localPosition, size);
             SimpleShapeGraphic graphic = BurgerUiFactory.CreateShape(
@@ -592,7 +690,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 type + "Phase",
                 graphic.rectTransform,
                 uiFont,
-                CookableGrillItemView.GetPhaseLabel(type, PattyGrillPhase.RawDough),
+                CookableGrillItemView.GetPhaseLabel(type, state.Phase),
                 18,
                 FontStyle.Bold,
                 Color.white,
@@ -606,39 +704,244 @@ namespace SheepSheepBurger.BurgerAssembly
                 this,
                 type,
                 graphic,
-                phaseLabel);
-            activeGrillItem = view;
+                phaseLabel,
+                state);
+            grillItems.Add(view);
+            focusedGrillItem = view;
             SetGrillStatus(
-                GetRawGrillItemName(type) + "을(를) 올렸습니다. 재료를 탭해서 조리를 시작해 주세요.",
+                existingState == null
+                    ? GetRawGrillItemName(type) + "을(를) 올렸습니다. 재료를 탭해서 조리를 시작해 주세요."
+                    : GetGrillItemName(type) + "을(를) 다시 올렸습니다. 기존 상태에서 조리를 이어갑니다.",
                 false);
         }
 
         private bool TryPlaceIngredient(IngredientType type, Vector2 localPosition)
         {
-            if (type != IngredientType.BunBottom && stackAssembler.BurgerStackRoot == null)
-            {
-                SetBoardStatus("먼저 하단 번을 도마에 놓아 햄버거의 기준 위치를 정하세요.", true);
-                ShowToast("하단 번을 먼저 놓아 주세요");
-                return false;
-            }
+            return TryPlaceBoardIngredient(type, localPosition, null, false);
+        }
 
-            if (!stackAssembler.TryPlace(type, localPosition, out BurgerData completedBurger))
+        private bool TryPlaceBoardIngredient(
+            IngredientType type,
+            Vector2 localPosition,
+            PattyGrillState cookingState,
+            bool movingExisting)
+        {
+            if (!movingExisting && !CanCreateNewBoardIngredient(type))
             {
                 ExplainBlockedBoardPlacement(type);
                 return false;
             }
 
+            bool shouldStack = type == IngredientType.BunBottom ||
+                (stackAssembler.HasBottomBun && stackAssembler.IsNearStack(localPosition));
+            if (!shouldStack)
+            {
+                CreateLooseBoardIngredient(type, localPosition, cookingState);
+                SetBoardStatus(
+                    BurgerIngredientCatalog.GetDisplayName(type) + "을(를) 도마에 놓았습니다.",
+                    false);
+                RefreshBoardSummary();
+                return true;
+            }
+
+            if (!stackAssembler.TryPlace(
+                    type,
+                    localPosition,
+                    this,
+                    cookingState,
+                    out _,
+                    out BurgerData completedBurger))
+            {
+                ExplainBlockedBoardPlacement(type);
+                return false;
+            }
             if (completedBurger != null)
             {
                 CompleteBurger(completedBurger);
             }
             else
             {
-                SetBoardStatus(BurgerIngredientCatalog.GetDisplayName(type) + " 배치 완료", false);
+                SetBoardStatus(BurgerIngredientCatalog.GetDisplayName(type) + "을(를) 버거 위에 쌓았습니다.", false);
             }
 
             RefreshBoardSummary();
             return true;
+        }
+
+        private bool MoveBoardIngredient(PlacedIngredientView ingredient, Vector2 localPosition)
+        {
+            if (ingredient.IngredientType == IngredientType.BunBottom &&
+                stackAssembler.Contains(ingredient))
+            {
+                stackAssembler.MoveStack(localPosition);
+                return true;
+            }
+
+            bool nearStack = stackAssembler.HasBottomBun && stackAssembler.IsNearStack(localPosition);
+            if (stackAssembler.Contains(ingredient))
+            {
+                if (nearStack)
+                {
+                    return stackAssembler.MoveIngredient(ingredient, localPosition);
+                }
+
+                IngredientType type = ingredient.IngredientType;
+                PattyGrillState cookingState = ingredient.CookingState;
+                if (!stackAssembler.RemoveIngredient(ingredient))
+                {
+                    return false;
+                }
+                CreateLooseBoardIngredient(type, localPosition, cookingState);
+                SetBoardStatus(BurgerIngredientCatalog.GetDisplayName(type) + "을(를) 스택에서 분리했습니다.", false);
+                return true;
+            }
+
+            if (!looseBoardIngredients.Contains(ingredient))
+            {
+                return false;
+            }
+
+            if (nearStack)
+            {
+                IngredientType type = ingredient.IngredientType;
+                PattyGrillState cookingState = ingredient.CookingState;
+                if (!stackAssembler.TryPlace(
+                        type,
+                        localPosition,
+                        this,
+                        cookingState,
+                        out _,
+                        out BurgerData completedBurger))
+                {
+                    return false;
+                }
+
+                looseBoardIngredients.Remove(ingredient);
+                DestroyControllerObject(ingredient.gameObject);
+                if (completedBurger != null)
+                {
+                    CompleteBurger(completedBurger);
+                }
+                else
+                {
+                    SetBoardStatus(BurgerIngredientCatalog.GetDisplayName(type) + "을(를) 버거 위에 쌓았습니다.", false);
+                }
+                return true;
+            }
+
+            RectTransform rect = ingredient.RectTransform;
+            rect.anchoredPosition = BurgerUiFactory.ClampInside(
+                boardLayerRoot.rect,
+                localPosition,
+                rect.sizeDelta);
+            ingredient.SetPlacement(stackAssembler.ReserveLooseLayerOrder(), false);
+            rect.SetAsLastSibling();
+            return true;
+        }
+
+        private PlacedIngredientView CreateLooseBoardIngredient(
+            IngredientType type,
+            Vector2 localPosition,
+            PattyGrillState cookingState)
+        {
+            BurgerIngredientVisual visual = GetBoardVisual(type, cookingState);
+            int layerOrder = stackAssembler.ReserveLooseLayerOrder();
+            Vector2 position = BurgerUiFactory.ClampInside(
+                boardLayerRoot.rect,
+                localPosition,
+                visual.Size);
+            SimpleShapeGraphic graphic = BurgerUiFactory.CreateShape(
+                "Loose" + type + "_" + layerOrder,
+                boardLayerRoot,
+                visual.Shape,
+                visual.Color,
+                position,
+                visual.Size,
+                true,
+                visual.SourceSprite);
+            graphic.gameObject.AddComponent<CanvasGroup>();
+            PlacedIngredientView view = graphic.gameObject.AddComponent<PlacedIngredientView>();
+            view.Configure(this, type, layerOrder, false, cookingState);
+            view.RectTransform.SetAsLastSibling();
+            looseBoardIngredients.Add(view);
+            return view;
+        }
+
+        private bool RemoveBoardIngredient(PlacedIngredientView ingredient)
+        {
+            if (stackAssembler.Contains(ingredient))
+            {
+                return stackAssembler.RemoveIngredient(ingredient);
+            }
+
+            if (!looseBoardIngredients.Remove(ingredient))
+            {
+                return false;
+            }
+
+            DestroyControllerObject(ingredient.gameObject);
+            return true;
+        }
+
+        private bool CanCreateNewBoardIngredient(IngredientType type)
+        {
+            if (stackAssembler.IsCompleted || BurgerIngredientCatalog.IsSauce(type))
+            {
+                return false;
+            }
+
+            if (type == IngredientType.BunBottom)
+            {
+                return !stackAssembler.HasBottomBun;
+            }
+
+            if (type == IngredientType.BunTop)
+            {
+                return !stackAssembler.HasTopBun &&
+                    !looseBoardIngredients.Any(item =>
+                        item != null && item.IngredientType == IngredientType.BunTop);
+            }
+
+            return !BurgerAssemblyState.IsTopping(type) ||
+                GetBoardToppingCount() < stackAssembler.MaximumToppings;
+        }
+
+        private int GetBoardToppingCount()
+        {
+            return stackAssembler.ToppingCount + looseBoardIngredients.Count(item =>
+                item != null && BurgerAssemblyState.IsTopping(item.IngredientType));
+        }
+
+        private static BurgerIngredientVisual GetBoardVisual(
+            IngredientType type,
+            PattyGrillState cookingState)
+        {
+            BurgerIngredientVisual visual = BurgerIngredientCatalog.GetVisual(type);
+            if (cookingState == null || !BurgerIngredientCatalog.IsGrillIngredient(type))
+            {
+                return visual;
+            }
+
+            BurgerSpriteCatalog sprites = BurgerSpriteCatalog.RequireActive();
+            Sprite sprite;
+            switch (cookingState.Phase)
+            {
+                case PattyGrillPhase.Overcooked:
+                    sprite = sprites.GetBurntGrillIngredient(type);
+                    break;
+                case PattyGrillPhase.Flipping:
+                case PattyGrillPhase.CookingSide2:
+                case PattyGrillPhase.Done:
+                    sprite = sprites.GetCookedGrillIngredient(type);
+                    break;
+                case PattyGrillPhase.RawDough:
+                    sprite = sprites.GetInitialGrillIngredient(type);
+                    break;
+                default:
+                    sprite = sprites.GetRawGrillIngredient(type);
+                    break;
+            }
+            return new BurgerIngredientVisual(visual.Shape, Color.white, visual.Size, sprite);
         }
 
         private void CompleteBurger(BurgerData burgerData)
@@ -741,15 +1044,6 @@ namespace SheepSheepBurger.BurgerAssembly
                 return;
             }
 
-            if (kind == CookingDragKind.RawGrillItem && activeGrillItem != null)
-            {
-                SetGrillStatus(
-                    "현재 " + GetGrillItemName(activeGrillItem.GrillIngredientType) +
-                    "을(를) 먼저 조리하거나 프로토타입을 리셋해 주세요.",
-                    true);
-                return;
-            }
-
             if (type == IngredientType.BunBottom && stackAssembler.HasBottomBun)
             {
                 SetBoardStatus("하단 번은 한 번만 놓을 수 있습니다.", true);
@@ -757,15 +1051,8 @@ namespace SheepSheepBurger.BurgerAssembly
                 return;
             }
 
-            if (type != IngredientType.BunBottom && !stackAssembler.HasBottomBun)
-            {
-                SetBoardStatus("먼저 하단 번을 도마의 원하는 위치에 놓으세요.", true);
-                ShowToast("하단 번을 먼저 놓아 주세요");
-                return;
-            }
-
             if (BurgerAssemblyState.IsTopping(type) &&
-                stackAssembler.ToppingCount >= stackAssembler.MaximumToppings)
+                GetBoardToppingCount() >= stackAssembler.MaximumToppings)
             {
                 ShowToast("더 이상 담을 수 없습니다");
             }
@@ -782,40 +1069,10 @@ namespace SheepSheepBurger.BurgerAssembly
                 SetBoardStatus("하단 번은 한 번만 놓을 수 있습니다.", true);
                 ShowToast("하단 번이 이미 있습니다");
             }
-            else if (type != IngredientType.BunBottom && !stackAssembler.HasBottomBun)
-            {
-                SetBoardStatus("먼저 하단 번을 도마의 원하는 위치에 놓으세요.", true);
-                ShowToast("하단 번을 먼저 놓아 주세요");
-            }
             else if (BurgerAssemblyState.IsTopping(type) &&
-                stackAssembler.ToppingCount >= stackAssembler.MaximumToppings)
+                GetBoardToppingCount() >= stackAssembler.MaximumToppings)
             {
                 ShowToast("더 이상 담을 수 없습니다");
-            }
-        }
-
-        private void ExplainBlockedGrillItemDrag(IngredientType type, PattyGrillPhase phase)
-        {
-            string itemName = GetGrillItemName(type);
-            switch (phase)
-            {
-                case PattyGrillPhase.RawDough:
-                    SetGrillStatus(GetRawGrillItemName(type) + "은(는) 아직 드래그할 수 없습니다. 먼저 탭해 주세요.", true);
-                    break;
-                case PattyGrillPhase.Flattened:
-                case PattyGrillPhase.CookingSide1:
-                    SetGrillStatus("아직 이동할 수 없습니다. " + itemName + " 조리가 끝날 때까지 기다려 주세요.", true);
-                    break;
-                case PattyGrillPhase.ReadyToFlip:
-                    SetGrillStatus(itemName + "을(를) 드래그하지 말고 5초 안에 탭해서 뒤집어 주세요.", true);
-                    break;
-                case PattyGrillPhase.Flipping:
-                case PattyGrillPhase.CookingSide2:
-                    SetGrillStatus("아직 이동할 수 없습니다. 2면 조리가 끝날 때까지 기다려 주세요.", true);
-                    break;
-                case PattyGrillPhase.Overcooked:
-                    SetGrillStatus(itemName + "이(가) 타서 이동할 수 없습니다. 프로토타입 리셋을 사용해 주세요.", true);
-                    break;
             }
         }
 
@@ -858,17 +1115,30 @@ namespace SheepSheepBurger.BurgerAssembly
             sauceDrawingController?.ResetDrawing();
             stackAssembler.Reset();
 
-            if (activeGrillItem != null)
+            foreach (CookableGrillItemView grillItem in grillItems)
             {
-                Destroy(activeGrillItem.gameObject);
-                activeGrillItem = null;
+                if (grillItem != null)
+                {
+                    DestroyControllerObject(grillItem.gameObject);
+                }
             }
+            grillItems.Clear();
+            focusedGrillItem = null;
+
+            foreach (PlacedIngredientView looseIngredient in looseBoardIngredients)
+            {
+                if (looseIngredient != null)
+                {
+                    DestroyControllerObject(looseIngredient.gameObject);
+                }
+            }
+            looseBoardIngredients.Clear();
 
             completionPublisher.Reset();
             packagingController?.ResetPackaging();
             cameraSlider.SetImmediate(CookingCameraZone.Grill);
             SetGrillStatus("패티·베이컨·계란 중 하나를 불판에 놓아 주세요.", false);
-            SetBoardStatus("먼저 하단 번을 도마의 원하는 위치에 놓으세요.", false);
+            SetBoardStatus("재료를 자유롭게 놓을 수 있습니다. 하단 번 가까이에 놓으면 자동으로 쌓입니다.", false);
             RefreshBoardSummary();
             RefreshControls();
         }
@@ -892,8 +1162,10 @@ namespace SheepSheepBurger.BurgerAssembly
             }
 
             var builder = new StringBuilder();
-            builder.Append("배치 ").Append(stackAssembler.PlacedIngredientCount).Append("개")
-                .Append(" · 토핑 ").Append(stackAssembler.ToppingCount).Append('/').Append(stackAssembler.MaximumToppings)
+            builder.Append("배치 ")
+                .Append(stackAssembler.PlacedIngredientCount + looseBoardIngredients.Count(item => item != null))
+                .Append("개")
+                .Append(" · 토핑 ").Append(GetBoardToppingCount()).Append('/').Append(stackAssembler.MaximumToppings)
                 .Append(" · 소스 ")
                 .Append(sauceDrawingController != null ? sauceDrawingController.StrokeCount : 0)
                 .Append("획");
@@ -992,17 +1264,35 @@ namespace SheepSheepBurger.BurgerAssembly
         {
             hasActivePointerDrag = false;
             draggedGrillItem = null;
+            draggedBoardIngredient = null;
             if (dragGhost != null)
             {
-                Destroy(dragGhost.gameObject);
+                DestroyControllerObject(dragGhost.gameObject);
                 dragGhost = null;
             }
         }
 
-        private bool TryGetLocalPoint(RectTransform target, Vector2 screenPosition, CookingCameraZone targetZone, out Vector2 local)
+        private static void DestroyControllerObject(GameObject target)
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+            if (Application.isPlaying)
+            {
+                Destroy(target);
+            }
+            else
+            {
+                DestroyImmediate(target);
+            }
+        }
+
+        private bool TryGetLocalPoint(RectTransform target, Vector2 screenPosition, out Vector2 local)
         {
             local = Vector2.zero;
-            if (target == null || mainCamera == null || cameraSlider == null)
+            if (target == null || mainCamera == null)
             {
                 return false;
             }
@@ -1016,7 +1306,6 @@ namespace SheepSheepBurger.BurgerAssembly
                 return false;
             }
 
-            local.x += cameraSlider.CurrentContentX - cameraSlider.GetContentX(targetZone);
             return target.rect.Contains(local);
         }
 

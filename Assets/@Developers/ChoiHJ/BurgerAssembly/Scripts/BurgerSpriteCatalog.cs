@@ -12,6 +12,9 @@ namespace SheepSheepBurger.BurgerAssembly
         [SerializeField] private Sprite triangle;
         [SerializeField] private Sprite roundedRectangle;
 
+        [Header("Environment")]
+        [SerializeField] private Sprite kitchenStationBackground;
+
         [Header("Grill - Patty")]
         [SerializeField] private Sprite pattyBall;
         [SerializeField] private Sprite pattyRaw;
@@ -51,6 +54,7 @@ namespace SheepSheepBurger.BurgerAssembly
         internal static BurgerSpriteCatalog Active { get; private set; }
 
         public Sprite PattyBall => pattyBall;
+        public Sprite KitchenStationBackground => kitchenStationBackground;
         public Sprite PattyRaw => pattyRaw;
         public Sprite PattyCooked => pattyCooked;
         public Sprite PattyBurnt => pattyBurnt;
@@ -84,6 +88,7 @@ namespace SheepSheepBurger.BurgerAssembly
             circle != null &&
             triangle != null &&
             roundedRectangle != null &&
+            kitchenStationBackground != null &&
             pattyBall != null &&
             pattyRaw != null &&
             pattyCooked != null &&
@@ -123,6 +128,11 @@ namespace SheepSheepBurger.BurgerAssembly
             circle = circleSprite;
             triangle = triangleSprite;
             roundedRectangle = roundedRectangleSprite;
+        }
+
+        public void ConfigureEnvironment(Sprite backgroundSprite)
+        {
+            kitchenStationBackground = backgroundSprite;
         }
 
         public void ConfigureCooking(
@@ -250,11 +260,14 @@ namespace SheepSheepBurger.BurgerAssembly
                 case IngredientType.Patty: return pattyBall;
                 case IngredientType.Bacon: return baconPile;
                 case IngredientType.Egg: return eggCarton;
-                case IngredientType.ToppingLettuce: return lettucePile;
-                case IngredientType.ToppingTomato: return tomatoPile;
-                case IngredientType.ToppingOnion: return onionPile;
-                case IngredientType.ToppingPickle: return picklePile;
-                case IngredientType.ToppingJalapeno: return jalapenoPile;
+                // Assembly tray icons use the same flat sprites as placement.
+                // The old pile art has an oblique side-view height that clashes
+                // with the strictly top-down cooking station.
+                case IngredientType.ToppingLettuce: return lettuce;
+                case IngredientType.ToppingTomato: return tomato;
+                case IngredientType.ToppingOnion: return onion;
+                case IngredientType.ToppingPickle: return pickle;
+                case IngredientType.ToppingJalapeno: return jalapeno;
                 default: return GetIngredient(type);
             }
         }

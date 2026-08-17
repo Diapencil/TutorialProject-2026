@@ -6,20 +6,22 @@ namespace SheepSheepBurger.BurgerAssembly
 {
     internal static class BurgerPrototypeTheme
     {
-        public static readonly Color Background = Hex("#C7F7C0");
-        public static readonly Color Ink = Hex("#18323D");
-        public static readonly Color Border = Hex("#1C3540");
-        public static readonly Color GrillZone = Hex("#FF7F83");
-        public static readonly Color BoardZone = Hex("#FFD9B5");
-        public static readonly Color PackagingZone = Hex("#DDF7D8");
-        public static readonly Color Panel = Hex("#72C6E8");
-        public static readonly Color Card = Hex("#F7FCFF");
-        public static readonly Color Guide = Hex("#F8B9B7");
-        public static readonly Color Board = Hex("#FFF8EA");
-        public static readonly Color BoardEdge = Hex("#62BFE3");
-        public static readonly Color Grill = Hex("#3F4447");
-        public static readonly Color GrillBar = Hex("#90989D");
-        public static readonly Color Accent = Hex("#4BAED4");
+        public static readonly Color Background = Hex("#E8E2D2");
+        public static readonly Color Ink = Hex("#263027");
+        public static readonly Color Border = Hex("#30382E");
+        public static readonly Color GrillZone = Hex("#6D3F333D");
+        public static readonly Color BoardZone = Hex("#D6C79C30");
+        public static readonly Color PackagingZone = Hex("#63705B42");
+        // The station illustration provides the physical structure. UI surfaces
+        // should read as light controls placed on the counter, not a second set.
+        public static readonly Color Panel = Hex("#F4EBD6B8");
+        public static readonly Color Card = Hex("#FFF9EAE8");
+        public static readonly Color Guide = Hex("#F4E1B5C4");
+        public static readonly Color Board = Hex("#F1DCAFD9");
+        public static readonly Color BoardEdge = Hex("#66715E");
+        public static readonly Color Grill = Hex("#5B392FE8");
+        public static readonly Color GrillBar = Hex("#A28B6B");
+        public static readonly Color Accent = Hex("#6B7762");
         public static readonly Color RawPatty = Hex("#C86B61");
         public static readonly Color CookedPatty = Hex("#754129");
         public static readonly Color BurntPatty = Hex("#211B18");
@@ -88,15 +90,15 @@ namespace SheepSheepBurger.BurgerAssembly
     {
         private static readonly BurgerTrayItemDefinition[] BoardTrayItems =
         {
-            new BurgerTrayItemDefinition("BottomBunTray", "하단 번", CookingDragKind.Ingredient, IngredientType.BunBottom, new Vector2(-600f, 42f), new Vector2(170f, 100f)),
-            new BurgerTrayItemDefinition("TopBunTray", "상단 번 · 완성", CookingDragKind.Ingredient, IngredientType.BunTop, new Vector2(-300f, 42f), new Vector2(170f, 100f)),
-            new BurgerTrayItemDefinition("LettuceTray", "양상추", CookingDragKind.Ingredient, IngredientType.ToppingLettuce, new Vector2(0f, 42f), new Vector2(170f, 100f)),
-            new BurgerTrayItemDefinition("TomatoTray", "토마토", CookingDragKind.Ingredient, IngredientType.ToppingTomato, new Vector2(300f, 42f), new Vector2(170f, 100f)),
-            new BurgerTrayItemDefinition("JalapenoTray", "할라피뇨", CookingDragKind.Ingredient, IngredientType.ToppingJalapeno, new Vector2(600f, 42f), new Vector2(170f, 100f)),
-            new BurgerTrayItemDefinition("OnionTray", "양파", CookingDragKind.Ingredient, IngredientType.ToppingOnion, new Vector2(-450f, -78f), new Vector2(170f, 100f)),
-            new BurgerTrayItemDefinition("PickleTray", "피클", CookingDragKind.Ingredient, IngredientType.ToppingPickle, new Vector2(-150f, -78f), new Vector2(170f, 100f)),
-            new BurgerTrayItemDefinition("KetchupTray", "케첩 · 클릭", CookingDragKind.Sauce, IngredientType.SauceKetchup, new Vector2(150f, -78f), new Vector2(170f, 100f)),
-            new BurgerTrayItemDefinition("MustardTray", "머스터드 · 클릭", CookingDragKind.Sauce, IngredientType.SauceMustard, new Vector2(450f, -78f), new Vector2(170f, 100f))
+            new BurgerTrayItemDefinition("BottomBunTray", "하단 번", CookingDragKind.Ingredient, IngredientType.BunBottom, new Vector2(-360f, 90f), new Vector2(100f, 100f)),
+            new BurgerTrayItemDefinition("TopBunTray", "상단 번", CookingDragKind.Ingredient, IngredientType.BunTop, new Vector2(-240f, 90f), new Vector2(100f, 100f)),
+            new BurgerTrayItemDefinition("LettuceTray", "양상추", CookingDragKind.Ingredient, IngredientType.ToppingLettuce, new Vector2(-120f, 90f), new Vector2(100f, 100f)),
+            new BurgerTrayItemDefinition("TomatoTray", "토마토", CookingDragKind.Ingredient, IngredientType.ToppingTomato, new Vector2(0f, 90f), new Vector2(100f, 100f)),
+            new BurgerTrayItemDefinition("JalapenoTray", "할라피뇨", CookingDragKind.Ingredient, IngredientType.ToppingJalapeno, new Vector2(120f, 90f), new Vector2(100f, 100f)),
+            new BurgerTrayItemDefinition("OnionTray", "양파", CookingDragKind.Ingredient, IngredientType.ToppingOnion, new Vector2(240f, 90f), new Vector2(100f, 100f)),
+            new BurgerTrayItemDefinition("PickleTray", "피클", CookingDragKind.Ingredient, IngredientType.ToppingPickle, new Vector2(360f, 90f), new Vector2(100f, 100f)),
+            new BurgerTrayItemDefinition("KetchupTray", "케첩", CookingDragKind.Sauce, IngredientType.SauceKetchup, new Vector2(-360f, -90f), new Vector2(100f, 100f)),
+            new BurgerTrayItemDefinition("MustardTray", "머스터드", CookingDragKind.Sauce, IngredientType.SauceMustard, new Vector2(-240f, -90f), new Vector2(100f, 100f))
         };
 
         public static IReadOnlyList<BurgerTrayItemDefinition> GetBoardTrayItems()
@@ -131,27 +133,27 @@ namespace SheepSheepBurger.BurgerAssembly
             switch (type)
             {
                 case IngredientType.Patty:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.CookedPatty, new Vector2(250f, 100f), sprites.PattyCooked);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.CookedPatty, new Vector2(250f, 250f), sprites.PattyCooked);
                 case IngredientType.Bacon:
-                    return new BurgerIngredientVisual(SimpleShape.Rectangle, BurgerPrototypeTheme.Hex("#B96C5C"), new Vector2(285f, 92f), sprites.BaconCooked);
+                    return new BurgerIngredientVisual(SimpleShape.Rectangle, BurgerPrototypeTheme.Hex("#B96C5C"), new Vector2(285f, 150f), sprites.BaconCooked);
                 case IngredientType.Egg:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#FFF1B8"), new Vector2(250f, 108f), sprites.EggCooked);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#FFF1B8"), new Vector2(245f, 245f), sprites.EggCooked);
                 case IngredientType.BunBottom:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Bun, new Vector2(280f, 90f), sprites.BunBottom);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Bun, new Vector2(250f, 250f), null);
                 case IngredientType.BunTop:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Bun, new Vector2(290f, 105f), sprites.BunTop);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Bun, new Vector2(260f, 260f), sprites.BunTop);
                 case IngredientType.ToppingLettuce:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#63B94D"), new Vector2(250f, 70f), sprites.Lettuce);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#63B94D"), new Vector2(235f, 235f), sprites.Lettuce);
                 case IngredientType.ToppingTomato:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#E84B3C"), new Vector2(220f, 58f), sprites.Tomato);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#E84B3C"), new Vector2(112f, 112f), sprites.Tomato);
                 case IngredientType.ToppingCheese:
-                    return new BurgerIngredientVisual(SimpleShape.Triangle, BurgerPrototypeTheme.Hex("#FFD84C"), new Vector2(135f, 75f), sprites.Cheese);
+                    return new BurgerIngredientVisual(SimpleShape.Triangle, BurgerPrototypeTheme.Hex("#FFD84C"), new Vector2(155f, 155f), null);
                 case IngredientType.ToppingOnion:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#B981C7"), new Vector2(215f, 58f), sprites.Onion);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#B981C7"), new Vector2(135f, 100f), sprites.Onion);
                 case IngredientType.ToppingPickle:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#7C9B55"), new Vector2(180f, 55f), sprites.Pickle);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#7C9B55"), new Vector2(115f, 115f), sprites.Pickle);
                 case IngredientType.ToppingJalapeno:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#6A9B52"), new Vector2(195f, 55f), sprites.Jalapeno);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#6A9B52"), new Vector2(135f, 95f), sprites.Jalapeno);
                 case IngredientType.SauceKetchup:
                     return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#D92E28"), new Vector2(22f, 22f), sprites.Ketchup);
                 case IngredientType.SauceMustard:

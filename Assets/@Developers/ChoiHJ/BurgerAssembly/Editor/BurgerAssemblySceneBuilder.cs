@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -19,6 +20,7 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
         private const string LegacyPackagingScenePath = SceneDirectory + "/BurgerPackaging.unity";
         private const string SpriteDirectory = "Assets/@Developers/ChoiHJ/BurgerAssembly/Sprites";
         private const string ProvidedArtDirectory = SpriteDirectory + "/ProvidedArt";
+        private const string EnvironmentDirectory = SpriteDirectory + "/Environment";
 
         [MenuItem("Sheep Sheep Burger/Build Unified Cooking Scene")]
         public static void BuildAndVerify()
@@ -45,6 +47,19 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             }
         }
 
+        [MenuItem("Sheep Sheep Burger/Play Background-Aligned Scene")]
+        public static void OpenAssemblySceneAndPlay()
+        {
+            EditorSceneManager.OpenScene(AssemblyScenePath, OpenSceneMode.Single);
+            EditorApplication.delayCall += () =>
+            {
+                if (!EditorApplication.isPlayingOrWillChangePlaymode)
+                {
+                    EditorApplication.isPlaying = true;
+                }
+            };
+        }
+
         private static void VerifyRuntimeInterface()
         {
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -68,11 +83,17 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             RequireFind("IngredientTray");
             RequireFind("PackagingBoard");
             RequireFind("PackagingTray");
+            Button leftTrashReset = RequireFind("LeftTrashReset").GetComponent<Button>();
+            Button rightTrashReset = RequireFind("RightTrashReset").GetComponent<Button>();
+            Require(
+                leftTrashReset != null && rightTrashReset != null,
+                "Both illustrated trash cans must reset the prototype when clicked.");
             CanvasScaler canvasScaler = RequireFind("CookingCanvas").GetComponent<CanvasScaler>();
             Require(
                 canvasScaler != null &&
                 canvasScaler.uiScaleMode == CanvasScaler.ScaleMode.ScaleWithScreenSize &&
-                canvasScaler.referenceResolution == new Vector2(1920f, 1080f),
+                canvasScaler.referenceResolution == new Vector2(1920f, 1080f) &&
+                Mathf.Approximately(canvasScaler.matchWidthOrHeight, 1f),
                 "Cooking UI must scale from its 1920x1080 reference resolution.");
             Button packageButton = RequireFind("PackageButton").GetComponent<Button>();
             Require(packageButton != null && !packageButton.interactable, "Packaging button must remain disabled until the actual burger reaches the tray.");
@@ -80,8 +101,34 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             GameObject rawTray = RequireFind("RawPattySource");
             CookingTrayDragSource rawSource = rawTray.GetComponent<CookingTrayDragSource>();
             Require(rawSource != null && rawSource.Kind == CookingDragKind.RawGrillItem, "Raw patty tray source must create a grill item.");
+            Require(
+                rawTray.GetComponent<SimpleShapeGraphic>() != null &&
+                Mathf.Approximately(rawTray.GetComponent<SimpleShapeGraphic>().color.a, 0f),
+                "Ingredient sources must use the illustrated bins without a card background.");
             SimpleShapeGraphic rawPattyIcon = RequireFind("RawPattySourceIcon").GetComponent<SimpleShapeGraphic>();
             Require(rawPattyIcon != null && rawPattyIcon.SourceSprite != null, "Tray art must use a serialized Sprite reference.");
+            SimpleShapeGraphic grillBackdrop = RequireFind("KitchenStationBackground").GetComponent<SimpleShapeGraphic>();
+            Require(
+                grillBackdrop != null && grillBackdrop.SourceSprite == controller.SpriteCatalog.KitchenStationBackground,
+                "The cooking canvas must use the serialized kitchen-station background exactly once.");
+            Require(
+                grillBackdrop.transform.parent != null &&
+                grillBackdrop.transform.parent.name == "CookingPageStrip" &&
+                grillBackdrop.rectTransform.sizeDelta.x > canvasScaler.referenceResolution.x &&
+                Mathf.Approximately(grillBackdrop.rectTransform.sizeDelta.y, canvasScaler.referenceResolution.y),
+                "The kitchen background must fit the full reference height without vertical cropping.");
+            Require(
+                GameObject.Find("GrillPageEnvironmentBackdrop") == null &&
+                GameObject.Find("BoardPageEnvironmentBackdrop") == null &&
+                GameObject.Find("PackagingPageEnvironmentBackdrop") == null,
+                "Cooking pages must not create duplicated or cropped environment backgrounds.");
+            Require(
+                GameObject.Find("GrillTitle") == null &&
+                GameObject.Find("CookingGuide") == null &&
+                GameObject.Find("BoardTitle") == null &&
+                GameObject.Find("BoardStatusPanel") == null &&
+                GameObject.Find("PackagingHelpPanel") == null,
+                "Artwork-aligned stations must not be covered by explanatory panels.");
             CookingTrayDragSource baconSource = RequireFind("RawBaconSource").GetComponent<CookingTrayDragSource>();
             CookingTrayDragSource eggSource = RequireFind("RawEggSource").GetComponent<CookingTrayDragSource>();
             Require(
@@ -113,21 +160,61 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             CookableGrillItemView patty = RequireFind("CookablePatty").GetComponent<CookableGrillItemView>();
             Require(patty != null && patty.State.Phase == PattyGrillPhase.RawDough, "Verification patty must start as raw dough.");
             Require(patty.GrillIngredientType == IngredientType.Patty, "Verification grill item must preserve its ingredient type.");
-            Require(!controller.TryBeginCookedGrillItemDrag(patty, Vector2.zero), "Raw dough must reject cooked-item dragging.");
-            Require(patty.State.Phase == PattyGrillPhase.RawDough, "Dragging raw dough must not act like a tap.");
+            Require(controller.TryBeginCookedGrillItemDrag(patty, Vector2.zero), "Raw dough must be movable before cooking starts.");
+            InvokePrivate(controller, "CleanupPointerDrag");
+            Require(patty.State.Phase == PattyGrillPhase.RawDough, "Dragging raw dough must preserve its cooking state.");
 
-            Require((bool)InvokePrivate(controller, "TryPlaceIngredient", IngredientType.BunBottom, Vector2.zero), "Bottom bun must create the burger stack root.");
-            Require((bool)InvokePrivate(controller, "TryPlaceIngredient", IngredientType.ToppingJalapeno, new Vector2(300f, 100f)), "Provided-art topping must snap onto the burger stack.");
-            Require((bool)InvokePrivate(controller, "TryPlaceIngredient", IngredientType.BunTop, new Vector2(-300f, -100f)), "Top bun must complete the burger stack.");
+            RectTransform boardLayerRoot = RequireFind("BoardIngredientLayer").GetComponent<RectTransform>();
+            Canvas.ForceUpdateCanvases();
+            Vector2 visibleBoardCenter = RectTransformUtility.WorldToScreenPoint(
+                Camera.main,
+                boardLayerRoot.position);
+            Require(
+                controller.TryBeginTrayDrag(
+                    CookingDragKind.Ingredient,
+                    IngredientType.BunBottom,
+                    SimpleShape.Circle,
+                    new Color(0.91f, 0.65f, 0.30f),
+                    new Vector2(250f, 250f),
+                    null,
+                    visibleBoardCenter),
+                "Bottom-bun tray drag must begin while the visible board overlaps the grill camera stop.");
+            controller.EndTrayDrag(visibleBoardCenter);
+            Require(
+                GameObject.Find("BurgerStackRoot") != null,
+                "Dropping the bottom bun on the visible board rectangle must create the burger stack regardless of the current camera stop.");
+            Require((bool)InvokePrivate(controller, "TryPlaceIngredient", IngredientType.ToppingTomato, new Vector2(350f, 0f)), "A distant topping must remain loose on the board.");
+            Require((bool)InvokePrivate(controller, "TryPlaceIngredient", IngredientType.ToppingJalapeno, new Vector2(40f, 20f)), "A nearby topping must keep its exact top-view drop position.");
+            Require((bool)InvokePrivate(controller, "TryPlaceIngredient", IngredientType.ToppingJalapeno, new Vector2(-30f, 30f)), "A consecutive duplicate topping must join the same layer.");
+            Require((bool)InvokePrivate(controller, "TryPlaceIngredient", IngredientType.ToppingOnion, new Vector2(110f, 0f)), "A topping near the stack edge must be corrected slightly inward.");
+            Require((bool)InvokePrivate(controller, "TryPlaceIngredient", IngredientType.ToppingJalapeno, new Vector2(20f, -45f)), "A repeated topping separated by another type must start a new layer.");
+            Require((bool)InvokePrivate(controller, "TryPlaceIngredient", IngredientType.BunTop, new Vector2(0f, 40f)), "A nearby top bun must complete the burger stack.");
             Require(
                 publishedBurger != null && ReferenceEquals(publishedBurger, controller.LastCompletedBurger),
                 "Completion publishing must preserve the controller event and LastCompletedBurger API.");
             GameObject stackRoot = RequireFind("BurgerStackRoot");
-            RectTransform bottomBun = RequireFind("BunBottom_0").GetComponent<RectTransform>();
-            RectTransform jalapeno = RequireFind("ToppingJalapeno_1").GetComponent<RectTransform>();
-            Require(bottomBun.parent == stackRoot.transform && jalapeno.parent == stackRoot.transform, "Placed ingredients must share the burger stack root.");
-            Require(Mathf.Abs(jalapeno.anchoredPosition.x) < 0.01f && jalapeno.anchoredPosition.y > bottomBun.anchoredPosition.y, "Later ingredients must stack above the centered bottom bun.");
-            Require(!bottomBun.GetComponent<SimpleShapeGraphic>().raycastTarget, "Placed ingredients must not remain individually draggable.");
+            PlacedIngredientView[] allPlacedIngredients = UnityEngine.Object
+                .FindObjectsByType<PlacedIngredientView>(FindObjectsSortMode.None);
+            PlacedIngredientView bottomBunView = allPlacedIngredients.Single(view =>
+                view.IngredientType == IngredientType.BunBottom && view.IsStacked);
+            PlacedIngredientView looseTomatoView = allPlacedIngredients.Single(view =>
+                view.IngredientType == IngredientType.ToppingTomato && !view.IsStacked);
+            PlacedIngredientView[] jalapenos = allPlacedIngredients
+                .Where(view => view.IngredientType == IngredientType.ToppingJalapeno && view.IsStacked)
+                .OrderBy(view => view.RectTransform.GetSiblingIndex())
+                .ToArray();
+            PlacedIngredientView onion = allPlacedIngredients.Single(view =>
+                view.IngredientType == IngredientType.ToppingOnion && view.IsStacked);
+            RectTransform bottomBun = bottomBunView.RectTransform;
+            Require(looseTomatoView.RectTransform.parent != stackRoot.transform, "A distant ingredient must not join the burger stack.");
+            Require(Mathf.Abs(looseTomatoView.RectTransform.anchoredPosition.x - 350f) < 0.01f, "A distant ingredient must keep its board position.");
+            Require(bottomBun.parent == stackRoot.transform && jalapenos.All(view => view.RectTransform.parent == stackRoot.transform), "Placed ingredients must share the burger stack root.");
+            Require((jalapenos[0].RectTransform.anchoredPosition - new Vector2(40f, 20f)).sqrMagnitude < 0.01f, "A central top-view placement must not be recentered.");
+            Require(jalapenos[0].LayerOrder == jalapenos[1].LayerOrder, "Consecutive duplicate ingredients must share one layer.");
+            Require(jalapenos[2].LayerOrder > onion.LayerOrder && onion.LayerOrder > jalapenos[1].LayerOrder, "A 1 -> 2 -> 1 sequence must create three distinct layers.");
+            Require(onion.RectTransform.anchoredPosition.magnitude < 110f && onion.RectTransform.anchoredPosition.magnitude > 80f, "An edge placement must move only slightly toward the bun center.");
+            Require(publishedBurger.ingredients.Select(item => item.layerOrder).Distinct().Count() == 5, "The completed top-view burger must contain the expected five logical layers including both buns.");
+            Require(bottomBun.GetComponent<SimpleShapeGraphic>().raycastTarget, "Placed ingredients must remain individually draggable.");
             GameObject completedBurgerDragHandle = RequireFind("CompletedBurgerDragHandle");
             BurgerPackagingController packaging = packagingPage.GetComponent<BurgerPackagingController>();
             Require(packaging != null, "Packaging page must own its packaging controller.");
@@ -141,22 +228,50 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             InvokePrivate(packaging, "PackageBurger");
             Require(packaging.IsPackaged && !packageButton.interactable, "Packaging must complete once and disable the button.");
             RequireFind("PackageWrap");
+            float grillGuideAlpha = RequireFind("GrillDropArea").GetComponent<SimpleShapeGraphic>().color.a;
+            float boardGuideAlpha = RequireFind("BoardDropArea").GetComponent<SimpleShapeGraphic>().color.a;
+            float packagingGuideAlpha = RequireFind("PackagingTray").GetComponent<SimpleShapeGraphic>().color.a;
+            bool temporaryGuidesMatchSetting = CookingPrototypeRules.ShowTemporaryInteractionAreas
+                ? grillGuideAlpha > 0f && boardGuideAlpha > 0f && packagingGuideAlpha > 0f
+                : Mathf.Approximately(grillGuideAlpha, 0f) &&
+                    Mathf.Approximately(boardGuideAlpha, 0f) &&
+                    Mathf.Approximately(packagingGuideAlpha, 0f);
+            Require(
+                temporaryGuidesMatchSetting &&
+                Mathf.Approximately(RequireFind("PackagingBoard").GetComponent<SimpleShapeGraphic>().color.a, 0f),
+                "Temporary grill, board, and packaging guides must match the shared visibility setting.");
+            Require(
+                RequireFind("PackagingBoardFrame").GetComponent<RectTransform>().anchoredPosition.y > -100f,
+                "The packaging hit area must stay on the tabletop rather than the floor.");
+            leftTrashReset.onClick.Invoke();
+            Require(
+                controller.LastCompletedBurger == null && !packaging.HasBurger && !packageButton.interactable,
+                "Clicking either trash can must reset cooking, assembly, and packaging state.");
         }
 
         private static void VerifyModel()
         {
-            var board = new BurgerAssemblyState(2);
+            var board = new BurgerAssemblyState(8);
             Require(!board.TryRegisterPlacement(IngredientType.ToppingCheese, out _), "Ingredients must be rejected until a bottom bun is placed.");
             Require(board.TryRegisterPlacement(IngredientType.BunBottom, out int bottomLayer) && bottomLayer == 0, "Bottom bun must establish the burger stack.");
             Require(!board.TryRegisterPlacement(IngredientType.BunBottom, out _), "A burger stack must reject duplicate bottom buns.");
             Require(board.TryRegisterPlacement(IngredientType.ToppingCheese, out int firstLayer) && firstLayer == 1, "First topping should be accepted.");
-            Require(board.TryRegisterPlacement(IngredientType.ToppingCheese, out int secondLayer) && secondLayer == 2, "Duplicate toppings should be accepted.");
-            Require(!board.TryRegisterPlacement(IngredientType.ToppingTomato, out _), "Configured topping limit must be enforced.");
+            Require(board.TryRegisterPlacement(IngredientType.ToppingCheese, out int secondLayer) && secondLayer == firstLayer, "Consecutive duplicate toppings must share a layer.");
+            Require(board.TryRegisterPlacement(IngredientType.ToppingTomato, out int tomatoLayer) && tomatoLayer > secondLayer, "A different topping must create the next layer.");
+            Require(board.TryRegisterPlacement(IngredientType.ToppingCheese, out int repeatedCheeseLayer) && repeatedCheeseLayer > tomatoLayer, "A repeated topping after another type must create a fresh layer.");
+            Require(board.TryUnregisterPlacement(IngredientType.ToppingCheese), "A moved topping must be removable from the stack model.");
+            Require(board.TryRegisterPlacement(IngredientType.ToppingPickle, out _), "Removing a topping must free one topping slot.");
             Require(board.TryRegisterPlacement(IngredientType.Patty, out _), "Patty must not count toward the topping limit.");
             Require(board.TryRegisterPlacement(IngredientType.Bacon, out _), "Bacon must not count toward the topping limit.");
             Require(board.TryRegisterPlacement(IngredientType.Egg, out _), "Egg must not count toward the topping limit.");
             Require(board.TryRegisterPlacement(IngredientType.SauceKetchup, out _), "Sauce stamps must not count toward the topping limit.");
             Require(board.TryRegisterPlacement(IngredientType.BunTop, out int topLayer), "Top bun must be accepted after the bottom bun.");
+
+            var limitedBoard = new BurgerAssemblyState(2);
+            Require(limitedBoard.TryRegisterPlacement(IngredientType.BunBottom, out _), "Limited board must accept its bottom bun.");
+            Require(limitedBoard.TryRegisterPlacement(IngredientType.ToppingCheese, out _), "Limited board must accept its first topping.");
+            Require(limitedBoard.TryRegisterPlacement(IngredientType.ToppingCheese, out _), "The topping limit counts items even when they share a layer.");
+            Require(!limitedBoard.TryRegisterPlacement(IngredientType.ToppingTomato, out _), "Configured topping limit must be enforced independently from layer grouping.");
 
             var placements = new List<IngredientPlacement>
             {
@@ -188,7 +303,7 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             patty.Tick(CookingPrototypeRules.SecondSideCookSeconds);
             Require(patty.Phase == PattyGrillPhase.Done && patty.CanDragToBoard, "Second side must finish after three seconds.");
             patty.Tick(CookingPrototypeRules.DoneToOvercookedSeconds);
-            Require(patty.Phase == PattyGrillPhase.Overcooked && !patty.CanDragToBoard, "Done patty must burn after five unattended seconds.");
+            Require(patty.Phase == PattyGrillPhase.Overcooked && patty.CanDragToBoard, "Burnt ingredients must remain movable.");
 
             var unattendedPatty = new PattyGrillState();
             Require(unattendedPatty.TryPressDough(), "Unattended patty must start cooking after being pressed.");
@@ -266,6 +381,8 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
                 LoadSprite(SpriteDirectory + "/UI/circle.png"),
                 LoadSprite(SpriteDirectory + "/UI/triangle.png"),
                 LoadSprite(SpriteDirectory + "/UI/rounded_rectangle.png"));
+            catalog.ConfigureEnvironment(
+                LoadSprite(EnvironmentDirectory + "/kitchen_station_reference.png"));
             catalog.ConfigureCooking(
                 LoadSprite(ProvidedArtDirectory + "/patty_ball.png"),
                 LoadSprite(ProvidedArtDirectory + "/patty_raw.png"),
@@ -282,8 +399,8 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             catalog.ConfigureAssembly(
                 LoadSprite(SpriteDirectory + "/Ingredients/bun_bottom.png"),
                 LoadSprite(ProvidedArtDirectory + "/bun_top.png"),
-                LoadSprite(ProvidedArtDirectory + "/lettuce_pile.png"),
-                LoadSprite(ProvidedArtDirectory + "/lettuce_pile.png"),
+                LoadSprite(ProvidedArtDirectory + "/lettuce_topdown.png"),
+                LoadSprite(ProvidedArtDirectory + "/lettuce_topdown.png"),
                 LoadSprite(ProvidedArtDirectory + "/tomato_slice.png"),
                 LoadSprite(ProvidedArtDirectory + "/tomato_pile.png"),
                 LoadSprite(SpriteDirectory + "/Ingredients/cheese.png"),

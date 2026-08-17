@@ -36,7 +36,7 @@ namespace SheepSheepBurger.BurgerAssembly
 
         public float PhaseElapsed => phaseElapsed;
 
-        public bool CanDragToBoard => Phase == PattyGrillPhase.Done;
+        public bool CanDragToBoard => true;
 
         public event Action<PattyGrillPhase> PhaseChanged;
 

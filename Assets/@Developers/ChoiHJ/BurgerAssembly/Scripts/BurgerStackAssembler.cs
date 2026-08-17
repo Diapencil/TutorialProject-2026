@@ -11,10 +11,11 @@ namespace SheepSheepBurger.BurgerAssembly
         private readonly List<PlacedIngredientView> placedIngredients = new List<PlacedIngredientView>();
 
         private RectTransform boardLayerRoot;
-        private float currentStackY;
         private float stackMinY;
         private float stackMaxY;
         private float stackHalfWidth;
+        private float stackAnchorRadius;
+        private int nextLooseLayerOrder;
 
         public BurgerStackAssembler(int maximumToppings = CookingPrototypeRules.MaximumToppings)
         {
@@ -27,11 +28,19 @@ namespace SheepSheepBurger.BurgerAssembly
 
         public bool HasBottomBun => state.HasBottomBun;
 
+        public bool HasTopBun => state.HasTopBun;
+
         public int ToppingCount => state.ToppingCount;
 
         public int MaximumToppings => state.MaximumToppings;
 
         public int PlacedIngredientCount => placedIngredients.Count(view => view != null);
+
+        public int StackLayerCount => placedIngredients
+            .Where(view => view != null)
+            .Select(view => view.LayerOrder)
+            .Distinct()
+            .Count();
 
         public float StackMinY => stackMinY;
 
@@ -56,8 +65,20 @@ namespace SheepSheepBurger.BurgerAssembly
             return state.BringToFront();
         }
 
-        public bool TryPlace(IngredientType type, Vector2 localPosition, out BurgerData completedBurger)
+        public int ReserveLooseLayerOrder()
         {
+            return nextLooseLayerOrder++;
+        }
+
+        public bool TryPlace(
+            IngredientType type,
+            Vector2 localPosition,
+            BurgerAssemblyController controller,
+            PattyGrillState cookingState,
+            out PlacedIngredientView placedView,
+            out BurgerData completedBurger)
+        {
+            placedView = null;
             completedBurger = null;
             if (boardLayerRoot == null)
             {
@@ -89,27 +110,24 @@ namespace SheepSheepBurger.BurgerAssembly
             }
             else
             {
-                float layerRise = Mathf.Min(
-                    CookingPrototypeRules.BurgerStackLayerSpacing,
-                    Mathf.Max(18f, visual.Size.y * 0.45f));
-                currentStackY += layerRise;
-                stackedPosition = new Vector2(0f, currentStackY);
+                stackedPosition = CorrectStackLocalPosition(localPosition);
                 ExpandStackBounds(stackedPosition, visual.Size);
             }
 
             KeepBurgerStackInsideBoard();
             SimpleShapeGraphic graphic = BurgerUiFactory.CreateShape(
-                type + "_" + layerOrder,
+                type + "_Layer" + layerOrder + "_Item" + placedIngredients.Count,
                 BurgerStackRoot,
                 visual.Shape,
                 visual.Color,
                 stackedPosition,
                 visual.Size,
-                false,
-                visual.SourceSprite);
-            PlacedIngredientView view = graphic.gameObject.AddComponent<PlacedIngredientView>();
-            view.Configure(type, layerOrder);
-            placedIngredients.Add(view);
+                true,
+                GetPlacementSprite(type, cookingState, visual.SourceSprite));
+            graphic.gameObject.AddComponent<CanvasGroup>();
+            placedView = graphic.gameObject.AddComponent<PlacedIngredientView>();
+            placedView.Configure(controller, type, layerOrder, true, cookingState);
+            placedIngredients.Add(placedView);
 
             if (type == IngredientType.BunTop)
             {
@@ -117,6 +135,58 @@ namespace SheepSheepBurger.BurgerAssembly
             }
 
             return true;
+        }
+
+        public bool IsNearStack(Vector2 boardLocalPosition)
+        {
+            if (BurgerStackRoot == null)
+            {
+                return false;
+            }
+
+            Vector2 relative = boardLocalPosition - BurgerStackRoot.anchoredPosition;
+            float padding = CookingPrototypeRules.BurgerStackSnapPadding;
+            return relative.magnitude <= stackAnchorRadius + padding;
+        }
+
+        public void MoveStack(Vector2 boardLocalPosition)
+        {
+            if (BurgerStackRoot != null)
+            {
+                BurgerStackRoot.anchoredPosition = ClampBurgerStackPosition(boardLocalPosition);
+            }
+        }
+
+        public bool MoveIngredient(PlacedIngredientView view, Vector2 boardLocalPosition)
+        {
+            if (view == null || view.IngredientType == IngredientType.BunBottom ||
+                !placedIngredients.Contains(view) || !IsNearStack(boardLocalPosition))
+            {
+                return false;
+            }
+
+            view.RectTransform.anchoredPosition = CorrectStackLocalPosition(boardLocalPosition);
+            RebuildStackBounds();
+            return true;
+        }
+
+        public bool RemoveIngredient(PlacedIngredientView view)
+        {
+            if (view == null || view.IngredientType == IngredientType.BunBottom ||
+                !placedIngredients.Contains(view) || !state.TryUnregisterPlacement(view.IngredientType))
+            {
+                return false;
+            }
+
+            placedIngredients.Remove(view);
+            DestroyObject(view.gameObject);
+            RebuildStackLayout();
+            return true;
+        }
+
+        public bool Contains(PlacedIngredientView view)
+        {
+            return view != null && placedIngredients.Contains(view);
         }
 
         public void InsertDecorationAtLayer(RectTransform decoration, int layerOrder)
@@ -179,10 +249,11 @@ namespace SheepSheepBurger.BurgerAssembly
 
             placedIngredients.Clear();
             state.Reset();
-            currentStackY = 0f;
             stackMinY = 0f;
             stackMaxY = 0f;
             stackHalfWidth = 0f;
+            stackAnchorRadius = 0f;
+            nextLooseLayerOrder = 0;
         }
 
         private void InitializeBurgerStack(Vector2 boardLocalPosition, Vector2 bottomBunSize)
@@ -195,10 +266,10 @@ namespace SheepSheepBurger.BurgerAssembly
                 BurgerUiFactory.ClampInside(boardLayerRoot.rect, boardLocalPosition, bottomBunSize),
                 Vector2.zero);
 
-            currentStackY = 0f;
             stackMinY = -bottomBunSize.y * 0.5f;
             stackMaxY = bottomBunSize.y * 0.5f;
             stackHalfWidth = bottomBunSize.x * 0.5f;
+            stackAnchorRadius = Mathf.Min(bottomBunSize.x, bottomBunSize.y) * 0.5f;
         }
 
         private void ExpandStackBounds(Vector2 localPosition, Vector2 size)
@@ -206,6 +277,40 @@ namespace SheepSheepBurger.BurgerAssembly
             stackHalfWidth = Mathf.Max(stackHalfWidth, Mathf.Abs(localPosition.x) + size.x * 0.5f);
             stackMinY = Mathf.Min(stackMinY, localPosition.y - size.y * 0.5f);
             stackMaxY = Mathf.Max(stackMaxY, localPosition.y + size.y * 0.5f);
+        }
+
+        private void RebuildStackLayout()
+        {
+            placedIngredients.RemoveAll(view => view == null);
+            RebuildStackBounds();
+        }
+
+        private void RebuildStackBounds()
+        {
+            placedIngredients.RemoveAll(view => view == null);
+            PlacedIngredientView bottomBun = placedIngredients
+                .FirstOrDefault(view => view.IngredientType == IngredientType.BunBottom);
+            if (bottomBun == null)
+            {
+                return;
+            }
+
+            Vector2 bottomSize = bottomBun.RectTransform.sizeDelta;
+            stackMinY = -bottomSize.y * 0.5f;
+            stackMaxY = bottomSize.y * 0.5f;
+            stackHalfWidth = bottomSize.x * 0.5f;
+            stackAnchorRadius = Mathf.Min(bottomSize.x, bottomSize.y) * 0.5f;
+            bottomBun.RectTransform.anchoredPosition = Vector2.zero;
+
+            foreach (PlacedIngredientView view in placedIngredients
+                         .Where(item => item != bottomBun)
+                         .OrderBy(item => item.LayerOrder))
+            {
+                Vector2 size = view.RectTransform.sizeDelta;
+                ExpandStackBounds(view.RectTransform.anchoredPosition, size);
+            }
+
+            KeepBurgerStackInsideBoard();
         }
 
         private void KeepBurgerStackInsideBoard()
@@ -238,6 +343,49 @@ namespace SheepSheepBurger.BurgerAssembly
                 .Select(view => view.Capture(boardLayerRoot))
                 .OrderBy(placement => placement.layerOrder)
                 .ToList();
+        }
+
+        private Vector2 CorrectStackLocalPosition(Vector2 boardLocalPosition)
+        {
+            Vector2 relative = boardLocalPosition - BurgerStackRoot.anchoredPosition;
+            float distance = relative.magnitude;
+            float unadjustedRadius = stackAnchorRadius *
+                CookingPrototypeRules.BurgerStackUnadjustedRadiusRatio;
+            if (distance <= unadjustedRadius || distance <= Mathf.Epsilon)
+            {
+                return relative;
+            }
+
+            float correctedDistance = Mathf.Max(
+                unadjustedRadius,
+                distance - CookingPrototypeRules.BurgerStackEdgeCorrectionDistance);
+            return relative * (correctedDistance / distance);
+        }
+
+        private static Sprite GetPlacementSprite(
+            IngredientType type,
+            PattyGrillState cookingState,
+            Sprite fallback)
+        {
+            if (cookingState == null || !BurgerIngredientCatalog.IsGrillIngredient(type))
+            {
+                return fallback;
+            }
+
+            BurgerSpriteCatalog sprites = BurgerSpriteCatalog.RequireActive();
+            switch (cookingState.Phase)
+            {
+                case PattyGrillPhase.Overcooked:
+                    return sprites.GetBurntGrillIngredient(type);
+                case PattyGrillPhase.Flipping:
+                case PattyGrillPhase.CookingSide2:
+                case PattyGrillPhase.Done:
+                    return sprites.GetCookedGrillIngredient(type);
+                case PattyGrillPhase.RawDough:
+                    return sprites.GetInitialGrillIngredient(type);
+                default:
+                    return sprites.GetRawGrillIngredient(type);
+            }
         }
 
         private static void DestroyObject(GameObject target)

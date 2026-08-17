@@ -7,18 +7,13 @@ namespace SheepSheepBurger.BurgerAssembly
     [DisallowMultipleComponent]
     public sealed class BurgerPackagingController : MonoBehaviour
     {
-        private static readonly Color Ink = Hex("#18323D");
-        private static readonly Color Border = Hex("#1C3540");
-        private static readonly Color Board = Hex("#FFF8EA");
-        private static readonly Color Tray = Hex("#F2E1BF");
-        private static readonly Color BoardEdge = Hex("#62BFE3");
-        private static readonly Color Accent = Hex("#4BAED4");
+        private static readonly Color Border = BurgerPrototypeTheme.Border;
+        private static readonly Color Accent = BurgerPrototypeTheme.Accent;
 
         private RectTransform pageRoot;
         private RectTransform burgerTray;
         private RectTransform currentBurgerRoot;
         private Font uiFont;
-        private Text statusText;
         private Button packageButton;
         private GameObject packageWrap;
         private float burgerHalfWidth;
@@ -82,8 +77,6 @@ namespace SheepSheepBurger.BurgerAssembly
             currentBurgerRoot.SetAsLastSibling();
 
             packageButton.interactable = true;
-            statusText.text = "햄버거가 트레이에 놓였습니다. 포장하기 버튼을 누르세요.";
-            statusText.color = Ink;
             return true;
         }
 
@@ -99,106 +92,64 @@ namespace SheepSheepBurger.BurgerAssembly
             {
                 packageButton.interactable = false;
             }
-            if (statusText != null)
-            {
-                statusText.text = "포장대는 언제든 확인할 수 있습니다. 완성된 햄버거를 트레이로 옮겨 주세요.";
-                statusText.color = Ink;
-            }
         }
 
         public void SetZoneEntered()
         {
-            if (statusText == null)
-            {
-                return;
-            }
-
-            if (!HasBurger)
-            {
-                statusText.text = "완성된 햄버거를 조립 구역에서 드래그해 중앙 트레이에 놓으세요.";
-                statusText.color = Ink;
-            }
-            else if (!isPackaged)
-            {
-                statusText.text = "햄버거가 트레이에 있습니다. 오른쪽의 포장하기 버튼을 누르세요.";
-                statusText.color = Ink;
-            }
         }
 
         public void SetBurgerDragInProgress()
         {
-            if (statusText != null && !HasBurger)
-            {
-                statusText.text = "드래그 중인 햄버거를 중앙 트레이 안에 놓으세요.";
-                statusText.color = Ink;
-            }
         }
 
         public void SetBurgerDropRejected()
         {
-            if (statusText != null && !HasBurger)
-            {
-                statusText.text = "트레이 밖에 놓았습니다. 조립 구역으로 돌아가 다시 옮겨 주세요.";
-                statusText.color = Hex("#A33A2B");
-            }
         }
 
         private void BuildInterface()
         {
-            CreateText("PackagingTitle", pageRoot, "햄버거 포장대", 52, FontStyle.Bold, Ink, new Vector2(0f, 470f), new Vector2(900f, 80f));
-            CreateText("PackagingHelp", pageRoot, "완성된 햄버거를 중앙 트레이에 직접 놓은 뒤 오른쪽 버튼을 누르세요.", 24, FontStyle.Bold, Ink, new Vector2(0f, 405f), new Vector2(1250f, 50f));
-            CreateText("PackagingSwipeHint", pageRoot, "→ 오른쪽으로 스와이프하면 조립 구역으로 돌아갑니다", 20, FontStyle.Bold, Ink, new Vector2(0f, 350f), new Vector2(900f, 42f));
-
+            // The desk painted on the far right is the complete packaging area.
+            // These objects provide hit testing only and render no replacement desk.
             RectTransform boardFrame = CreateRoundedPanel(
                 "PackagingBoardFrame",
                 pageRoot,
-                BoardEdge,
-                new Vector2(-170f, -40f),
-                new Vector2(1120f, 700f),
+                Color.clear,
+                new Vector2(730f, -55f),
+                new Vector2(360f, 260f),
                 false,
-                34f);
+                0f);
             RectTransform boardRoot = CreateRoundedPanel(
                 "PackagingBoard",
                 boardFrame,
-                Board,
+                Color.clear,
                 Vector2.zero,
-                new Vector2(1060f, 640f),
+                new Vector2(350f, 250f),
                 false,
-                30f);
-            CreateText("PackagingBoardLabel", boardRoot, "포장 트레이 · 햄버거를 여기에 드롭", 25, FontStyle.Bold, Ink, new Vector2(0f, 275f), new Vector2(700f, 45f));
+                0f);
 
             burgerTray = CreateRoundedPanel(
                 "PackagingTray",
                 boardRoot,
-                Tray,
-                new Vector2(0f, -35f),
-                new Vector2(900f, 500f),
+                CookingPrototypeRules.ShowTemporaryInteractionAreas
+                    ? BurgerPrototypeTheme.Hex("#F4B9424D")
+                    : Color.clear,
+                Vector2.zero,
+                new Vector2(330f, 230f),
                 false,
-                26f);
-            CreateText("PackagingTrayHint", burgerTray, "햄버거 대기 트레이", 22, FontStyle.Bold, Ink, new Vector2(0f, 205f), new Vector2(500f, 40f));
+                0f);
 
             RectTransform buttonRect = CreateRoundedPanel(
                 "PackageButton",
                 pageRoot,
                 Accent,
-                new Vector2(650f, -25f),
-                new Vector2(320f, 130f),
+                new Vector2(730f, -230f),
+                new Vector2(180f, 68f),
                 true,
-                30f);
+                22f);
             packageButton = buttonRect.gameObject.AddComponent<Button>();
             packageButton.targetGraphic = buttonRect.GetComponent<Graphic>();
             packageButton.onClick.AddListener(PackageBurger);
-            CreateText("PackageButtonLabel", buttonRect, "포장하기", 34, FontStyle.Bold, Color.white, Vector2.zero, buttonRect.sizeDelta);
-
-            statusText = CreateText(
-                "PackagingStatus",
-                pageRoot,
-                string.Empty,
-                25,
-                FontStyle.Bold,
-                Ink,
-                new Vector2(0f, -455f),
-                new Vector2(1400f, 60f));
+            CreateText("PackageButtonLabel", buttonRect, "포장", 24, FontStyle.Bold, Color.white, Vector2.zero, buttonRect.sizeDelta);
         }
 
         private void PackageBurger()
@@ -211,8 +162,6 @@ namespace SheepSheepBurger.BurgerAssembly
             isPackaged = true;
             packageButton.interactable = false;
             CreatePackageWrap();
-            statusText.text = "포장이 완료되었습니다!";
-            statusText.color = Hex("#287A3A");
         }
 
         private void CreatePackageWrap()
@@ -226,7 +175,7 @@ namespace SheepSheepBurger.BurgerAssembly
             RectTransform wrapRect = CreateRoundedPanel(
                 "PackageWrap",
                 burgerTray,
-                new Color(0.82f, 0.94f, 1f, 0.88f),
+                Color.clear,
                 center,
                 size,
                 false,
@@ -240,7 +189,6 @@ namespace SheepSheepBurger.BurgerAssembly
                 new Vector2(260f, 145f),
                 false,
                 BurgerSpriteCatalog.RequireActive().CompletedBurger);
-            CreateText("PackageWrapLabel", wrapRect, "포장 완료", 34, FontStyle.Bold, Ink, new Vector2(0f, -92f), new Vector2(size.x - 30f, 60f));
             packageWrap = wrapRect.gameObject;
             packageWrap.transform.SetAsLastSibling();
         }
@@ -289,7 +237,9 @@ namespace SheepSheepBurger.BurgerAssembly
             SimpleShapeGraphic graphic = CreateShape(name, parent, SimpleShape.RoundedRectangle, color, position, size, raycastTarget);
             graphic.CornerRadius = cornerRadius;
             Outline outline = graphic.gameObject.AddComponent<Outline>();
-            outline.effectColor = Border;
+            Color border = Border;
+            border.a = color.a <= 0.01f ? 0f : border.a;
+            outline.effectColor = border;
             outline.effectDistance = new Vector2(1.5f, -1.5f);
             outline.useGraphicAlpha = true;
             return graphic.rectTransform;
@@ -351,9 +301,5 @@ namespace SheepSheepBurger.BurgerAssembly
             rect.sizeDelta = size;
         }
 
-        private static Color Hex(string value)
-        {
-            return ColorUtility.TryParseHtmlString(value, out Color color) ? color : Color.magenta;
-        }
     }
 }

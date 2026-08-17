@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &715261465
+--- !u!1 &429437629
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,9 +127,87 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 715261468}
-  - component: {fileID: 715261467}
-  - component: {fileID: 715261466}
+  - component: {fileID: 429437631}
+  - component: {fileID: 429437630}
+  m_Layer: 0
+  m_Name: BurgerAssemblyGame
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &429437630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 429437629}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6adfa981b099fc43b14ed4a7fafb1cf, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.BurgerAssembly.BurgerAssemblyController
+  spriteCatalog:
+    rectangle: {fileID: 8630838012316850449, guid: 3ed5dcd2077f4ea49983b91eab93eaff, type: 3}
+    circle: {fileID: -6231044458718751821, guid: 1a521a3c11adf4e438ab0bd660b0e4e6, type: 3}
+    triangle: {fileID: 9164359298635338950, guid: 5484b25e679dfdc4db251d852b4a17e5, type: 3}
+    roundedRectangle: {fileID: 7898183876960410391, guid: d2f96356c2fa53448bca79fd15aaf7dc, type: 3}
+    kitchenStationBackground: {fileID: 21300000, guid: 3f7235d61c6244d0b2e4b51571bf081f, type: 3}
+    pattyBall: {fileID: 21300000, guid: c6c505efe7b149d0baf759aa5822e5d7, type: 3}
+    pattyRaw: {fileID: 21300000, guid: a703f6c894fe44ca95c9fda4254dad43, type: 3}
+    pattyCooked: {fileID: 21300000, guid: 399d81a0acce48229a8c09a67aae9028, type: 3}
+    pattyBurnt: {fileID: 21300000, guid: f84e40bfd2a14fafa4a36758aa947372, type: 3}
+    baconPile: {fileID: 21300000, guid: b2a10ef8bab94463b344d4ecc84c73f1, type: 3}
+    baconRaw: {fileID: 21300000, guid: 0e776e9e2dd84abcaa18cfa2e98b2c83, type: 3}
+    baconCooked: {fileID: 21300000, guid: a87d20e7162f4a31bd183e97c4faa10e, type: 3}
+    baconBurnt: {fileID: 21300000, guid: 4c5db5ac2406499a9bc65a9ac031bd89, type: 3}
+    eggCarton: {fileID: 21300000, guid: 138492ffedf7433b81700e5ee9991d0e, type: 3}
+    eggRaw: {fileID: 21300000, guid: 50276300897b44248d80944a2b444dca, type: 3}
+    eggCooked: {fileID: 21300000, guid: b792ac8243ea4897b4c1cf5c27725b80, type: 3}
+    eggBurnt: {fileID: 21300000, guid: 334514e1a67e45dfbefa3ff61dd6103b, type: 3}
+    bunBottom: {fileID: 7189501038438112788, guid: d859a5f07ab6dbc48a04940bf0d97cd4, type: 3}
+    bunTop: {fileID: 21300000, guid: fb8b9c946b474c72a925cc8891a642dd, type: 3}
+    lettuce: {fileID: 21300000, guid: c2f7daa831a944f7900f316f1721e133, type: 3}
+    lettucePile: {fileID: 21300000, guid: c2f7daa831a944f7900f316f1721e133, type: 3}
+    tomato: {fileID: 21300000, guid: aec143a2a02747f4a56d6bdc300dc20a, type: 3}
+    tomatoPile: {fileID: 21300000, guid: b7ec580f901e4d759c1391c587ee3404, type: 3}
+    cheese: {fileID: -4470592730861715767, guid: cc1fcc415e7ff2542b33b3471aae77cd, type: 3}
+    onion: {fileID: 21300000, guid: e1e1116c8fdb40119f655b12e4380a43, type: 3}
+    onionPile: {fileID: 21300000, guid: f3fb0bbcc9d14750bbea9d48af30921c, type: 3}
+    pickle: {fileID: 21300000, guid: bb3ca46e68a4424d9c6910afee530a4f, type: 3}
+    picklePile: {fileID: 21300000, guid: 2e911923fc87473699cd486bd03afd6b, type: 3}
+    jalapeno: {fileID: 21300000, guid: bf1ca70e5cb94d8898d9c234814933a7, type: 3}
+    jalapenoPile: {fileID: 21300000, guid: 8a31721adaff4bfc9b655cd395c0049e, type: 3}
+    ketchup: {fileID: -9032648240131754058, guid: 836449c064b7d2c4d86636bb5cc90531, type: 3}
+    mustard: {fileID: -2314699757929624426, guid: 0d9501d1eba066f48bb5d5f1492223e9, type: 3}
+    completedBurger: {fileID: 21300000, guid: da0e8af7bc0547e2bfa490d874fd54c4, type: 3}
+--- !u!4 &429437631
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 429437629}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1694617209
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1694617212}
+  - component: {fileID: 1694617211}
+  - component: {fileID: 1694617210}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -137,21 +215,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &715261466
+--- !u!81 &1694617210
 AudioListener:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 715261465}
+  m_GameObject: {fileID: 1694617209}
   m_Enabled: 1
---- !u!20 &715261467
+--- !u!20 &1694617211
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 715261465}
+  m_GameObject: {fileID: 1694617209}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
@@ -196,93 +274,16 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!4 &715261468
+--- !u!4 &1694617212
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 715261465}
+  m_GameObject: {fileID: 1694617209}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -10}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1898794129
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1898794131}
-  - component: {fileID: 1898794130}
-  m_Layer: 0
-  m_Name: BurgerAssemblyGame
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1898794130
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1898794129}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6adfa981b099fc43b14ed4a7fafb1cf, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.BurgerAssembly.BurgerAssemblyController
-  spriteCatalog:
-    rectangle: {fileID: 8630838012316850449, guid: 3ed5dcd2077f4ea49983b91eab93eaff, type: 3}
-    circle: {fileID: -6231044458718751821, guid: 1a521a3c11adf4e438ab0bd660b0e4e6, type: 3}
-    triangle: {fileID: 9164359298635338950, guid: 5484b25e679dfdc4db251d852b4a17e5, type: 3}
-    roundedRectangle: {fileID: 7898183876960410391, guid: d2f96356c2fa53448bca79fd15aaf7dc, type: 3}
-    pattyBall: {fileID: 21300000, guid: c6c505efe7b149d0baf759aa5822e5d7, type: 3}
-    pattyRaw: {fileID: 21300000, guid: a703f6c894fe44ca95c9fda4254dad43, type: 3}
-    pattyCooked: {fileID: 21300000, guid: 399d81a0acce48229a8c09a67aae9028, type: 3}
-    pattyBurnt: {fileID: 21300000, guid: f84e40bfd2a14fafa4a36758aa947372, type: 3}
-    baconPile: {fileID: 21300000, guid: b2a10ef8bab94463b344d4ecc84c73f1, type: 3}
-    baconRaw: {fileID: 21300000, guid: 0e776e9e2dd84abcaa18cfa2e98b2c83, type: 3}
-    baconCooked: {fileID: 21300000, guid: a87d20e7162f4a31bd183e97c4faa10e, type: 3}
-    baconBurnt: {fileID: 21300000, guid: 4c5db5ac2406499a9bc65a9ac031bd89, type: 3}
-    eggCarton: {fileID: 21300000, guid: 138492ffedf7433b81700e5ee9991d0e, type: 3}
-    eggRaw: {fileID: 21300000, guid: 50276300897b44248d80944a2b444dca, type: 3}
-    eggCooked: {fileID: 21300000, guid: b792ac8243ea4897b4c1cf5c27725b80, type: 3}
-    eggBurnt: {fileID: 21300000, guid: 334514e1a67e45dfbefa3ff61dd6103b, type: 3}
-    bunBottom: {fileID: 7189501038438112788, guid: d859a5f07ab6dbc48a04940bf0d97cd4, type: 3}
-    bunTop: {fileID: 21300000, guid: fb8b9c946b474c72a925cc8891a642dd, type: 3}
-    lettuce: {fileID: 21300000, guid: da20983bff134dacb8738f8fc6341325, type: 3}
-    lettucePile: {fileID: 21300000, guid: da20983bff134dacb8738f8fc6341325, type: 3}
-    tomato: {fileID: 21300000, guid: aec143a2a02747f4a56d6bdc300dc20a, type: 3}
-    tomatoPile: {fileID: 21300000, guid: b7ec580f901e4d759c1391c587ee3404, type: 3}
-    cheese: {fileID: -4470592730861715767, guid: cc1fcc415e7ff2542b33b3471aae77cd, type: 3}
-    onion: {fileID: 21300000, guid: e1e1116c8fdb40119f655b12e4380a43, type: 3}
-    onionPile: {fileID: 21300000, guid: f3fb0bbcc9d14750bbea9d48af30921c, type: 3}
-    pickle: {fileID: 21300000, guid: bb3ca46e68a4424d9c6910afee530a4f, type: 3}
-    picklePile: {fileID: 21300000, guid: 2e911923fc87473699cd486bd03afd6b, type: 3}
-    jalapeno: {fileID: 21300000, guid: bf1ca70e5cb94d8898d9c234814933a7, type: 3}
-    jalapenoPile: {fileID: 21300000, guid: 8a31721adaff4bfc9b655cd395c0049e, type: 3}
-    ketchup: {fileID: -9032648240131754058, guid: 836449c064b7d2c4d86636bb5cc90531, type: 3}
-    mustard: {fileID: -2314699757929624426, guid: 0d9501d1eba066f48bb5d5f1492223e9, type: 3}
-    completedBurger: {fileID: 21300000, guid: da0e8af7bc0547e2bfa490d874fd54c4, type: 3}
---- !u!4 &1898794131
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1898794129}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -292,5 +293,5 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 715261468}
-  - {fileID: 1898794131}
+  - {fileID: 1694617212}
+  - {fileID: 429437631}
