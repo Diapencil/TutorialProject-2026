@@ -29,7 +29,7 @@ namespace Lee.Counter
             dayProgress = DayProgressRuntime.GetOrCreate();
             ui.SetTop(dayProgress, settings.CustomersPerDay);
 
-            if (dayProgress.ServedCustomerCount >= settings.CustomersPerDay) return;
+            if (dayProgress.ServedCustomerCount >= settings.CustomersPerDay) return; // TODO settings 수정
             order = CounterSceneSession.ActiveOrder;
             if (order == null) CreateNextCustomer(); else RestoreReturningCustomer();
         }
@@ -61,7 +61,7 @@ namespace Lee.Counter
         private bool TryCreateOrder(out OrderInstance nextOrder)
         {
             var customers = new List<CustomerData>();
-            foreach (var candidate in settings.AvailableCustomers)
+            foreach (var candidate in settings.AvailableCustomers) // TODO settings 수정
                 if (candidate != null) customers.Add(candidate);
             var orders = new List<OrderData>();
             foreach (var candidate in settings.AvailableOrders)
@@ -78,7 +78,7 @@ namespace Lee.Counter
             nextOrder = new OrderInstance
             {
                 customer = selectedCustomer,
-                order = orders[Random.Range(0, orders.Count)],
+                order = orders[Random.Range(0, orders.Count)], // TODO 현재 가지고 있는 재료로 제작 가능한 버거 중에서 선택
                 spriteIndex = selectedCustomer.spritePath == null || selectedCustomer.spritePath.Count == 0
                     ? 0
                     : Random.Range(0, selectedCustomer.spritePath.Count),
