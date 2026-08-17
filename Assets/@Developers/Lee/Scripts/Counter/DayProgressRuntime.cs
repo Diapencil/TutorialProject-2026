@@ -1,74 +1,62 @@
+using SheepSheepBurger.Core;
 using UnityEngine;
 
 namespace Lee.Counter
 {
-    /// <summary>
-    /// Holds day progress for the current game run. It survives scene loads and never mutates a data asset.
-    /// </summary>
+    /// <summary>Owns Core runtime state for the current day without mutating data assets.</summary>
     public sealed class DayProgressRuntime : MonoBehaviour
     {
         private static DayProgressRuntime instance;
 
-        public int CurrentDay { get; private set; }
-        public int ServedCustomerCount { get; private set; }
-        public int DailyRevenue { get; private set; }
+        public GameState GameState { get; private set; }
+        public DayState DayState { get; private set; }
+        public int CurrentDay => GameState.currentDay;
+        public int ServedCustomerCount => DayState.customersServed;
+        public int DailyRevenue => DayState.dailyRevenue;
 
-        public static DayProgressRuntime GetOrCreate(CounterDayState initialState)
+        public static DayProgressRuntime GetOrCreate()
         {
-            if (instance == null)
-                instance = FindFirstObjectByType<DayProgressRuntime>();
-            if (instance != null)
-                return instance;
+            if (instance == null) instance = FindFirstObjectByType<DayProgressRuntime>();
+            if (instance != null) return instance;
 
             var owner = new GameObject(nameof(DayProgressRuntime));
             instance = owner.AddComponent<DayProgressRuntime>();
-            instance.Initialize(initialState);
+            instance.Initialize();
             DontDestroyOnLoad(owner);
             return instance;
         }
 
         private void Awake()
         {
-            if (instance != null && instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
+            if (instance != null && instance != this) { Destroy(gameObject); return; }
             instance = this;
+            Initialize();
             DontDestroyOnLoad(gameObject);
         }
 
-        private void OnDestroy()
-        {
-            if (instance == this)
-                instance = null;
-        }
+        private void OnDestroy() { if (instance == this) instance = null; }
 
-        private void Initialize(CounterDayState initialState)
+        private void Initialize()
         {
-            if (initialState == null)
-            {
-                Debug.LogError("CounterDayState is required to initialize day progress.");
-                CurrentDay = 1;
-                return;
-            }
-
-            CurrentDay = initialState.InitialDay;
-            ServedCustomerCount = initialState.InitialServedCustomerCount;
-            DailyRevenue = initialState.InitialDailyRevenue;
+            if (GameState != null) return;
+            GameState = new GameState { currentDay = 1 };
+            DayState = new DayState { count = new System.Collections.Generic.List<int>() };
         }
 
         public void RegisterCustomer(int reward)
         {
-            ServedCustomerCount++;
-            DailyRevenue += reward;
+            DayState.customersServed++;
+            DayState.dailyRevenue += reward;
+            GameState.totalCustomersServed++;
+            GameState.gold += reward;
         }
 
         public void BeginNextDay()
         {
-            CurrentDay++;
-            ServedCustomerCount = 0;
-            DailyRevenue = 0;
+            GameState.currentDay++;
+            DayState.customersServed = 0;
+            DayState.dailyRevenue = 0;
+            DayState.wasAttackedToday = false;
         }
     }
 }

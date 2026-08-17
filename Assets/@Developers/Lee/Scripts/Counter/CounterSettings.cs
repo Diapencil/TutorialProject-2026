@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using SheepSheepBurger.Core;
 using UnityEngine;
 
 namespace Lee.Counter
@@ -10,23 +11,22 @@ namespace Lee.Counter
         [Min(1f), SerializeField] private float patienceSeconds = 60f;
         [Min(0f), SerializeField] private float reactionSeconds = 2f;
         [SerializeField] private string cookingSceneName = "Cooking";
-        [Tooltip("하루 동안 등장할 수 있는 손님 종류입니다.")]
         [SerializeField] private List<CustomerData> availableCustomers = new();
-        [TextArea, SerializeField] private string perfectReaction = "완벽해요! 정말 맛있어요!";
-        [TextArea, SerializeField] private string goodReaction = "조금 아쉽지만 맛있게 먹을게요.";
-        [TextArea, SerializeField] private string badReaction = "제가 주문한 버거가 아닌 것 같아요.";
-        [TextArea, SerializeField] private string timeoutReaction = "너무 오래 기다렸어요. 이만 갈게요.";
+        [SerializeField] private List<OrderData> availableOrders = new();
+        [TextArea, SerializeField] private string perfectReaction = "Perfect!";
+        [TextArea, SerializeField] private string goodReaction = "Good!";
+        [TextArea, SerializeField] private string badReaction = "That was not what I ordered.";
 
         public int CustomersPerDay => customersPerDay;
         public float PatienceSeconds => patienceSeconds;
         public float ReactionSeconds => reactionSeconds;
         public string CookingSceneName => cookingSceneName;
         public IReadOnlyList<CustomerData> AvailableCustomers => availableCustomers;
-        public string GetReaction(ServiceResult result) => result switch
+        public IReadOnlyList<OrderData> AvailableOrders => availableOrders;
+        public string GetReaction(Grade grade) => grade switch
         {
-            ServiceResult.Perfect => perfectReaction,
-            ServiceResult.Good => goodReaction,
-            ServiceResult.Timeout => timeoutReaction,
+            Grade.Perfect => perfectReaction,
+            Grade.Good => goodReaction,
             _ => badReaction
         };
     }
