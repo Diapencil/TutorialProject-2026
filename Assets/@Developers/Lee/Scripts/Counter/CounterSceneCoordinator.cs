@@ -11,7 +11,8 @@ namespace Lee.Counter
         [SerializeField] private CounterSettings settings;
         [SerializeField] private CounterSceneUI ui;
         [SerializeField] private CustomerPresenter customerPrefab;
-        [SerializeField] private Transform customerSpawnPoint;
+        [Tooltip("Canvas 안에서 배경과 카운터 전경 사이에 둔 UI 레이어입니다.")]
+        [SerializeField] private RectTransform customerLayer;
 
         private OrderInstance order;
         private CustomerPresenter customer;
@@ -55,7 +56,7 @@ namespace Lee.Counter
             if (!TryCreateOrder(out order)) return;
             CounterSceneSession.BeginOrder(order);
             remainingPatience = order.patienceRemaining;
-            SetupCustomer();
+            SetupCustomer(playEntrance: true);
         }
 
         private bool TryCreateOrder(out OrderInstance nextOrder)
@@ -91,18 +92,39 @@ namespace Lee.Counter
         private void RestoreReturningCustomer()
         {
             remainingPatience = order.patienceRemaining;
-            SetupCustomer();
+            // Cooking 씬에서 돌아온 손님은 이미 카운터에 서 있는 상태다.
+            // 따라서 등장 연출과 주문 대사를 다시 표시하지 않는다.
+            SetupCustomer(playEntrance: false);
             ui.SetOrderConfirmed(CounterSceneSession.HasConfirmedOrder);
             ui.SetCookedBurgerAvailable(CounterSceneSession.CookedBurger != null);
         }
 
-        private void SetupCustomer()
+        private void SetupCustomer(bool playEntrance)
         {
-            customer = Instantiate(customerPrefab, customerSpawnPoint);
-            customer.Enter();
-            ui.ShowOrder(order);
-            ui.SetOrderConfirmed(false);
+            // UI는 같은 Canvas 안에서 sibling 순서대로 그려진다. customerLayer는
+            // 배경 Image 다음, CounterFront Image 이전에 배치해야 한다.
+            var parent = customerLayer;
+            customer = Instantiate(customerPrefab, parent);
+            if (customerLayer != null)
+                customer.transform.SetAsLastSibling();
+            ui.HideOrder();
             ui.SetCookedBurgerAvailable(false);
+
+            if (!playEntrance) return;
+
+            customer.Enter();
+            StartCoroutine(ShowOrderAfterCustomerEnters(customer, order));
+        }
+
+        private IEnumerator ShowOrderAfterCustomerEnters(CustomerPresenter enteringCustomer, OrderInstance enteringOrder)
+        {
+            yield return new WaitForSeconds(enteringCustomer.EnterDuration);
+
+            // 등장 중 손님이 교체되거나 씬이 전환된 경우에는 이전 주문을 표시하지 않는다.
+            if (customer != enteringCustomer || order != enteringOrder || resolving) yield break;
+
+            ui.ShowOrder(enteringOrder);
+            ui.SetOrderConfirmed(CounterSceneSession.HasConfirmedOrder);
         }
 
         private void ConfirmOrder()

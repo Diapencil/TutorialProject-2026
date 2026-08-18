@@ -52,6 +52,16 @@ namespace Lee.Counter
             resultRoot.SetActive(false);
         }
 
+        public void HideOrder()
+        {
+            speechBubbleText.text = string.Empty;
+            clarificationRequest = string.Empty;
+            clarificationShown = false;
+            confirmOrderButton.interactable = false;
+            whatButton.interactable = false;
+            resultRoot.SetActive(false);
+        }
+
         private void ShowClarification()
         {
             if (clarificationShown) return;

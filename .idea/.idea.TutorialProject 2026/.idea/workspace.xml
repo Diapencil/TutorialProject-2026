@@ -11,19 +11,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c7d90a9e-043d-4fac-85b6-48a84da04955" name="변경" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.TutorialProject 2026/.idea/indexLayout.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/@Developers/Lee/Data/Counter/Customer1.asset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/@Developers/Lee/Data/Counter/Customer1.asset.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/@Developers/Lee/Data/Counter/DayState.asset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/@Developers/Lee/Data/Counter/DayState.asset.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/@Developers/Lee/Data/Counter/Recipe1.asset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/@Developers/Lee/Data/Counter/Recipe1.asset.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/@Developers/Lee/Fonts/NanumGothic SDF.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/@Developers/Lee/Fonts/NanumGothic SDF.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/@Developers/Lee/Prefabs/Customer.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/@Developers/Lee/Prefabs/Customer.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/@Developers/Lee/Scenes/Counter.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/@Developers/Lee/Scenes/Counter.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/@Developers/Lee/Scripts/Counter/CounterSceneCoordinator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/@Developers/Lee/Scripts/Counter/CounterSceneCoordinator.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Data/Dialogues/Hot dog.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Data/Dialogues/Hot dog.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Data/Dialogues/Missing child Burger.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Data/Dialogues/Missing child Burger.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Data/Dialogues/Vegan burger.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Data/Dialogues/Vegan burger.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Data/Dialogues/Vegetarian burger.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Data/Dialogues/Vegetarian burger.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Data/Ingredients/egg.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Data/Ingredients/egg.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Data/Ingredients/onion.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Data/Ingredients/onion.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Data/Recipes/Fried burger.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Data/Recipes/Fried burger.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Data/Recipes/Fried egg burger.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Data/Recipes/Fried egg burger.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Data/Recipes/Hot dog.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Data/Recipes/Hot dog.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Data/Recipes/Missing child Burger.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Data/Recipes/Missing child Burger.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Data/Recipes/Vegetarian burger.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Data/Recipes/Vegetarian burger.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Data/Recipes/Wild burger.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Data/Recipes/Wild burger.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/@Developers/Lee/Scripts/Counter/CounterSceneUI.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/@Developers/Lee/Scripts/Counter/CounterSceneUI.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/@Developers/Lee/Scripts/Counter/CustomerPresenter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/@Developers/Lee/Scripts/Counter/CustomerPresenter.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/@Developers/Lee/Sprites/counter_front.PNG.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/@Developers/Lee/Sprites/counter_front.PNG.meta" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -193,6 +194,7 @@
       <workItem from="1785335988344" duration="1472000" />
       <workItem from="1785680064751" duration="1390000" />
       <workItem from="1785853822232" duration="586000" />
+      <workItem from="1787012781242" duration="4864000" />
     </task>
     <servers />
   </component>
