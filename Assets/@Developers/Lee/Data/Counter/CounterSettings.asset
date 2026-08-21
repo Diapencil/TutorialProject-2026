@@ -15,7 +15,7 @@ MonoBehaviour:
   customersPerDay: 8
   patienceSeconds: 60
   reactionSeconds: 2
-  cookingSceneName: Cooking_temp
+  cookingSceneName: BurgerAssembly
   availableCustomers:
   - {fileID: 11400000, guid: a2715f77db9e5c2429c02d297b9e0071, type: 2}
   - {fileID: 11400000, guid: 43ec81016a6938340abf0a439d5db1f5, type: 2}

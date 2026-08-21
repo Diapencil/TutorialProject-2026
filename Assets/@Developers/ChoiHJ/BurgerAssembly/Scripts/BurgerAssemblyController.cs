@@ -72,6 +72,8 @@ namespace SheepSheepBurger.BurgerAssembly
 
         public BurgerSpriteCatalog SpriteCatalog => spriteCatalog;
 
+        public BurgerPackagingController PackagingController => packagingController;
+
         private RectTransform BurgerStackRoot => stackAssembler.BurgerStackRoot;
 
         public void SetSpriteCatalog(BurgerSpriteCatalog value)

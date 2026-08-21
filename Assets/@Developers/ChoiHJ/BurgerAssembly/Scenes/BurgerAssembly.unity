@@ -119,6 +119,80 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &150139393
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 150139395}
+  - component: {fileID: 150139394}
+  m_Layer: 0
+  m_Name: CounterReturnBridge
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &150139394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 150139393}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c10ddf75b7ad1c43abcf3ae2df826d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lee.Counter.BurgerAssemblyCounterBridge
+  controller: {fileID: 429437630}
+  counterSceneName: Counter
+  returnDelaySeconds: 1.5
+  ingredientMap:
+  - burgerAssemblyType: 0
+    coreIngredient: {fileID: 11400000, guid: b0de1025bc5310e4d90fba051ab4ac01, type: 2}
+  - burgerAssemblyType: 1
+    coreIngredient: {fileID: 11400000, guid: 4e9590c32cef09b48b2efc1fbd675d58, type: 2}
+  - burgerAssemblyType: 2
+    coreIngredient: {fileID: 11400000, guid: 151c86a4dcfc6c64bbbfa2043195c5fc, type: 2}
+  - burgerAssemblyType: 3
+    coreIngredient: {fileID: 11400000, guid: 8df27fcfb27b137438426cac1253f5e3, type: 2}
+  - burgerAssemblyType: 4
+    coreIngredient: {fileID: 11400000, guid: 2e63ad892dc1b4044b7d6c595d9e87e8, type: 2}
+  - burgerAssemblyType: 5
+    coreIngredient: {fileID: 11400000, guid: 87d8e63a477497c45a381bb1f2088c7c, type: 2}
+  - burgerAssemblyType: 6
+    coreIngredient: {fileID: 11400000, guid: ee4177aa0f5a9924d9560b2af0015791, type: 2}
+  - burgerAssemblyType: 7
+    coreIngredient: {fileID: 11400000, guid: a9395f3a21dc52d418759082c45429ab, type: 2}
+  - burgerAssemblyType: 8
+    coreIngredient: {fileID: 11400000, guid: a5fdc566181da034a906fdb43b6e5973, type: 2}
+  - burgerAssemblyType: 9
+    coreIngredient: {fileID: 11400000, guid: d1b795ac805485d42bcd8bdc11e93c6b, type: 2}
+  - burgerAssemblyType: 10
+    coreIngredient: {fileID: 11400000, guid: 81903002c2f61144e95e521d93b8527c, type: 2}
+  - burgerAssemblyType: 11
+    coreIngredient: {fileID: 11400000, guid: 363fe7aa11d99f74c816d9f0f1cea467, type: 2}
+  - burgerAssemblyType: 12
+    coreIngredient: {fileID: 11400000, guid: 80b6650d616051f4a8d6017c2f2abd5b, type: 2}
+--- !u!4 &150139395
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 150139393}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &429437629
 GameObject:
   m_ObjectHideFlags: 0
@@ -146,7 +220,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f6adfa981b099fc43b14ed4a7fafb1cf, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.BurgerAssembly.BurgerAssemblyController
   spriteCatalog:
     rectangle: {fileID: 8630838012316850449, guid: 3ed5dcd2077f4ea49983b91eab93eaff, type: 3}
@@ -191,6 +265,11 @@ MonoBehaviour:
     mustard: {fileID: 21300000, guid: 49b7edef09ad46e79e5f1ff6a356c173, type: 3}
     mustardCursor: {fileID: 21300000, guid: ea08120613ce49ad8e0e989b72b934cd, type: 3}
     completedBurger: {fileID: 21300000, guid: da0e8af7bc0547e2bfa490d874fd54c4, type: 3}
+  cookingSchema:
+    defaultRecipeId: 0
+    ingredients: []
+    recipes: []
+    gradeConfigs: []
 --- !u!4 &429437631
 Transform:
   m_ObjectHideFlags: 0
@@ -304,3 +383,4 @@ SceneRoots:
   m_Roots:
   - {fileID: 1694617212}
   - {fileID: 429437631}
+  - {fileID: 150139395}

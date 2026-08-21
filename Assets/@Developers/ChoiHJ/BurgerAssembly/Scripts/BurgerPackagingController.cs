@@ -27,6 +27,8 @@ namespace SheepSheepBurger.BurgerAssembly
 
         public bool IsPackaged => isPackaged;
 
+        public event Action Packaged;
+
         public void Configure(RectTransform page, Font font)
         {
             if (page == null)
@@ -162,6 +164,7 @@ namespace SheepSheepBurger.BurgerAssembly
             isPackaged = true;
             packageButton.interactable = false;
             CreatePackageWrap();
+            Packaged?.Invoke();
         }
 
         private void CreatePackageWrap()
