@@ -185,16 +185,30 @@ namespace SheepSheepBurger.Settings
 
         private void Awake()
         {
-            ApplyDesign();
+            if (ShouldApplyDesignOnAwake())
+            {
+                ApplyDesign();
+            }
+            else
+            {
+                ApplyCanvas();
+            }
         }
 
         private void OnValidate()
         {
 #if UNITY_EDITOR
             EditorApplication.delayCall -= ApplyDesignDelayed;
-            EditorApplication.delayCall += ApplyDesignDelayed;
+
+            if (ShouldApplyDesignOnValidate())
+            {
+                EditorApplication.delayCall += ApplyDesignDelayed;
+            }
 #else
-            ApplyDesign();
+            if (ShouldApplyDesignOnValidate())
+            {
+                ApplyDesign();
+            }
 #endif
         }
 
@@ -228,6 +242,16 @@ namespace SheepSheepBurger.Settings
                 canvasScaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
                 canvasScaler.matchWidthOrHeight = preset.matchWidthOrHeight;
             }
+        }
+
+        private bool ShouldApplyDesignOnAwake()
+        {
+            return preset != null && preset.applyDesignOnAwake;
+        }
+
+        private bool ShouldApplyDesignOnValidate()
+        {
+            return preset != null && preset.applyDesignOnValidate;
         }
 
         private void ApplyLayout()

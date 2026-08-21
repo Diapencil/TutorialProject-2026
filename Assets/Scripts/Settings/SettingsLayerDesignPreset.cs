@@ -29,6 +29,19 @@ namespace SheepSheepBurger.Settings
         [Header("폰트")]
         public TMP_FontAsset fontAsset;
 
+        [Header("자동 적용")]
+        [InspectorName("게임 시작 때 프리셋 자동 적용")]
+        [Tooltip("끄면 플레이 시작 때 프리셋 색/폰트/위치로 덮어쓰지 않습니다. 직접 수정한 Image 색을 유지하려면 꺼두세요.")]
+        public bool applyDesignOnAwake = false;
+
+        [InspectorName("인스펙터 변경 때 프리셋 자동 적용")]
+        [Tooltip("끄면 프리팹/씬의 Inspector에서 직접 바꾼 색과 위치를 자동으로 덮어쓰지 않습니다.")]
+        public bool applyDesignOnValidate = false;
+
+        [InspectorName("프리셋 수정 시 열린 레이어 자동 적용")]
+        [Tooltip("켜면 이 프리셋 값을 바꿀 때 열린 씬의 설정 레이어에 즉시 반영합니다.")]
+        public bool applyToOpenLayersOnValidate = false;
+
         [Header("적용 옵션")]
         [InspectorName("RectTransform 위치/크기 자동 적용")]
         [Tooltip("끄면 프리팹/씬에서 손으로 수정한 UI 위치와 크기를 유지합니다.")]
@@ -161,7 +174,11 @@ namespace SheepSheepBurger.Settings
             }
 
             EditorApplication.delayCall -= ApplyToOpenLayers;
-            EditorApplication.delayCall += ApplyToOpenLayers;
+
+            if (applyToOpenLayersOnValidate)
+            {
+                EditorApplication.delayCall += ApplyToOpenLayers;
+            }
         }
 
         public void ApplyToOpenLayers()
