@@ -76,10 +76,7 @@ namespace SheepSheepBurger.Shop
             ShopSceneDesignPreset.TextSettings text = preset.text;
             ShopSceneDesignPreset.ColorSettings colors = preset.colors;
 
-            if (root != null)
-            {
-                root.sizeDelta = layout.slotCellSize;
-            }
+            bool shouldApplyLayout = preset.applyRectTransformLayout;
 
             if (background != null)
             {
@@ -90,9 +87,17 @@ namespace SheepSheepBurger.Shop
                 background.raycastTarget = false;
             }
 
-            SetAnchors(iconRect, new Vector2(0f, slot.iconBottomAnchor), Vector2.one,
-                       new Vector2(slot.innerPadding, slot.innerPadding),
-                       new Vector2(-slot.innerPadding, -slot.innerPadding));
+            if (shouldApplyLayout)
+            {
+                if (root != null)
+                {
+                    root.sizeDelta = layout.slotCellSize;
+                }
+
+                SetAnchors(iconRect, new Vector2(0f, slot.iconBottomAnchor), Vector2.one,
+                           new Vector2(slot.innerPadding, slot.innerPadding),
+                           new Vector2(-slot.innerPadding, -slot.innerPadding));
+            }
 
             if (iconImage != null)
             {
@@ -103,22 +108,30 @@ namespace SheepSheepBurger.Shop
             {
                 nameText.fontSize = text.slotNameFontSize;
                 nameText.color = colors.mainText;
-                SetAnchors(nameText.rectTransform,
-                           new Vector2(0f, slot.nameBottomAnchor),
-                           new Vector2(1f, slot.iconBottomAnchor),
-                           new Vector2(slot.innerPadding, 0f),
-                           new Vector2(-slot.innerPadding, 0f));
+
+                if (shouldApplyLayout)
+                {
+                    SetAnchors(nameText.rectTransform,
+                               new Vector2(0f, slot.nameBottomAnchor),
+                               new Vector2(1f, slot.iconBottomAnchor),
+                               new Vector2(slot.innerPadding, 0f),
+                               new Vector2(-slot.innerPadding, 0f));
+                }
             }
 
             if (costText != null)
             {
                 costText.fontSize = text.slotCostFontSize;
                 costText.color = colors.mainText;
-                SetAnchors(costText.rectTransform,
-                           new Vector2(0f, slot.costBottomAnchor),
-                           new Vector2(1f, slot.nameBottomAnchor),
-                           new Vector2(slot.innerPadding, 0f),
-                           new Vector2(-slot.innerPadding, 0f));
+
+                if (shouldApplyLayout)
+                {
+                    SetAnchors(costText.rectTransform,
+                               new Vector2(0f, slot.costBottomAnchor),
+                               new Vector2(1f, slot.nameBottomAnchor),
+                               new Vector2(slot.innerPadding, 0f),
+                               new Vector2(-slot.innerPadding, 0f));
+                }
             }
 
             if (purchaseButtonImage != null)

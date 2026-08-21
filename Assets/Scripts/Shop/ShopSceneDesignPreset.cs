@@ -45,6 +45,11 @@ namespace SheepSheepBurger.Shop
         [Tooltip("상점 항목 카드 프레임 이미지입니다.")]
         public Sprite slotFrameSprite;
 
+        [Header("적용 옵션")]
+        [InspectorName("RectTransform 위치/크기 자동 적용")]
+        [Tooltip("끄면 UI 위치/크기/앵커는 씬의 RectTransform 값을 그대로 사용합니다. Unity에서 직접 드래그해서 배치하려면 꺼두세요.")]
+        public bool applyRectTransformLayout = false;
+
         [Header("앞뒤 순서")]
         [Tooltip("값이 클수록 나중에 그려져 화면 앞쪽에 보입니다.")]
         public LayerOrderSettings layerOrder = LayerOrderSettings.Default;

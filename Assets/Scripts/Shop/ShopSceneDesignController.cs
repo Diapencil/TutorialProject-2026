@@ -133,7 +133,16 @@ namespace SheepSheepBurger.Shop
             }
 
             ApplyCanvasAndCamera();
-            ApplyPanelLayout();
+
+            if (preset.applyRectTransformLayout)
+            {
+                ApplyPanelLayout();
+            }
+            else
+            {
+                ApplySlotScrollBehavior(preset.layout);
+            }
+
             ApplyText();
             ApplyColorsAndButtons();
             ApplySlotDesign();
@@ -260,20 +269,27 @@ namespace SheepSheepBurger.Shop
                                                   0, 0);
             }
 
-            if (slotScrollRect != null)
-            {
-                slotScrollRect.horizontal = true;
-                slotScrollRect.vertical = false;
-                slotScrollRect.inertia = true;
-                slotScrollRect.movementType = ScrollRect.MovementType.Elastic;
-                slotScrollRect.elasticity = layout.slotScrollElasticity;
-                slotScrollRect.scrollSensitivity = layout.slotScrollSensitivity;
-                slotScrollRect.viewport = slotViewport;
-                slotScrollRect.content = slotParent;
-            }
+            ApplySlotScrollBehavior(layout);
 
             ApplyDebtLayout(layout);
             ApplyLayerOrder();
+        }
+
+        private void ApplySlotScrollBehavior(ShopSceneDesignPreset.LayoutSettings layout)
+        {
+            if (slotScrollRect == null)
+            {
+                return;
+            }
+
+            slotScrollRect.horizontal = true;
+            slotScrollRect.vertical = false;
+            slotScrollRect.inertia = true;
+            slotScrollRect.movementType = ScrollRect.MovementType.Elastic;
+            slotScrollRect.elasticity = layout.slotScrollElasticity;
+            slotScrollRect.scrollSensitivity = layout.slotScrollSensitivity;
+            slotScrollRect.viewport = slotViewport;
+            slotScrollRect.content = slotParent;
         }
 
         private void ApplyTabLayout(float tabButtonHeight)
