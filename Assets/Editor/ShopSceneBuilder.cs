@@ -1,4 +1,5 @@
 // 상점 씬·슬롯 프리팹·샘플 SO 애셋을 코드로 전부 생성하는 에디터 전용 빌더.
+using System.IO;
 using System.Collections.Generic;
 using SheepSheepBurger.Core;
 using SheepSheepBurger.Shop;
@@ -26,6 +27,7 @@ namespace SheepSheepBurger.EditorTools
         private const string IngredientsFolder = "Assets/Data/Shop/Ingredients";
         private const string UpgradesFolder = "Assets/Data/Shop/Upgrades";
         private const string DecorationsFolder = "Assets/Data/Shop/Decorations";
+        private const string TmpSettingsPath = "Assets/TextMesh Pro/Resources/TMP Settings.asset";
 
         private const string ScenePath = ScenesFolder + "/ShopScene.unity";
         private const string SlotPrefabPath = PrefabsFolder + "/ShopSlot.prefab";
@@ -100,7 +102,7 @@ namespace SheepSheepBurger.EditorTools
                 return;
             }
 
-            if (!ConfirmTextMeshProResources())
+            if (!EnsureTextMeshProResources())
             {
                 return;
             }
@@ -135,26 +137,36 @@ namespace SheepSheepBurger.EditorTools
             EditorGUIUtility.PingObject(AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath));
         }
 
-        private static bool ConfirmTextMeshProResources()
+        private static bool EnsureTextMeshProResources()
         {
-            if (TMP_Settings.instance != null)
+            if (File.Exists(TmpSettingsPath))
             {
                 return true;
             }
 
-            if (Application.isBatchMode)
-            {
-                Debug.LogWarning("[ShopSceneBuilder] TMP Essential Resources가 없습니다. 기본 TMP 설정으로 계속 진행합니다.");
-                return true;
-            }
-
-            return EditorUtility.DisplayDialog(
+            bool shouldImport = Application.isBatchMode || EditorUtility.DisplayDialog(
                 "TextMeshPro 리소스 없음",
-                "TMP Essential Resources가 임포트되지 않았습니다.\n" +
-                "Window > TextMeshPro > Import TMP Essential Resources 를 먼저 실행하세요.\n\n" +
-                "그대로 진행하면 텍스트가 보이지 않을 수 있습니다.",
-                "그대로 진행",
+                "TMP Essential Resources가 없어 자동으로 임포트합니다.\n" +
+                "한글 폰트 애셋은 아직 별도로 연결해야 합니다.",
+                "임포트",
                 "취소");
+
+            if (!shouldImport)
+            {
+                return false;
+            }
+
+            Debug.Log("[ShopSceneBuilder] TMP Essential Resources를 자동 임포트합니다.");
+            TMP_PackageResourceImporter.ImportResources(true, false, false);
+            AssetDatabase.Refresh();
+
+            if (File.Exists(TmpSettingsPath))
+            {
+                return true;
+            }
+
+            Debug.LogError("[ShopSceneBuilder] TMP Essential Resources 임포트에 실패했습니다.");
+            return false;
         }
 
         // ══════════════════════════════════════════════════════
