@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac5ce3904fa515149a0e4e5ac8ae0f8a, type: 3}
+  m_Name: GradeConfig
+  m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.GradeConfig
+  grades:
+  - grade: 0
+    maxErrors: 0
+    tipAmount: 5
+    requireNoHint: 1
+    paysBasePrice: 1
+  - grade: 1
+    maxErrors: 2
+    tipAmount: 3
+    requireNoHint: 1
+    paysBasePrice: 1
+  - grade: 2
+    maxErrors: 4
+    tipAmount: 0
+    requireNoHint: 0
+    paysBasePrice: 1
+  - grade: 3
+    maxErrors: 6
+    tipAmount: 0
+    requireNoHint: 0
+    paysBasePrice: 0
