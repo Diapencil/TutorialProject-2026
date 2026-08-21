@@ -43,7 +43,8 @@ namespace SheepSheepBurger.Economy
         MedicalCare,
         DecorationSmall,
         DecorationMedium,
-        DecorationLarge
+        DecorationLarge,
+        Lettuce
     }
 
     public enum RepairDamageSeverity

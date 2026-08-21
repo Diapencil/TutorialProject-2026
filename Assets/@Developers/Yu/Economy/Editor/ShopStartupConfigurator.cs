@@ -7,7 +7,7 @@ namespace SheepSheepBurger.Economy.Editor
     [InitializeOnLoad]
     public static class ShopStartupConfigurator
     {
-        private const string ShopScenePath = "Assets/@Developers/ChoiHJ/Economy/Scenes/ShopPrototype.unity";
+        private const string ShopScenePath = "Assets/@Developers/Yu/Economy/Scenes/ShopPrototype.unity";
 
         static ShopStartupConfigurator()
         {

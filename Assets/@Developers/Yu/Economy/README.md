@@ -46,4 +46,4 @@ This module implements the current economy notes.
 ## Editor Verification
 
 - `Sheep Sheep Burger > Verify Economy System` runs model assertions.
-- `Sheep Sheep Burger > Build Shop Prototype Scene` creates `Assets/@Developers/ChoiHJ/Economy/Scenes/ShopPrototype.unity`.
+- `Sheep Sheep Burger > Build Shop Prototype Scene` creates `Assets/@Developers/Yu/Economy/Scenes/ShopPrototype.unity`.

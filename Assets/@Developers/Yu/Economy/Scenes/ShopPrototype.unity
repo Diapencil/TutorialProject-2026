@@ -150,6 +150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Economy.ShopScreenController
   loadFromPlayerPrefs: 1
   debugStartingMoney: 0
+  gameDatabase: {fileID: 11400000, guid: 2f1784b510d6a4a4688469f86dae4ce2, type: 2}
   selectedCategory: 0
   selectedItemIndex: 0
 --- !u!4 &431013896

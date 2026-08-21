@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Core.Data;
 using SheepSheepBurger.BurgerAssembly;
+using CoreIngredientData = SheepSheepBurger.Core.IngredientData;
 
 namespace SheepSheepBurger.Economy
 {
@@ -38,6 +40,82 @@ namespace SheepSheepBurger.Economy
                 Decoration(ShopItemId.DecorationMedium, "Medium Decoration", "For debt-free players.", 300f),
                 Decoration(ShopItemId.DecorationLarge, "Large Decoration", "For debt-free players.", 500f)
             });
+        }
+
+        public static ShopCatalog CreateFromGameDatabase(GameDatabase database)
+        {
+            if (database == null)
+            {
+                return CreateDefault();
+            }
+
+            var result = new List<ShopItemData>();
+            IReadOnlyList<CoreIngredientData> ingredients = database.GetAllIngredients();
+            for (int index = 0; index < ingredients.Count; index++)
+            {
+                CoreIngredientData ingredient = ingredients[index];
+                if (ingredient == null || ingredient.isDefaultUnlocked || !TryMapIngredient(ingredient.id, out ShopItemId itemId, out IngredientType ingredientType))
+                {
+                    continue;
+                }
+
+                string displayName = string.IsNullOrWhiteSpace(ingredient.ingredientName)
+                    ? ingredient.name
+                    : ingredient.ingredientName;
+                result.Add(Topping(
+                    itemId,
+                    displayName,
+                    "Unlock " + displayName + ".",
+                    ingredientType,
+                    Math.Max(0, ingredient.unlockCost)));
+            }
+
+            ShopCatalog defaults = CreateDefault();
+            for (int index = 0; index < defaults.items.Count; index++)
+            {
+                ShopItemData item = defaults.items[index];
+                if (item.category != ShopCategory.Topping)
+                {
+                    result.Add(item);
+                }
+            }
+
+            return new ShopCatalog(result);
+        }
+
+        private static bool TryMapIngredient(int ingredientId, out ShopItemId itemId, out IngredientType ingredientType)
+        {
+            switch (ingredientId)
+            {
+                case 8:
+                    itemId = ShopItemId.Jalapeno;
+                    ingredientType = IngredientType.ToppingJalapeno;
+                    return true;
+                case 9:
+                    itemId = ShopItemId.Onion;
+                    ingredientType = IngredientType.ToppingOnion;
+                    return true;
+                case 10:
+                    itemId = ShopItemId.Lettuce;
+                    ingredientType = IngredientType.ToppingLettuce;
+                    return true;
+                case 11:
+                    itemId = ShopItemId.Tomato;
+                    ingredientType = IngredientType.ToppingTomato;
+                    return true;
+                case 12:
+                    itemId = ShopItemId.FriedEgg;
+                    ingredientType = IngredientType.ToppingFriedEgg;
+                    return true;
+                case 13:
+                    itemId = ShopItemId.Bacon;
+                    ingredientType = IngredientType.ToppingBacon;
+                    return true;
+                default:
+                    itemId = default;
+                    ingredientType = default;
+                    return false;
+            }
         }
 
         private static ShopItemData Topping(

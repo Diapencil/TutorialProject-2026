@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Globalization;
+using Core.Data;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
@@ -8,7 +9,7 @@ using UnityEngine.UI;
 namespace SheepSheepBurger.Economy
 {
     [DisallowMultipleComponent]
-    public sealed class ShopScreenController : MonoBehaviour
+    public sealed class ShopScreenController : MonoBehaviour, IScrollHandler
     {
         private const float ReferenceWidth = 1600f;
         private const float ReferenceHeight = 900f;
@@ -25,6 +26,7 @@ namespace SheepSheepBurger.Economy
 
         [SerializeField] private bool loadFromPlayerPrefs = true;
         [SerializeField] private float debugStartingMoney = 0f;
+        [SerializeField] private GameDatabase gameDatabase;
         [SerializeField] private ShopCategory selectedCategory = ShopCategory.Topping;
         [SerializeField] private int selectedItemIndex;
 
@@ -43,7 +45,7 @@ namespace SheepSheepBurger.Economy
 
         private void Awake()
         {
-            catalog = ShopCatalog.CreateDefault();
+            catalog = ShopCatalog.CreateFromGameDatabase(gameDatabase);
             economy = new EconomyService(catalog);
             state = loadFromPlayerPrefs
                 ? PlayerPrefsEconomyStore.LoadOrDefault()
@@ -73,6 +75,25 @@ namespace SheepSheepBurger.Economy
             int nextPage = (currentPage + direction + pageCount) % pageCount;
             selectedItemIndex = nextPage * 3;
             Refresh();
+        }
+
+        public void OnScroll(PointerEventData eventData)
+        {
+            if (selectedCategory == ShopCategory.Repair || selectedCategory == ShopCategory.Debt)
+            {
+                return;
+            }
+
+            float delta = Mathf.Abs(eventData.scrollDelta.y) >= Mathf.Abs(eventData.scrollDelta.x)
+                ? eventData.scrollDelta.y
+                : -eventData.scrollDelta.x;
+            if (Mathf.Abs(delta) < 0.01f)
+            {
+                return;
+            }
+
+            MoveSelection(delta < 0f ? 1 : -1);
+            eventData.Use();
         }
 
         public void GiveDebugMoney(float amount)
@@ -213,12 +234,6 @@ namespace SheepSheepBurger.Economy
             viewportImage.raycastTarget = true;
             Mask mask = cardRootObject.AddComponent<Mask>();
             mask.showMaskGraphic = false;
-            ScrollRect scrollRect = cardRootObject.AddComponent<ScrollRect>();
-            scrollRect.horizontal = false;
-            scrollRect.vertical = false;
-            scrollRect.movementType = ScrollRect.MovementType.Clamped;
-            scrollRect.scrollSensitivity = 36f;
-
             GameObject contentObject = new GameObject("ShopCardContent", typeof(RectTransform));
             cardContent = contentObject.GetComponent<RectTransform>();
             cardContent.SetParent(cardRoot, false);
@@ -227,9 +242,6 @@ namespace SheepSheepBurger.Economy
             cardContent.pivot = new Vector2(0.5f, 1f);
             cardContent.anchoredPosition = Vector2.zero;
             cardContent.sizeDelta = cardRoot.sizeDelta;
-            scrollRect.viewport = cardRoot;
-            scrollRect.content = cardContent;
-
             CreateEventSystem();
         }
 

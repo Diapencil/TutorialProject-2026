@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Core.Data;
 using System.IO;
 using SheepSheepBurger.BurgerAssembly;
 using UnityEditor;
@@ -11,7 +12,7 @@ namespace SheepSheepBurger.Economy.Editor
 {
     public static class EconomySystemVerifier
     {
-        private const string SceneDirectory = "Assets/@Developers/ChoiHJ/Economy/Scenes";
+        private const string SceneDirectory = "Assets/@Developers/Yu/Economy/Scenes";
         private const string ScenePath = SceneDirectory + "/ShopPrototype.unity";
 
         [MenuItem("Sheep Sheep Burger/Verify Economy System")]
@@ -176,6 +177,10 @@ namespace SheepSheepBurger.Economy.Editor
 
             var shopObject = new GameObject("ShopScreen", typeof(ShopScreenController));
             shopObject.transform.position = Vector3.zero;
+            var serializedController = new SerializedObject(shopObject.GetComponent<ShopScreenController>());
+            serializedController.FindProperty("gameDatabase").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<GameDatabase>("Assets/Data/GameDatabase.asset");
+            serializedController.ApplyModifiedPropertiesWithoutUndo();
 
             EditorSceneManager.MarkSceneDirty(scene);
             if (!EditorSceneManager.SaveScene(scene, ScenePath))
