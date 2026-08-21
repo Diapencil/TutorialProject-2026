@@ -32,6 +32,7 @@ namespace SheepSheepBurger.EditorTools
         private const string ShopFontSourcePath = "Assets/@Developers/Lee/Fonts/NanumGothic.ttf";
         private const string ShopFontAssetPath = TmpFontMaterialsFolder + "/Shop Korean SDF.asset";
         private const string ExistingKoreanFontAssetPath = "Assets/@Developers/Lee/Fonts/NanumGothic SDF.asset";
+        private const string ShopDesignPresetPath = ShopDataFolder + "/ShopSceneDesignPreset.asset";
 
         private const string ScenePath = ScenesFolder + "/ShopScene.unity";
         private const string SlotPrefabPath = PrefabsFolder + "/ShopSlot.prefab";
@@ -141,11 +142,12 @@ namespace SheepSheepBurger.EditorTools
 
             activeFontAsset = EnsureShopFontAsset();
             ConfigureTextMeshProSettings(activeFontAsset);
+            ShopSceneDesignPreset designPreset = EnsureShopDesignPreset();
 
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             // (A) 슬롯 프리팹
-            ShopSlotUI slotPrefab = BuildSlotPrefab();
+            ShopSlotUI slotPrefab = BuildSlotPrefab(designPreset);
 
             // (C) 샘플 SO 애셋
             IngredientData[] ingredients = ConfigureSampleIngredients();
@@ -153,7 +155,7 @@ namespace SheepSheepBurger.EditorTools
             DecorationData[] decorations = CreateSampleDecorations();
 
             // (B) 씬
-            BuildScene(slotPrefab, ingredients, upgrades, decorations);
+            BuildScene(designPreset, slotPrefab, ingredients, upgrades, decorations);
 
             EditorSceneManager.MarkSceneDirty(scene);
             AssetDatabase.SaveAssets();
@@ -351,10 +353,26 @@ namespace SheepSheepBurger.EditorTools
             EditorUtility.SetDirty(settings);
         }
 
+        private static ShopSceneDesignPreset EnsureShopDesignPreset()
+        {
+            ShopSceneDesignPreset preset = AssetDatabase.LoadAssetAtPath<ShopSceneDesignPreset>(ShopDesignPresetPath);
+
+            if (preset != null)
+            {
+                return preset;
+            }
+
+            preset = ScriptableObject.CreateInstance<ShopSceneDesignPreset>();
+            AssetDatabase.CreateAsset(preset, ShopDesignPresetPath);
+            AssetDatabase.SaveAssets();
+
+            return preset;
+        }
+
         // ══════════════════════════════════════════════════════
         // (A) 슬롯 프리팹
         // ══════════════════════════════════════════════════════
-        private static ShopSlotUI BuildSlotPrefab()
+        private static ShopSlotUI BuildSlotPrefab(ShopSceneDesignPreset designPreset)
         {
             GameObject root = CreateUIObject("ShopSlot", null);
             RectTransform rootRect = (RectTransform)root.transform;
@@ -401,6 +419,14 @@ namespace SheepSheepBurger.EditorTools
             GameObject lockedOverlay = CreateOverlay("LockedOverlay", root.transform,
                                                      new Color(LockedOverlayGrey, LockedOverlayGrey,
                                                                LockedOverlayGrey, LockedOverlayAlpha));
+            Image soldOutOverlayImage = soldOutOverlay.GetComponent<Image>();
+            Image lockedOverlayImage = lockedOverlay.GetComponent<Image>();
+
+            ShopSlotDesignPresenter designPresenter = root.AddComponent<ShopSlotDesignPresenter>();
+            designPresenter.Bind(designPreset, rootRect, background, iconRect, iconImage,
+                                 nameText, costText, purchaseButton, buttonImage,
+                                 soldOutOverlayImage, lockedOverlayImage);
+            designPresenter.ApplyDesign();
 
             // SerializeField 6개를 코드로 연결
             SerializedObject serialized = new SerializedObject(slotUI);
@@ -431,7 +457,8 @@ namespace SheepSheepBurger.EditorTools
         // ══════════════════════════════════════════════════════
         // (B) 씬
         // ══════════════════════════════════════════════════════
-        private static void BuildScene(ShopSlotUI slotPrefab, IngredientData[] ingredients,
+        private static void BuildScene(ShopSceneDesignPreset designPreset, ShopSlotUI slotPrefab,
+                                       IngredientData[] ingredients,
                                        UpgradeData[] upgrades, DecorationData[] decorations)
         {
             EnsureEventSystem();
@@ -453,12 +480,16 @@ namespace SheepSheepBurger.EditorTools
             canvasObject.AddComponent<GraphicRaycaster>();
 
             ShopManager shopManager = canvasObject.AddComponent<ShopManager>();
+            ShopSceneDesignController designController = canvasObject.AddComponent<ShopSceneDesignController>();
 
             // ── TopHud ──
             GameObject topHud = CreateUIObject("TopHud", canvasObject.transform);
             RectTransform topHudRect = (RectTransform)topHud.transform;
             SetAnchors(topHudRect, new Vector2(0f, 1f), Vector2.one,
                        new Vector2(0f, -TopHudHeight), Vector2.zero);
+            Image topHudBackground = topHud.AddComponent<Image>();
+            topHudBackground.color = Color.clear;
+            topHudBackground.raycastTarget = false;
 
             TextMeshProUGUI goldText = CreateText("GoldText", topHud.transform, "0.0C",
                                                   HudFontSize, TextAlignmentOptions.Left, Color.black);
@@ -475,6 +506,9 @@ namespace SheepSheepBurger.EditorTools
             RectTransform sideBarRect = (RectTransform)sideBar.transform;
             SetAnchors(sideBarRect, Vector2.zero, new Vector2(0f, 1f),
                        Vector2.zero, new Vector2(SideBarWidth, -TopHudHeight));
+            Image sideBarBackground = sideBar.AddComponent<Image>();
+            sideBarBackground.color = Color.clear;
+            sideBarBackground.raycastTarget = false;
 
             VerticalLayoutGroup layout = sideBar.AddComponent<VerticalLayoutGroup>();
             layout.spacing = SideBarSpacing;
@@ -496,11 +530,16 @@ namespace SheepSheepBurger.EditorTools
             Vector2 centerOffsetMax = new Vector2(0f, -TopHudHeight);
 
             GameObject gridPanel = CreateUIObject("GridPanel", canvasObject.transform);
-            SetAnchors((RectTransform)gridPanel.transform, Vector2.zero, Vector2.one,
+            RectTransform gridPanelRect = (RectTransform)gridPanel.transform;
+            SetAnchors(gridPanelRect, Vector2.zero, Vector2.one,
                        centerOffsetMin, centerOffsetMax);
+            Image gridPanelBackground = gridPanel.AddComponent<Image>();
+            gridPanelBackground.color = Color.clear;
+            gridPanelBackground.raycastTarget = false;
 
             GameObject slotParent = CreateUIObject("SlotParent", gridPanel.transform);
-            StretchFull((RectTransform)slotParent.transform);
+            RectTransform slotParentRect = (RectTransform)slotParent.transform;
+            StretchFull(slotParentRect);
             GridLayoutGroup grid = slotParent.AddComponent<GridLayoutGroup>();
             grid.cellSize = new Vector2(SlotCellWidth, SlotCellHeight);
             grid.spacing = new Vector2(SlotSpacingX, SlotSpacingY);
@@ -509,8 +548,12 @@ namespace SheepSheepBurger.EditorTools
             grid.childAlignment = TextAnchor.MiddleCenter;
 
             GameObject debtPanel = CreateUIObject("DebtPanel", canvasObject.transform);
-            SetAnchors((RectTransform)debtPanel.transform, Vector2.zero, Vector2.one,
+            RectTransform debtPanelRect = (RectTransform)debtPanel.transform;
+            SetAnchors(debtPanelRect, Vector2.zero, Vector2.one,
                        centerOffsetMin, centerOffsetMax);
+            Image debtPanelBackground = debtPanel.AddComponent<Image>();
+            debtPanelBackground.color = Color.clear;
+            debtPanelBackground.raycastTarget = false;
 
             TextMeshProUGUI debtRemainingText = CreateText("DebtRemainingText", debtPanel.transform,
                                                            "1500.0C", DebtFontSize,
@@ -541,11 +584,18 @@ namespace SheepSheepBurger.EditorTools
 
             debtPanel.SetActive(false);
 
-            // ── MessageText ──
-            TextMeshProUGUI messageText = CreateText("MessageText", canvasObject.transform, string.Empty,
-                                                     MessageFontSize, TextAlignmentOptions.Center, Color.black);
-            SetAnchors(messageText.rectTransform, Vector2.zero, new Vector2(1f, 0f),
+            // ── MessageBar ──
+            GameObject messageBar = CreateUIObject("MessageBar", canvasObject.transform);
+            RectTransform messageBarRect = (RectTransform)messageBar.transform;
+            SetAnchors(messageBarRect, Vector2.zero, new Vector2(1f, 0f),
                        Vector2.zero, new Vector2(0f, MessageAreaHeight));
+            Image messageBarBackground = messageBar.AddComponent<Image>();
+            messageBarBackground.color = Color.clear;
+            messageBarBackground.raycastTarget = false;
+
+            TextMeshProUGUI messageText = CreateText("MessageText", messageBar.transform, string.Empty,
+                                                     MessageFontSize, TextAlignmentOptions.Center, Color.black);
+            StretchFull(messageText.rectTransform);
 
             // ── GameManagerObj ──
             GameObject gameManagerObject = new GameObject("GameManagerObj");
@@ -556,6 +606,25 @@ namespace SheepSheepBurger.EditorTools
                             gridPanel, debtPanel, slotParent.transform,
                             goldText, dDayText, messageText,
                             debtRemainingText, repayInputField, repayConfirmButton);
+
+            Image inputBackground = repayInputField.targetGraphic as Image;
+            Image repayButtonBackground = repayConfirmButton.targetGraphic as Image;
+            ShopSlotDesignPresenter slotPrefabDesign = slotPrefab != null
+                ? slotPrefab.GetComponent<ShopSlotDesignPresenter>()
+                : null;
+            designController.Bind(designPreset, uiCamera, canvas, scaler,
+                                  topHudRect, topHudBackground,
+                                  sideBarRect, sideBarBackground, layout,
+                                  gridPanelRect, gridPanelBackground,
+                                  slotParentRect, grid,
+                                  debtPanelRect, debtPanelBackground,
+                                  messageBarRect, messageBarBackground,
+                                  goldText, dDayText, messageText, debtRemainingText,
+                                  repayInputField, inputBackground,
+                                  repayConfirmButton, repayButtonBackground,
+                                  new[] { toppingTabButton, upgradeTabButton, decorationTabButton, debtTabButton },
+                                  slotPrefabDesign);
+            designController.ApplyDesign();
         }
 
         private static Camera CreateMainCamera()
