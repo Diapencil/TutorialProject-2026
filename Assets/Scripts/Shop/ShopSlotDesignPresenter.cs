@@ -83,7 +83,11 @@ namespace SheepSheepBurger.Shop
 
             if (background != null)
             {
+                background.sprite = preset.slotFrameSprite;
+                background.type = Image.Type.Simple;
+                background.preserveAspect = true;
                 background.color = colors.slotBackground;
+                background.raycastTarget = false;
             }
 
             SetAnchors(iconRect, new Vector2(0f, slot.iconBottomAnchor), Vector2.one,
@@ -147,8 +151,27 @@ namespace SheepSheepBurger.Shop
 
         private void OnValidate()
         {
+#if UNITY_EDITOR
+            EditorApplication.delayCall -= ApplyDesignDelayed;
+            EditorApplication.delayCall += ApplyDesignDelayed;
+#else
+            ApplyDesign();
+#endif
+        }
+
+#if UNITY_EDITOR
+        private void ApplyDesignDelayed()
+        {
+            EditorApplication.delayCall -= ApplyDesignDelayed;
+
+            if (this == null)
+            {
+                return;
+            }
+
             ApplyDesign();
         }
+#endif
 
         private static void SetAnchors(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax,
                                        Vector2 offsetMin, Vector2 offsetMax)

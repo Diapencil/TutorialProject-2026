@@ -32,6 +32,19 @@ namespace SheepSheepBurger.Shop
 
         public Color cameraBackgroundColor = new Color(0.08f, 0.08f, 0.08f, 1f);
 
+        [Header("이미지 리소스")]
+        [Tooltip("상점 전체 배경 이미지입니다. Canvas 전체에 꽉 차게 깔립니다.")]
+        public Sprite backgroundSprite;
+
+        [Tooltip("버튼 기본 상태 이미지입니다. 클릭을 떼면 이 이미지로 돌아옵니다.")]
+        public Sprite buttonNormalSprite;
+
+        [Tooltip("버튼 클릭 중 이미지입니다. 마우스/터치가 눌려 있는 동안 표시됩니다.")]
+        public Sprite buttonPressedSprite;
+
+        [Tooltip("상점 항목 카드 프레임 이미지입니다.")]
+        public Sprite slotFrameSprite;
+
         [Header("앞뒤 순서")]
         [Tooltip("값이 클수록 나중에 그려져 화면 앞쪽에 보입니다.")]
         public LayerOrderSettings layerOrder = LayerOrderSettings.Default;
@@ -51,6 +64,9 @@ namespace SheepSheepBurger.Shop
         [Serializable]
         public struct LayerOrderSettings
         {
+            [Tooltip("BackgroundImage 앞뒤 순서입니다. 값이 작을수록 뒤에 보입니다.")]
+            public int background;
+
             [Tooltip("GridPanel 앞뒤 순서입니다. 값이 클수록 앞에 보입니다.")]
             public int gridPanel;
 
@@ -81,13 +97,18 @@ namespace SheepSheepBurger.Shop
             [Tooltip("MessageBar Z 위치입니다. 값이 커질수록 카메라/앞쪽으로 이동합니다.")]
             public float messageBarZ;
 
+            [Tooltip("BackgroundImage Z 위치입니다. 값이 커질수록 카메라/앞쪽으로 이동합니다.")]
+            public float backgroundZ;
+
             public static LayerOrderSettings Default => new LayerOrderSettings
             {
+                background = -100,
                 gridPanel = 0,
                 debtPanel = 5,
                 sideBar = 10,
                 topHud = 20,
                 messageBar = 30,
+                backgroundZ = 0f,
                 gridPanelZ = 0f,
                 debtPanelZ = 0f,
                 sideBarZ = 0f,
@@ -103,6 +124,8 @@ namespace SheepSheepBurger.Shop
             [Min(0f)] public float sideBarWidth;
             [Min(0f)] public float messageAreaHeight;
             [Min(0f)] public float sideBarPadding;
+            [Min(0f)] public float sideBarTopPadding;
+            [Min(0f)] public float sideBarBottomPadding;
             [Min(0f)] public float sideBarSpacing;
             [Min(0f)] public float tabButtonHeight;
             [Min(0f)] public float hudHorizontalPadding;
@@ -118,17 +141,19 @@ namespace SheepSheepBurger.Shop
 
             public static LayoutSettings Default => new LayoutSettings
             {
-                topHudHeight = 100f,
-                sideBarWidth = 260f,
+                topHudHeight = 96f,
+                sideBarWidth = 360f,
                 messageAreaHeight = 80f,
-                sideBarPadding = 20f,
-                sideBarSpacing = 20f,
-                tabButtonHeight = 120f,
+                sideBarPadding = 34f,
+                sideBarTopPadding = 170f,
+                sideBarBottomPadding = 24f,
+                sideBarSpacing = 18f,
+                tabButtonHeight = 132f,
                 hudHorizontalPadding = 20f,
                 messageHorizontalPadding = 0f,
                 slotColumnCount = 4,
-                slotCellSize = new Vector2(300f, 400f),
-                slotSpacing = new Vector2(40f, 40f),
+                slotCellSize = new Vector2(330f, 480f),
+                slotSpacing = new Vector2(32f, 32f),
                 debtInputSize = new Vector2(520f, 80f),
                 debtButtonSize = new Vector2(320f, 80f),
                 debtTextHeight = 120f,
@@ -147,10 +172,10 @@ namespace SheepSheepBurger.Shop
 
             public static SlotSettings Default => new SlotSettings
             {
-                iconBottomAnchor = 0.4f,
-                nameBottomAnchor = 0.25f,
-                costBottomAnchor = 0.08f,
-                innerPadding = 12f
+                iconBottomAnchor = 0.53f,
+                nameBottomAnchor = 0.38f,
+                costBottomAnchor = 0.24f,
+                innerPadding = 28f
             };
         }
 
@@ -168,9 +193,9 @@ namespace SheepSheepBurger.Shop
             public static TextSettings Default => new TextSettings
             {
                 hudFontSize = 40f,
-                tabFontSize = 32f,
-                slotNameFontSize = 28f,
-                slotCostFontSize = 26f,
+                tabFontSize = 30f,
+                slotNameFontSize = 26f,
+                slotCostFontSize = 24f,
                 messageFontSize = 30f,
                 debtFontSize = 60f,
                 inputFontSize = 32f
@@ -215,9 +240,9 @@ namespace SheepSheepBurger.Shop
                 slotBackground = Color.white,
                 slotSoldOutOverlay = new Color(0f, 0f, 0f, 0.6f),
                 slotLockedOverlay = new Color(0.5f, 0.5f, 0.5f, 0.8f),
-                mainText = Color.black,
-                dDayText = Color.red,
-                messageText = Color.black,
+                mainText = new Color(0.19f, 0.13f, 0.08f, 1f),
+                dDayText = new Color(0.64f, 0.12f, 0.08f, 1f),
+                messageText = new Color(0.19f, 0.13f, 0.08f, 1f),
                 placeholderText = Color.grey
             };
         }

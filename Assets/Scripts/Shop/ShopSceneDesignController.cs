@@ -23,6 +23,8 @@ namespace SheepSheepBurger.Shop
         [SerializeField] private CanvasScaler canvasScaler;
 
         [Header("패널")]
+        [SerializeField] private RectTransform background;
+        [SerializeField] private Image backgroundImage;
         [SerializeField] private RectTransform topHud;
         [SerializeField] private Image topHudBackground;
         [SerializeField] private RectTransform sideBar;
@@ -59,6 +61,8 @@ namespace SheepSheepBurger.Shop
                          Camera boundCamera,
                          Canvas boundCanvas,
                          CanvasScaler boundCanvasScaler,
+                         RectTransform boundBackground,
+                         Image boundBackgroundImage,
                          RectTransform boundTopHud,
                          Image boundTopHudBackground,
                          RectTransform boundSideBar,
@@ -87,6 +91,8 @@ namespace SheepSheepBurger.Shop
             uiCamera = boundCamera;
             canvas = boundCanvas;
             canvasScaler = boundCanvasScaler;
+            background = boundBackground;
+            backgroundImage = boundBackgroundImage;
             topHud = boundTopHud;
             topHudBackground = boundTopHudBackground;
             sideBar = boundSideBar;
@@ -135,8 +141,27 @@ namespace SheepSheepBurger.Shop
 
         private void OnValidate()
         {
+#if UNITY_EDITOR
+            EditorApplication.delayCall -= ApplyDesignDelayed;
+            EditorApplication.delayCall += ApplyDesignDelayed;
+#else
+            ApplyDesign();
+#endif
+        }
+
+#if UNITY_EDITOR
+        private void ApplyDesignDelayed()
+        {
+            EditorApplication.delayCall -= ApplyDesignDelayed;
+
+            if (this == null)
+            {
+                return;
+            }
+
             ApplyDesign();
         }
+#endif
 
         private void ApplyCanvasAndCamera()
         {
@@ -168,6 +193,7 @@ namespace SheepSheepBurger.Shop
             Vector2 centerOffsetMin = new Vector2(layout.sideBarWidth, layout.messageAreaHeight);
             Vector2 centerOffsetMax = new Vector2(0f, -layout.topHudHeight);
 
+            SetAnchors(background, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             SetAnchors(topHud, new Vector2(0f, 1f), Vector2.one,
                        new Vector2(0f, -layout.topHudHeight), Vector2.zero);
             SetAnchors(sideBar, Vector2.zero, new Vector2(0f, 1f),
@@ -200,8 +226,11 @@ namespace SheepSheepBurger.Shop
 
             if (sideBarLayout != null)
             {
-                int padding = Mathf.RoundToInt(layout.sideBarPadding);
-                sideBarLayout.padding = new RectOffset(padding, padding, padding, padding);
+                int horizontalPadding = Mathf.RoundToInt(layout.sideBarPadding);
+                int topPadding = Mathf.RoundToInt(layout.sideBarTopPadding);
+                int bottomPadding = Mathf.RoundToInt(layout.sideBarBottomPadding);
+                sideBarLayout.padding = new RectOffset(horizontalPadding, horizontalPadding,
+                                                       topPadding, bottomPadding);
                 sideBarLayout.spacing = layout.sideBarSpacing;
             }
 
@@ -283,6 +312,7 @@ namespace SheepSheepBurger.Shop
         private void ApplyLayerOrder()
         {
             ShopSceneDesignPreset.LayerOrderSettings order = preset.layerOrder;
+            SetLocalZ(background, order.backgroundZ);
             SetLocalZ(gridPanel, order.gridPanelZ);
             SetLocalZ(debtPanel, order.debtPanelZ);
             SetLocalZ(sideBar, order.sideBarZ);
@@ -291,6 +321,7 @@ namespace SheepSheepBurger.Shop
 
             OrderedTransform[] ordered =
             {
+                new OrderedTransform(background, order.background),
                 new OrderedTransform(gridPanel, order.gridPanel),
                 new OrderedTransform(debtPanel, order.debtPanel),
                 new OrderedTransform(sideBar, order.sideBar),
@@ -341,6 +372,7 @@ namespace SheepSheepBurger.Shop
         {
             ShopSceneDesignPreset.ColorSettings colorSettings = preset.colors;
 
+            SetSpriteImage(backgroundImage, preset.backgroundSprite, Color.white, false, false);
             SetImage(topHudBackground, colorSettings.topHudBackground, false);
             SetImage(sideBarBackground, colorSettings.sideBarBackground, false);
             SetImage(gridPanelBackground, colorSettings.gridPanelBackground, false);
@@ -351,12 +383,14 @@ namespace SheepSheepBurger.Shop
 
             for (int i = 0; i < tabButtons.Length; i++)
             {
-                ApplyButtonColors(tabButtons[i], colorSettings.tabNormal, colorSettings.tabHighlighted,
-                                  colorSettings.tabPressed, colorSettings.tabSelected);
+                ApplyButtonSkin(tabButtons[i], preset.buttonNormalSprite, preset.buttonPressedSprite,
+                                colorSettings.tabNormal, colorSettings.tabHighlighted,
+                                colorSettings.tabPressed, colorSettings.tabSelected);
             }
 
-            ApplyButtonColors(repayConfirmButton, colorSettings.actionButtonBackground, colorSettings.tabHighlighted,
-                              colorSettings.tabPressed, colorSettings.tabSelected);
+            ApplyButtonSkin(repayConfirmButton, preset.buttonNormalSprite, preset.buttonPressedSprite,
+                            colorSettings.actionButtonBackground, colorSettings.tabHighlighted,
+                            colorSettings.tabPressed, colorSettings.tabSelected);
         }
 
         private void ApplySlotDesign()
@@ -382,6 +416,19 @@ namespace SheepSheepBurger.Shop
             }
         }
 
+        private static void ApplyButtonSkin(Button button, Sprite normalSprite, Sprite pressedSprite,
+                                            Color normal, Color highlighted,
+                                            Color pressed, Color disabled)
+        {
+            if (normalSprite == null && pressedSprite == null)
+            {
+                ApplyButtonColors(button, normal, highlighted, pressed, disabled);
+                return;
+            }
+
+            ApplyButtonSprites(button, normalSprite, pressedSprite);
+        }
+
         private static void ApplyButtonColors(Button button, Color normal, Color highlighted,
                                               Color pressed, Color disabled)
         {
@@ -389,6 +436,8 @@ namespace SheepSheepBurger.Shop
             {
                 return;
             }
+
+            button.transition = Selectable.Transition.ColorTint;
 
             ColorBlock colors = button.colors;
             colors.normalColor = normal;
@@ -404,6 +453,44 @@ namespace SheepSheepBurger.Shop
             }
         }
 
+        private static void ApplyButtonSprites(Button button, Sprite normalSprite, Sprite pressedSprite)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            Sprite releasedSprite = normalSprite != null ? normalSprite : pressedSprite;
+            Sprite clickedSprite = pressedSprite != null ? pressedSprite : releasedSprite;
+
+            button.transition = Selectable.Transition.SpriteSwap;
+
+            SpriteState spriteState = button.spriteState;
+            spriteState.highlightedSprite = releasedSprite;
+            spriteState.pressedSprite = clickedSprite;
+            spriteState.selectedSprite = releasedSprite;
+            spriteState.disabledSprite = releasedSprite;
+            button.spriteState = spriteState;
+
+            ColorBlock colors = button.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = Color.white;
+            colors.pressedColor = Color.white;
+            colors.selectedColor = Color.white;
+            colors.disabledColor = new Color(1f, 1f, 1f, 0.65f);
+            colors.colorMultiplier = 1f;
+            button.colors = colors;
+
+            if (button.targetGraphic is Image image)
+            {
+                image.sprite = releasedSprite;
+                image.type = Image.Type.Simple;
+                image.preserveAspect = true;
+                image.color = Color.white;
+                image.raycastTarget = true;
+            }
+        }
+
         private static TMP_Text GetButtonLabel(Button button)
         {
             return button != null ? button.GetComponentInChildren<TMP_Text>(true) : null;
@@ -416,6 +503,21 @@ namespace SheepSheepBurger.Shop
                 return;
             }
 
+            image.color = color;
+            image.raycastTarget = raycastTarget;
+        }
+
+        private static void SetSpriteImage(Image image, Sprite sprite, Color color,
+                                           bool raycastTarget, bool preserveAspect)
+        {
+            if (image == null)
+            {
+                return;
+            }
+
+            image.sprite = sprite;
+            image.type = Image.Type.Simple;
+            image.preserveAspect = preserveAspect;
             image.color = color;
             image.raycastTarget = raycastTarget;
         }

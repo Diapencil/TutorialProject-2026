@@ -22,6 +22,9 @@ namespace SheepSheepBurger.EditorTools
         // ── 경로 ───────────────────────────────────────────────
         private const string ScenesFolder = "Assets/Scenes";
         private const string PrefabsFolder = "Assets/Prefabs";
+        private const string GameAssetsFolder = "Assets/GameAssets";
+        private const string ShopGameAssetsFolder = GameAssetsFolder + "/Shop";
+        private const string ShopArtFolder = ShopGameAssetsFolder + "/UI";
         private const string DataFolder = "Assets/Data";
         private const string ShopDataFolder = "Assets/Data/Shop";
         private const string IngredientsFolder = "Assets/Data/Shop/Ingredients";
@@ -33,6 +36,10 @@ namespace SheepSheepBurger.EditorTools
         private const string ShopFontAssetPath = TmpFontMaterialsFolder + "/Shop Korean SDF.asset";
         private const string ExistingKoreanFontAssetPath = "Assets/@Developers/Lee/Fonts/NanumGothic SDF.asset";
         private const string ShopDesignPresetPath = ShopDataFolder + "/ShopSceneDesignPreset.asset";
+        private const string ShopBackgroundSpritePath = ShopArtFolder + "/shop_background.png";
+        private const string ShopButtonNormalSpritePath = ShopArtFolder + "/shop_button_normal.png";
+        private const string ShopButtonPressedSpritePath = ShopArtFolder + "/shop_button_pressed.png";
+        private const string ShopSlotFrameSpritePath = ShopArtFolder + "/shop_item_frame.png";
 
         private const string ScenePath = ScenesFolder + "/ShopScene.unity";
         private const string SlotPrefabPath = PrefabsFolder + "/ShopSlot.prefab";
@@ -42,17 +49,19 @@ namespace SheepSheepBurger.EditorTools
         private const float ReferenceHeight = 1080f;
         private const float ScalerMatch = 0.5f;
 
-        private const float TopHudHeight = 100f;
-        private const float SideBarWidth = 260f;
-        private const float SideBarSpacing = 20f;
-        private const float SideBarPadding = 20f;
-        private const float TabButtonHeight = 120f;
+        private const float TopHudHeight = 96f;
+        private const float SideBarWidth = 360f;
+        private const float SideBarSpacing = 18f;
+        private const float SideBarPadding = 34f;
+        private const float SideBarTopPadding = 170f;
+        private const float SideBarBottomPadding = 24f;
+        private const float TabButtonHeight = 132f;
         private const float MessageAreaHeight = 80f;
 
-        private const float SlotCellWidth = 300f;
-        private const float SlotCellHeight = 400f;
-        private const float SlotSpacingX = 40f;
-        private const float SlotSpacingY = 40f;
+        private const float SlotCellWidth = 330f;
+        private const float SlotCellHeight = 480f;
+        private const float SlotSpacingX = 32f;
+        private const float SlotSpacingY = 32f;
         private const int SlotColumnCount = 4;
         private const int ShopSlotCount = 4;
 
@@ -73,10 +82,10 @@ namespace SheepSheepBurger.EditorTools
         private const float CameraDepth = -1f;
         private const float CanvasPlaneDistance = 10f;
 
-        private const float SlotIconTopRatio = 0.4f;
-        private const float SlotNameTopRatio = 0.25f;
-        private const float SlotCostTopRatio = 0.08f;
-        private const float SlotInnerPadding = 12f;
+        private const float SlotIconTopRatio = 0.53f;
+        private const float SlotNameTopRatio = 0.38f;
+        private const float SlotCostTopRatio = 0.24f;
+        private const float SlotInnerPadding = 28f;
 
         private const float SoldOutOverlayAlpha = 0.6f;
         private const float LockedOverlayAlpha = 0.8f;
@@ -133,6 +142,9 @@ namespace SheepSheepBurger.EditorTools
 
             EnsureFolder(ScenesFolder);
             EnsureFolder(PrefabsFolder);
+            EnsureFolder(GameAssetsFolder);
+            EnsureFolder(ShopGameAssetsFolder);
+            EnsureFolder(ShopArtFolder);
             EnsureFolder(DataFolder);
             EnsureFolder(ShopDataFolder);
             EnsureFolder(IngredientsFolder);
@@ -143,6 +155,7 @@ namespace SheepSheepBurger.EditorTools
             activeFontAsset = EnsureShopFontAsset();
             ConfigureTextMeshProSettings(activeFontAsset);
             ShopSceneDesignPreset designPreset = EnsureShopDesignPreset();
+            EnsureShopArtSprites(designPreset);
 
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -369,6 +382,250 @@ namespace SheepSheepBurger.EditorTools
             return preset;
         }
 
+        private static void EnsureShopArtSprites(ShopSceneDesignPreset preset)
+        {
+            if (preset == null)
+            {
+                return;
+            }
+
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+
+            Sprite backgroundSprite = LoadShopSprite(ShopBackgroundSpritePath);
+            Sprite normalButtonSprite = LoadShopSprite(ShopButtonNormalSpritePath);
+            Sprite pressedButtonSprite = LoadShopSprite(ShopButtonPressedSpritePath);
+            Sprite slotFrameSprite = LoadShopSprite(ShopSlotFrameSpritePath);
+
+            bool shouldApplyReferenceDefaults =
+                preset.backgroundSprite == null &&
+                preset.buttonNormalSprite == null &&
+                preset.buttonPressedSprite == null &&
+                preset.slotFrameSprite == null;
+
+            AssignIfMissing(ref preset.backgroundSprite, backgroundSprite);
+            AssignIfMissing(ref preset.buttonNormalSprite, normalButtonSprite);
+            AssignIfMissing(ref preset.buttonPressedSprite, pressedButtonSprite);
+            AssignIfMissing(ref preset.slotFrameSprite, slotFrameSprite);
+
+            if (shouldApplyReferenceDefaults)
+            {
+                ApplyReferenceArtDefaults(preset);
+            }
+
+            EditorUtility.SetDirty(preset);
+            AssetDatabase.SaveAssets();
+        }
+
+        private static Sprite LoadShopSprite(string path)
+        {
+            ConfigureSpriteImporter(path);
+            return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        }
+
+        private static void ConfigureSpriteImporter(string path)
+        {
+            if (!File.Exists(path))
+            {
+                Debug.LogWarning($"[ShopSceneBuilder] 상점 이미지 파일을 찾지 못했습니다: {path}");
+                return;
+            }
+
+            TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
+
+            if (importer == null)
+            {
+                AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+                importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            }
+
+            if (importer == null)
+            {
+                Debug.LogWarning($"[ShopSceneBuilder] TextureImporter를 찾지 못했습니다: {path}");
+                return;
+            }
+
+            bool changed = false;
+
+            if (importer.textureType != TextureImporterType.Sprite)
+            {
+                importer.textureType = TextureImporterType.Sprite;
+                changed = true;
+            }
+
+            if (importer.spriteImportMode != SpriteImportMode.Single)
+            {
+                importer.spriteImportMode = SpriteImportMode.Single;
+                changed = true;
+            }
+
+            TextureImporterSettings textureSettings = new TextureImporterSettings();
+            importer.ReadTextureSettings(textureSettings);
+
+            if (textureSettings.spriteMeshType != SpriteMeshType.FullRect)
+            {
+                textureSettings.spriteMeshType = SpriteMeshType.FullRect;
+                importer.SetTextureSettings(textureSettings);
+                changed = true;
+            }
+
+            if (importer.alphaSource != TextureImporterAlphaSource.FromInput)
+            {
+                importer.alphaSource = TextureImporterAlphaSource.FromInput;
+                changed = true;
+            }
+
+            if (!importer.alphaIsTransparency)
+            {
+                importer.alphaIsTransparency = true;
+                changed = true;
+            }
+
+            if (importer.mipmapEnabled)
+            {
+                importer.mipmapEnabled = false;
+                changed = true;
+            }
+
+            if (importer.npotScale != TextureImporterNPOTScale.None)
+            {
+                importer.npotScale = TextureImporterNPOTScale.None;
+                changed = true;
+            }
+
+            if (importer.textureCompression != TextureImporterCompression.Uncompressed)
+            {
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                changed = true;
+            }
+
+            if (importer.maxTextureSize < 4096)
+            {
+                importer.maxTextureSize = 4096;
+                changed = true;
+            }
+
+            if (!Mathf.Approximately(importer.spritePixelsPerUnit, 100f))
+            {
+                importer.spritePixelsPerUnit = 100f;
+                changed = true;
+            }
+
+            if (importer.wrapMode != TextureWrapMode.Clamp)
+            {
+                importer.wrapMode = TextureWrapMode.Clamp;
+                changed = true;
+            }
+
+            if (importer.filterMode != FilterMode.Bilinear)
+            {
+                importer.filterMode = FilterMode.Bilinear;
+                changed = true;
+            }
+
+            if (changed)
+            {
+                importer.SaveAndReimport();
+            }
+        }
+
+        private static void AssignIfMissing(ref Sprite target, Sprite source)
+        {
+            if (target == null && source != null)
+            {
+                target = source;
+            }
+        }
+
+        private static void ApplyReferenceArtDefaults(ShopSceneDesignPreset preset)
+        {
+            preset.referenceResolution = new Vector2(ReferenceWidth, ReferenceHeight);
+            preset.matchWidthOrHeight = ScalerMatch;
+            preset.canvasSortingOrder = 0;
+            preset.canvasPlaneDistance = CanvasPlaneDistance;
+            preset.cameraOrthographicSize = CameraOrthographicSize;
+            preset.cameraBackgroundColor = CameraBackgroundColor;
+
+            preset.layerOrder = new ShopSceneDesignPreset.LayerOrderSettings
+            {
+                background = -100,
+                gridPanel = 0,
+                debtPanel = 5,
+                sideBar = 10,
+                topHud = 20,
+                messageBar = 30,
+                backgroundZ = 0f,
+                gridPanelZ = 0f,
+                debtPanelZ = 0f,
+                sideBarZ = 0f,
+                topHudZ = 0f,
+                messageBarZ = 0f
+            };
+
+            preset.layout = new ShopSceneDesignPreset.LayoutSettings
+            {
+                topHudHeight = TopHudHeight,
+                sideBarWidth = SideBarWidth,
+                messageAreaHeight = MessageAreaHeight,
+                sideBarPadding = SideBarPadding,
+                sideBarTopPadding = SideBarTopPadding,
+                sideBarBottomPadding = SideBarBottomPadding,
+                sideBarSpacing = SideBarSpacing,
+                tabButtonHeight = TabButtonHeight,
+                hudHorizontalPadding = 20f,
+                messageHorizontalPadding = 0f,
+                slotColumnCount = SlotColumnCount,
+                slotCellSize = new Vector2(SlotCellWidth, SlotCellHeight),
+                slotSpacing = new Vector2(SlotSpacingX, SlotSpacingY),
+                debtInputSize = new Vector2(DebtInputWidth, DebtInputHeight),
+                debtButtonSize = new Vector2(DebtButtonWidth, DebtButtonHeight),
+                debtTextHeight = DebtTextHeight,
+                debtElementSpacing = DebtElementSpacing,
+                inputHorizontalPadding = SlotInnerPadding
+            };
+
+            preset.slot = new ShopSceneDesignPreset.SlotSettings
+            {
+                iconBottomAnchor = SlotIconTopRatio,
+                nameBottomAnchor = SlotNameTopRatio,
+                costBottomAnchor = SlotCostTopRatio,
+                innerPadding = SlotInnerPadding
+            };
+
+            preset.text = new ShopSceneDesignPreset.TextSettings
+            {
+                hudFontSize = HudFontSize,
+                tabFontSize = 30f,
+                slotNameFontSize = 26f,
+                slotCostFontSize = 24f,
+                messageFontSize = MessageFontSize,
+                debtFontSize = DebtFontSize,
+                inputFontSize = InputFontSize
+            };
+
+            preset.colors = new ShopSceneDesignPreset.ColorSettings
+            {
+                topHudBackground = Color.clear,
+                sideBarBackground = Color.clear,
+                gridPanelBackground = Color.clear,
+                debtPanelBackground = Color.clear,
+                messageBarBackground = Color.clear,
+                tabNormal = Color.white,
+                tabHighlighted = Color.white,
+                tabPressed = Color.white,
+                tabSelected = Color.white,
+                actionButtonBackground = Color.white,
+                inputBackground = Color.white,
+                slotBackground = Color.white,
+                slotSoldOutOverlay = new Color(0f, 0f, 0f, SoldOutOverlayAlpha),
+                slotLockedOverlay = new Color(LockedOverlayGrey, LockedOverlayGrey,
+                                              LockedOverlayGrey, LockedOverlayAlpha),
+                mainText = new Color(0.19f, 0.13f, 0.08f, 1f),
+                dDayText = new Color(0.64f, 0.12f, 0.08f, 1f),
+                messageText = new Color(0.19f, 0.13f, 0.08f, 1f),
+                placeholderText = Color.grey
+            };
+        }
+
         // ══════════════════════════════════════════════════════
         // (A) 슬롯 프리팹
         // ══════════════════════════════════════════════════════
@@ -482,6 +739,15 @@ namespace SheepSheepBurger.EditorTools
             ShopManager shopManager = canvasObject.AddComponent<ShopManager>();
             ShopSceneDesignController designController = canvasObject.AddComponent<ShopSceneDesignController>();
 
+            // ── Background ──
+            GameObject backgroundObject = CreateUIObject("BackgroundImage", canvasObject.transform);
+            RectTransform backgroundRect = (RectTransform)backgroundObject.transform;
+            StretchFull(backgroundRect);
+            Image backgroundImage = backgroundObject.AddComponent<Image>();
+            backgroundImage.sprite = designPreset.backgroundSprite;
+            backgroundImage.color = Color.white;
+            backgroundImage.raycastTarget = false;
+
             // ── TopHud ──
             GameObject topHud = CreateUIObject("TopHud", canvasObject.transform);
             RectTransform topHudRect = (RectTransform)topHud.transform;
@@ -513,7 +779,7 @@ namespace SheepSheepBurger.EditorTools
             VerticalLayoutGroup layout = sideBar.AddComponent<VerticalLayoutGroup>();
             layout.spacing = SideBarSpacing;
             layout.padding = new RectOffset((int)SideBarPadding, (int)SideBarPadding,
-                                            (int)SideBarPadding, (int)SideBarPadding);
+                                            (int)SideBarTopPadding, (int)SideBarBottomPadding);
             layout.childControlWidth = true;
             layout.childControlHeight = true;
             layout.childForceExpandWidth = true;
@@ -613,6 +879,7 @@ namespace SheepSheepBurger.EditorTools
                 ? slotPrefab.GetComponent<ShopSlotDesignPresenter>()
                 : null;
             designController.Bind(designPreset, uiCamera, canvas, scaler,
+                                  backgroundRect, backgroundImage,
                                   topHudRect, topHudBackground,
                                   sideBarRect, sideBarBackground, layout,
                                   gridPanelRect, gridPanelBackground,
