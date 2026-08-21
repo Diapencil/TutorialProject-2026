@@ -573,10 +573,8 @@ MonoBehaviour:
   enterDuration: 0.8
   exitDuration: 0.8
   enterScaleCurve:
-    serializedVersion: 2
     m_Curve:
-    - serializedVersion: 3
-      time: 0
+    - time: 0
       value: 0
       inSlope: 0
       outSlope: 0
@@ -584,8 +582,7 @@ MonoBehaviour:
       weightedMode: 0
       inWeight: 0
       outWeight: 0
-    - serializedVersion: 3
-      time: 0.75
+    - time: 0.75
       value: 1.1
       inSlope: 0
       outSlope: 0
@@ -593,8 +590,7 @@ MonoBehaviour:
       weightedMode: 0
       inWeight: 0
       outWeight: 0
-    - serializedVersion: 3
-      time: 1
+    - time: 1
       value: 1
       inSlope: 0
       outSlope: 0
@@ -606,10 +602,8 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   exitScaleCurve:
-    serializedVersion: 2
     m_Curve:
-    - serializedVersion: 3
-      time: 0
+    - time: 0
       value: 1
       inSlope: 0
       outSlope: 0
@@ -617,8 +611,7 @@ MonoBehaviour:
       weightedMode: 0
       inWeight: 0
       outWeight: 0
-    - serializedVersion: 3
-      time: 0.25
+    - time: 0.25
       value: 1.1
       inSlope: 0
       outSlope: 0
@@ -626,8 +619,7 @@ MonoBehaviour:
       weightedMode: 0
       inWeight: 0
       outWeight: 0
-    - serializedVersion: 3
-      time: 1
+    - time: 1
       value: 0
       inSlope: 0
       outSlope: 0
@@ -638,6 +630,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  visibleScale: {x: 0, y: 0, z: 0}
 --- !u!222 &500000005
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -971,6 +964,9 @@ MonoBehaviour:
   settings: {fileID: 11400000, guid: 66bc177406c577d48a0ca7e74d8369fe, type: 2}
   ui: {fileID: 1515904599}
   customer: {fileID: 500000004}
+  order: {customer: {fileID: 0}, order: {fileID: 0}, spriteIndex: 0, patienceRemaining: 0, hintUsed: 0, phase: 0}
+  dayProgress: {fileID: 0}
+  resolving: 0
 --- !u!4 &961899153
 Transform:
   m_ObjectHideFlags: 0
@@ -1759,6 +1755,8 @@ MonoBehaviour:
   resultRoot: {fileID: 1301159498}
   resultText: {fileID: 2061007404}
   typingCharInterval: 0.03
+  clarificationRequest: 
+  clarificationShown: 0
 --- !u!114 &1515904600
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2287,7 +2285,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -72, y: 62}
+  m_AnchoredPosition: {x: -71.99994, y: 62}
   m_SizeDelta: {x: -1133.81, y: -630.08}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1727874026
@@ -2793,7 +2791,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -326, y: 8.0745}
+  m_AnchoredPosition: {x: -299.77, y: 8.0745}
   m_SizeDelta: {x: 191.303, y: 66.149}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2098315084
