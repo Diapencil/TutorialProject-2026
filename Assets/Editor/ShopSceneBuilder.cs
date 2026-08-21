@@ -1,6 +1,5 @@
-// 상점 씬·슬롯 프리팹·샘플 SO 애셋을 코드로 전부 생성하는 에디터 전용 빌더.
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using SheepSheepBurger.Core;
 using SheepSheepBurger.Shop;
 using TMPro;
@@ -58,6 +57,12 @@ namespace SheepSheepBurger.EditorTools
         private const float MessageFontSize = 30f;
         private const float DebtFontSize = 60f;
         private const float InputFontSize = 32f;
+
+        // TODO(기획확인): 최초 스펙은 Screen Space - Overlay였지만, Game view 카메라 렌더링 확인을 위해 UI 카메라를 둔다.
+        private static readonly Color CameraBackgroundColor = new Color(0.08f, 0.08f, 0.08f, 1f);
+        private const float CameraOrthographicSize = 5.4f;
+        private const float CameraDepth = -1f;
+        private const float CanvasPlaneDistance = 10f;
 
         private const float SlotIconTopRatio = 0.4f;
         private const float SlotNameTopRatio = 0.25f;
@@ -254,9 +259,13 @@ namespace SheepSheepBurger.EditorTools
         {
             EnsureEventSystem();
 
+            Camera uiCamera = CreateMainCamera();
+
             GameObject canvasObject = new GameObject("Canvas", typeof(RectTransform));
             Canvas canvas = canvasObject.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.renderMode = RenderMode.ScreenSpaceCamera;
+            canvas.worldCamera = uiCamera;
+            canvas.planeDistance = CanvasPlaneDistance;
 
             CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -370,6 +379,25 @@ namespace SheepSheepBurger.EditorTools
                             gridPanel, debtPanel, slotParent.transform,
                             goldText, dDayText, messageText,
                             debtRemainingText, repayInputField, repayConfirmButton);
+        }
+
+        private static Camera CreateMainCamera()
+        {
+            GameObject cameraObject = new GameObject("Main Camera");
+            cameraObject.tag = "MainCamera";
+            cameraObject.transform.position = new Vector3(0f, 0f, -10f);
+
+            Camera camera = cameraObject.AddComponent<Camera>();
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = CameraBackgroundColor;
+            camera.orthographic = true;
+            camera.orthographicSize = CameraOrthographicSize;
+            camera.depth = CameraDepth;
+
+            AudioListener listener = cameraObject.AddComponent<AudioListener>();
+            listener.enabled = true;
+
+            return camera;
         }
 
         private static void WireShopManager(ShopManager shopManager, ShopSlotUI slotPrefab,
