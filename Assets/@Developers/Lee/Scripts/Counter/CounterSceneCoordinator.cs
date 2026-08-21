@@ -10,15 +10,12 @@ namespace Lee.Counter
     {
         [SerializeField] private CounterSettings settings;
         [SerializeField] private CounterSceneUI ui;
-        [SerializeField] private CustomerPresenter customerPrefab;
-        [Tooltip("Canvas 안에서 배경과 카운터 전경 사이에 둔 UI 레이어입니다.")]
-        [SerializeField] private RectTransform customerLayer;
+        [Tooltip("씬에 고정 배치된 손님 오브젝트입니다. 주문마다 새로 생성하지 않고 이 오브젝트를 재사용합니다.")]
+        [SerializeField] private CustomerPresenter customer;
 
         private OrderInstance order;
-        private CustomerPresenter customer;
         private DayProgressRuntime dayProgress;
         private bool resolving;
-        private float remainingPatience;
 
         private void OnEnable() => CounterSceneSession.BurgerSubmitted += OnBurgerSubmitted;
         private void OnDisable() => CounterSceneSession.BurgerSubmitted -= OnBurgerSubmitted;
@@ -29,6 +26,7 @@ namespace Lee.Counter
             ui.ServeClicked += ServeBurger;
             dayProgress = DayProgressRuntime.GetOrCreate();
             ui.SetTop(dayProgress, settings.CustomersPerDay);
+            customer.Hide();
 
             if (dayProgress.ServedCustomerCount >= settings.CustomersPerDay) return; // TODO settings 수정
             order = CounterSceneSession.ActiveOrder;
@@ -42,20 +40,10 @@ namespace Lee.Counter
             ui.ServeClicked -= ServeBurger;
         }
 
-        private void Update()
-        {
-            if (order == null || resolving) return;
-            remainingPatience = Mathf.Max(0, remainingPatience - Time.deltaTime);
-            order.patienceRemaining = Mathf.CeilToInt(remainingPatience);
-            ui.SetPatience(remainingPatience);
-            if (remainingPatience <= 0) StartCoroutine(Resolve(Grade.Bad));
-        }
-
         private void CreateNextCustomer()
         {
             if (!TryCreateOrder(out order)) return;
             CounterSceneSession.BeginOrder(order);
-            remainingPatience = order.patienceRemaining;
             SetupCustomer(playEntrance: true);
         }
 
@@ -91,7 +79,6 @@ namespace Lee.Counter
 
         private void RestoreReturningCustomer()
         {
-            remainingPatience = order.patienceRemaining;
             // Cooking 씬에서 돌아온 손님은 이미 카운터에 서 있는 상태다.
             // 따라서 등장 연출과 주문 대사를 다시 표시하지 않는다.
             SetupCustomer(playEntrance: false);
@@ -101,27 +88,42 @@ namespace Lee.Counter
 
         private void SetupCustomer(bool playEntrance)
         {
-            // UI는 같은 Canvas 안에서 sibling 순서대로 그려진다. customerLayer는
-            // 배경 Image 다음, CounterFront Image 이전에 배치해야 한다.
-            var parent = customerLayer;
-            customer = Instantiate(customerPrefab, parent);
-            if (customerLayer != null)
-                customer.transform.SetAsLastSibling();
+            ApplyCustomerSprite();
             ui.HideOrder();
             ui.SetCookedBurgerAvailable(false);
 
-            if (!playEntrance) return;
+            if (!playEntrance)
+            {
+                customer.ShowImmediate();
+                return;
+            }
 
             customer.Enter();
-            StartCoroutine(ShowOrderAfterCustomerEnters(customer, order));
+            StartCoroutine(ShowOrderAfterCustomerEnters(order));
         }
 
-        private IEnumerator ShowOrderAfterCustomerEnters(CustomerPresenter enteringCustomer, OrderInstance enteringOrder)
+        private void ApplyCustomerSprite()
         {
-            yield return new WaitForSeconds(enteringCustomer.EnterDuration);
+            var spritePath = order.customer.spritePath;
+            if (spritePath == null || spritePath.Count == 0) return;
 
-            // 등장 중 손님이 교체되거나 씬이 전환된 경우에는 이전 주문을 표시하지 않는다.
-            if (customer != enteringCustomer || order != enteringOrder || resolving) yield break;
+            var path = spritePath[Mathf.Clamp(order.spriteIndex, 0, spritePath.Count - 1)];
+            var sprites = Resources.LoadAll<Sprite>(path);
+            if (sprites == null || sprites.Length == 0)
+            {
+                Debug.LogWarning($"Resources에서 손님 스프라이트를 찾을 수 없습니다: {path}");
+                return;
+            }
+
+            customer.SetSprite(sprites[0]);
+        }
+
+        private IEnumerator ShowOrderAfterCustomerEnters(OrderInstance enteringOrder)
+        {
+            yield return new WaitForSeconds(customer.EnterDuration);
+
+            // 등장 중 주문이 교체되거나 씬이 전환된 경우에는 이전 주문을 표시하지 않는다.
+            if (order != enteringOrder || resolving) yield break;
 
             ui.ShowOrder(enteringOrder);
             ui.SetOrderConfirmed(CounterSceneSession.HasConfirmedOrder);
@@ -158,7 +160,6 @@ namespace Lee.Counter
             ui.ShowResult(grade, reward, settings.GetReaction(grade));
             customer.Exit();
             yield return new WaitForSeconds(settings.ReactionSeconds);
-            Destroy(customer.gameObject);
             CounterSceneSession.ClearOrder();
             order = null;
             resolving = false;

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using SheepSheepBurger.Core;
 using TMPro;
 using UnityEngine;
@@ -19,11 +20,13 @@ namespace Lee.Counter
         [SerializeField] private GameObject servingBurgerRoot;
         [SerializeField] private GameObject resultRoot;
         [SerializeField] private TMP_Text resultText;
+        [SerializeField] private float typingCharInterval = 0.03f;
 
         public event Action ConfirmClicked;
         public event Action ServeClicked;
         private string clarificationRequest;
         private bool clarificationShown;
+        private Coroutine typingCoroutine;
 
         private void Awake()
         {
@@ -42,9 +45,10 @@ namespace Lee.Counter
         public void ShowOrder(OrderInstance order)
         {
             var dialogue = order.order.dialogue;
-            speechBubbleText.text = dialogue != null && dialogue.orderLines != null && dialogue.orderLines.Count > 0
+            var line = dialogue != null && dialogue.orderLines != null && dialogue.orderLines.Count > 0
                 ? dialogue.orderLines[0]
                 : order.order.recipe.recipeName;
+            TypeText(line);
             clarificationRequest = dialogue != null ? dialogue.hintLine : string.Empty;
             clarificationShown = false;
             confirmOrderButton.interactable = true;
@@ -54,6 +58,7 @@ namespace Lee.Counter
 
         public void HideOrder()
         {
+            StopTyping();
             speechBubbleText.text = string.Empty;
             clarificationRequest = string.Empty;
             clarificationShown = false;
@@ -66,8 +71,35 @@ namespace Lee.Counter
         {
             if (clarificationShown) return;
             clarificationShown = true;
-            speechBubbleText.text = clarificationRequest;
+            TypeText(clarificationRequest);
             whatButton.interactable = false;
+        }
+
+        private void TypeText(string text)
+        {
+            StopTyping();
+            typingCoroutine = StartCoroutine(TypeTextRoutine(text));
+        }
+
+        private void StopTyping()
+        {
+            if (typingCoroutine == null) return;
+            StopCoroutine(typingCoroutine);
+            typingCoroutine = null;
+        }
+
+        private IEnumerator TypeTextRoutine(string text)
+        {
+            speechBubbleText.text = string.Empty;
+            if (string.IsNullOrEmpty(text)) yield break;
+
+            for (var i = 0; i < text.Length; i++)
+            {
+                speechBubbleText.text += text[i];
+                yield return new WaitForSeconds(typingCharInterval);
+            }
+
+            typingCoroutine = null;
         }
 
         public void SetTop(DayProgressRuntime day, int customersPerDay)
@@ -92,7 +124,7 @@ namespace Lee.Counter
         {
             resultRoot.SetActive(true);
             resultText.text = $"{result}\nReward: {reward:N0}\n{reaction}";
-            speechBubbleText.text = reaction;
+            TypeText(reaction);
         }
     }
 }
