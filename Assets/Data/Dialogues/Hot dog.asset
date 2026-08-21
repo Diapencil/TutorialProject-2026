@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76e52d79f05fec84da88b585a329c43e, type: 3}
-  m_Name: Hot dog
+  m_Name: Hot Dog
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.Dialogue
   orderLines:
   - "\uB09C \uD654\uB048\uD55C \uB291\uB300\uC5D0\uC694!"

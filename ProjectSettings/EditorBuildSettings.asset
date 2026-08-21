@@ -6,8 +6,17 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/@Developers/ChoiHJ/BurgerAssembly/Scenes/BurgerAssembly.unity
+    guid: c6d583da50abaff4dacbc3ccf668f154
+  - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
+  - enabled: 1
+    path: Assets/@Developers/Lee/Scenes/Counter.unity
+    guid: 439183208698b074b81f0e22957a9c9f
+  - enabled: 1
+    path: Assets/@Developers/Lee/Scenes/Cooking_temp.unity
+    guid: 2c50e1dec1c898646a7b4d7f3a796884
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
