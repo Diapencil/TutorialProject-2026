@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4eb6c15b4d87b2a4da2e338b5bd6985a, type: 3}
-  m_Name: Fried burger
+  m_Name: Fried Burger
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.RecipeData
   id: 13
   recipeName: "\uD6C4\uB77C\uC774\uBC84\uAC70"
