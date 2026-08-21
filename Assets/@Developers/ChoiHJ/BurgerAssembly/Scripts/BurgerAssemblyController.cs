@@ -12,6 +12,7 @@ namespace SheepSheepBurger.BurgerAssembly
     public sealed class BurgerAssemblyController : MonoBehaviour
     {
         [SerializeField] private BurgerSpriteCatalog spriteCatalog;
+        [SerializeField] private CookingSceneSchema cookingSchema;
 
         private readonly BurgerCompletionPublisher completionPublisher = new BurgerCompletionPublisher();
         private readonly BurgerStackAssembler stackAssembler = new BurgerStackAssembler();
@@ -46,6 +47,10 @@ namespace SheepSheepBurger.BurgerAssembly
         private Vector2 completedBurgerDragOffset;
         private Vector2 completedBurgerBoardPosition;
         private Vector2 lastCompletedBurgerPointer;
+        private int activeRecipeId = -1;
+        private int currentOrderErrors;
+        private bool currentOrderUsedHint;
+        private bool currentOrderWasAttacked;
 
         public event Action<BurgerData> OnBurgerCompleted
         {
@@ -55,6 +60,16 @@ namespace SheepSheepBurger.BurgerAssembly
 
         public BurgerData LastCompletedBurger => completionPublisher.LastCompletedBurger;
 
+        public event Action<PaymentResult> OnPaymentCalculated
+        {
+            add => completionPublisher.PaymentCalculated += value;
+            remove => completionPublisher.PaymentCalculated -= value;
+        }
+
+        public PaymentResult LastPaymentResult => completionPublisher.LastPaymentResult;
+
+        public CookingSceneSchema CookingSchema => cookingSchema;
+
         public BurgerSpriteCatalog SpriteCatalog => spriteCatalog;
 
         private RectTransform BurgerStackRoot => stackAssembler.BurgerStackRoot;
@@ -62,6 +77,37 @@ namespace SheepSheepBurger.BurgerAssembly
         public void SetSpriteCatalog(BurgerSpriteCatalog value)
         {
             spriteCatalog = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        public void SetCookingSchema(CookingSceneSchema value)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            value.Validate();
+            cookingSchema = value.Clone();
+            activeRecipeId = cookingSchema.defaultRecipeId;
+        }
+
+        public void ConfigureCookingOrder(
+            int recipeId,
+            int errorCount,
+            bool usedHint,
+            bool wasAttacked)
+        {
+            if (errorCount < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(errorCount));
+            }
+
+            EnsureCookingSchema();
+            cookingSchema.GetRecipe(recipeId);
+            activeRecipeId = recipeId;
+            currentOrderErrors = errorCount;
+            currentOrderUsedHint = usedHint;
+            currentOrderWasAttacked = wasAttacked;
         }
 
         public bool CanUseSauceTool(IngredientType type)
@@ -584,6 +630,7 @@ namespace SheepSheepBurger.BurgerAssembly
                     "BurgerAssemblyController requires serialized Sprite references before building the interface.");
             }
 
+            EnsureCookingSchema();
             spriteCatalog.Activate();
             BurgerAssemblyViewReferences view = new BurgerAssemblyViewBuilder(this, ResetPrototype).Build();
             mainCamera = view.MainCamera;
@@ -953,11 +1000,34 @@ namespace SheepSheepBurger.BurgerAssembly
                     stackAssembler.StackHalfWidth,
                     stackAssembler.StackMinY,
                     stackAssembler.StackMaxY));
+            PaymentResult paymentResult = cookingSchema.Evaluate(
+                completedData,
+                activeRecipeId,
+                currentOrderErrors,
+                currentOrderUsedHint,
+                currentOrderWasAttacked);
             EnableCompletedBurgerDrag();
             SetBoardStatus("조립 완료! 햄버거 전체를 오른쪽 끝으로 드래그하세요.", false);
             ShowToast("조립 완료");
-            completionPublisher.Publish(completedData);
+            completionPublisher.Publish(completedData, paymentResult);
             RefreshControls();
+        }
+
+        private void EnsureCookingSchema()
+        {
+            if (cookingSchema == null || !cookingSchema.IsConfigured)
+            {
+                cookingSchema = CookingSceneSchema.CreatePrototypeDefaults();
+            }
+            else
+            {
+                cookingSchema.Validate();
+            }
+
+            if (!cookingSchema.recipes.Any(recipe => recipe.id == activeRecipeId))
+            {
+                activeRecipeId = cookingSchema.defaultRecipeId;
+            }
         }
 
         private void EnableCompletedBurgerDrag()
@@ -1135,6 +1205,9 @@ namespace SheepSheepBurger.BurgerAssembly
             looseBoardIngredients.Clear();
 
             completionPublisher.Reset();
+            currentOrderErrors = 0;
+            currentOrderUsedHint = false;
+            currentOrderWasAttacked = false;
             packagingController?.ResetPackaging();
             cameraSlider.SetImmediate(CookingCameraZone.Grill);
             SetGrillStatus("패티·베이컨·계란 중 하나를 불판에 놓아 주세요.", false);

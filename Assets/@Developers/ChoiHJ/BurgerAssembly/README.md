@@ -2,7 +2,7 @@
 
 Unity version: `6000.3.19f1` (Unity 6.3 LTS)
 
-This module implements the cooking, assembly, and temporary packaging flow defined by the v1.1 cooking prototype specification. Counter, customer, order scoring, day progression, and rewards are intentionally outside this module.
+This module implements the cooking, assembly, temporary packaging, and cooking-result data flow defined by the v1.1 cooking prototype specification. Counter, customer simulation, day progression, debt, shop, decoration, and upgrades are intentionally outside this module.
 
 ## Play
 
@@ -47,6 +47,8 @@ Swipe at least 20% of the screen width to move through the same-scene `grill ↔
 - `BurgerAssemblyViewBuilder` creates the three-zone runtime UI and returns its typed references.
 - `BurgerStackAssembler` owns ingredient stacking, board bounds, assembly state, and result snapshots.
 - `BurgerCompletionPublisher` stores the latest result, logs JSON, and preserves the public completion event.
+- `CookingSceneDataSchema` defines the cooking-only `IngredientData`, ordered `RecipeLayer`/`RecipeData`, `GradeConfig`, and `PaymentResult` records from the economy schema.
+- `CookingSceneSchema` owns prototype-local ingredient costs, cooking ranges, recipe lookup, grade selection, and payment calculation without creating global day/economy state.
 - `BurgerPrototypePresentation` contains the prototype theme, ingredient visuals, and shared UI factory.
 - `CookingCameraSlider` handles three-zone swipe thresholds and page-strip tweening without taking over `Camera.main`.
 - `CookingTrayDragSource` keeps tray originals in place and creates drag visuals.
@@ -54,7 +56,7 @@ Swipe at least 20% of the screen width to move through the same-scene `grill ↔
 - `PlacedIngredientView` supports repeat dragging, loose/stacked placement, cooking-state transfer, and result capture.
 - `BurgerAssemblyState` enforces the bottom-bun prerequisite, topping limit, and completion lock.
 - `BurgerData` and `IngredientPlacement` capture type, local board position, and layer order.
-- `OnBurgerCompleted` publishes the completed `BurgerData`; the prototype also logs its JSON to the Console.
+- `OnBurgerCompleted` publishes the completed `BurgerData`; `OnPaymentCalculated` publishes its grade, paid base price, tip, ingredient cost, net income, and attack flag. The latest values are also available through `LastCompletedBurger` and `LastPaymentResult`, and both records are logged as JSON.
 - `BurgerPackagingController` accepts the original burger stack on its tray and enables packaging only after a valid drop.
 - `BurgerAssemblySceneBuilder` safely preserves the current editor scene setup while rebuilding and verifying the prototype scene.
 
@@ -64,7 +66,7 @@ Use `Sheep Sheep Burger > Build Unified Cooking Scene` to rebuild the unified sc
 
 ## Art integration notes
 
-The supplied cooking art is stored in `Assets/@Developers/ChoiHJ/BurgerAssembly/Sprites/ProvidedArt` and is connected through serialized `BurgerSpriteCatalog` references. Runtime `Resources.Load` calls and string asset paths are not used. The grill uses the supplied patty, bacon, and egg raw/cooked/burnt images; the board uses the supplied top bun, lettuce, tomato, onion, pickle, and jalapeno images and their pile variants; packaging displays the supplied completed-burger image. Cheese, the bottom bun, ketchup, and mustard keep the existing project art because no replacement image was supplied. `shop_ui.png` is imported for future shop work but is not placed in the cooking scene. Custom ingredient sprites render with a white UI tint so their source pixels are used unchanged. Before a mobile build, replace the operating-system font fallback with a packaged Korean TextMeshPro font asset.
+The supplied cooking art is stored in `Assets/@Developers/ChoiHJ/BurgerAssembly/Sprites/ProvidedArt` and is connected through serialized `BurgerSpriteCatalog` references. Runtime `Resources.Load` calls and string asset paths are not used. The grill uses the supplied patty, bacon, and egg raw/cooked/burnt images; while a patty is cooking, the six cropped frames from `IMG_0610.GIF` loop beneath the unchanged patty Sprite at the source frame timing. The board uses the supplied bottom bun, top bun, lettuce, tomato, onion, pickle, and jalapeno images and their pile variants. Ketchup and mustard use their placement-version images in the tray, and their click-version bottles follow the pointer over the board while sauce mode is selected. Packaging displays the supplied completed-burger image. Cheese keeps the existing project art because no replacement image was supplied. `shop_ui.png` is imported for future shop work but is not placed in the cooking scene. Custom ingredient sprites render with a white UI tint so their source pixels are used unchanged. Before a mobile build, replace the operating-system font fallback with a packaged Korean TextMeshPro font asset.
 
 The shared kitchen-station background is stored in `Sprites/Environment/kitchen_station_reference.png`. The runtime page strip renders this Sprite exactly once as an aspect-preserved panoramic counter. The three slide stops show its left grill, center ingredient/assembly, and right packaging regions; the matching interaction UI is parented to the same strip, so the background and controls travel together without duplicating the image.
 

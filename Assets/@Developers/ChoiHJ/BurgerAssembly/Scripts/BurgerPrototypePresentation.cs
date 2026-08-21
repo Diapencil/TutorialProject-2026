@@ -139,7 +139,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 case IngredientType.Egg:
                     return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#FFF1B8"), new Vector2(245f, 245f), sprites.EggCooked);
                 case IngredientType.BunBottom:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Bun, new Vector2(250f, 250f), null);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Bun, new Vector2(250f, 250f), sprites.BunBottom);
                 case IngredientType.BunTop:
                     return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Bun, new Vector2(260f, 260f), sprites.BunTop);
                 case IngredientType.ToppingLettuce:
@@ -188,15 +188,15 @@ namespace SheepSheepBurger.BurgerAssembly
                         sprites.EggCarton);
                 case IngredientType.SauceKetchup:
                     return new BurgerIngredientVisual(
-                        SimpleShape.Circle,
+                        SimpleShape.Rectangle,
                         BurgerPrototypeTheme.Hex("#D92E28"),
-                        new Vector2(70f, 100f),
+                        new Vector2(100f, 110f),
                         sprites.Ketchup);
                 case IngredientType.SauceMustard:
                     return new BurgerIngredientVisual(
-                        SimpleShape.Circle,
+                        SimpleShape.Rectangle,
                         BurgerPrototypeTheme.Hex("#F5C542"),
-                        new Vector2(70f, 100f),
+                        new Vector2(100f, 110f),
                         sprites.Mustard);
                 case IngredientType.ToppingLettuce:
                 case IngredientType.ToppingTomato:

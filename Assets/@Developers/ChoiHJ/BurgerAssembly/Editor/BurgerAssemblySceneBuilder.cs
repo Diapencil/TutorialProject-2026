@@ -69,7 +69,9 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             BurgerAssemblyController controller = controllerObject.GetComponent<BurgerAssemblyController>();
             controller.SetSpriteCatalog(CreateSpriteCatalog());
             BurgerData publishedBurger = null;
+            PaymentResult publishedPayment = null;
             controller.OnBurgerCompleted += burger => publishedBurger = burger;
+            controller.OnPaymentCalculated += payment => publishedPayment = payment;
 
             InvokePrivate(controller, "BuildInterface");
             InvokePrivate(controller, "RefreshControls");
@@ -107,6 +109,30 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
                 "Ingredient sources must use the illustrated bins without a card background.");
             SimpleShapeGraphic rawPattyIcon = RequireFind("RawPattySourceIcon").GetComponent<SimpleShapeGraphic>();
             Require(rawPattyIcon != null && rawPattyIcon.SourceSprite != null, "Tray art must use a serialized Sprite reference.");
+            Require(controller.SpriteCatalog.PattyCookingFrameCount == 6, "Patty cooking animation must contain all six source frames.");
+            Require(
+                RequireFind("BottomBunTrayIcon").GetComponent<SimpleShapeGraphic>().SourceSprite == controller.SpriteCatalog.BunBottom,
+                "Bottom-bun tray and placement must use the supplied top-down Sprite.");
+            Require(
+                RequireFind("KetchupTrayIcon").GetComponent<SimpleShapeGraphic>().SourceSprite == controller.SpriteCatalog.Ketchup &&
+                RequireFind("MustardTrayIcon").GetComponent<SimpleShapeGraphic>().SourceSprite == controller.SpriteCatalog.Mustard,
+                "Sauce tray items must use the supplied placement-version Sprites.");
+            BurgerSauceDrawingController sauceController = RequireFind("BoardDropArea").GetComponent<BurgerSauceDrawingController>();
+            Require(
+                sauceController != null &&
+                sauceController.SauceCursorGraphic != null &&
+                !sauceController.SauceCursorGraphic.raycastTarget,
+                "Sauce mode must create a non-blocking pointer-follow visual.");
+            controller.ToggleSauceTool(IngredientType.SauceKetchup);
+            Require(
+                sauceController.SauceCursorGraphic.SourceSprite == controller.SpriteCatalog.KetchupCursor,
+                "Ketchup mode must use the supplied click-version cursor Sprite.");
+            controller.ToggleSauceTool(IngredientType.SauceKetchup);
+            controller.ToggleSauceTool(IngredientType.SauceMustard);
+            Require(
+                sauceController.SauceCursorGraphic.SourceSprite == controller.SpriteCatalog.MustardCursor,
+                "Mustard mode must use the supplied click-version cursor Sprite.");
+            controller.ToggleSauceTool(IngredientType.SauceMustard);
             SimpleShapeGraphic grillBackdrop = RequireFind("KitchenStationBackground").GetComponent<SimpleShapeGraphic>();
             Require(
                 grillBackdrop != null && grillBackdrop.SourceSprite == controller.SpriteCatalog.KitchenStationBackground,
@@ -160,9 +186,19 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             CookableGrillItemView patty = RequireFind("CookablePatty").GetComponent<CookableGrillItemView>();
             Require(patty != null && patty.State.Phase == PattyGrillPhase.RawDough, "Verification patty must start as raw dough.");
             Require(patty.GrillIngredientType == IngredientType.Patty, "Verification grill item must preserve its ingredient type.");
+            Require(
+                patty.PattyCookingEffect != null &&
+                patty.PattyCookingEffect.transform.GetSiblingIndex() < patty.transform.GetSiblingIndex(),
+                "Patty cooking animation must render on a sibling below the original patty image.");
             Require(controller.TryBeginCookedGrillItemDrag(patty, Vector2.zero), "Raw dough must be movable before cooking starts.");
             InvokePrivate(controller, "CleanupPointerDrag");
             Require(patty.State.Phase == PattyGrillPhase.RawDough, "Dragging raw dough must preserve its cooking state.");
+            Require(patty.State.TryPressDough(), "Verification patty must begin cooking after being pressed.");
+            patty.State.Tick(0f);
+            Require(patty.PattyCookingEffect.gameObject.activeSelf, "Cooking must show the animation layer below the patty.");
+            Require(
+                patty.GetComponent<SimpleShapeGraphic>().SourceSprite == controller.SpriteCatalog.PattyRaw,
+                "Cooking animation must not replace the original patty Sprite.");
 
             RectTransform boardLayerRoot = RequireFind("BoardIngredientLayer").GetComponent<RectTransform>();
             Canvas.ForceUpdateCanvases();
@@ -192,6 +228,12 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             Require(
                 publishedBurger != null && ReferenceEquals(publishedBurger, controller.LastCompletedBurger),
                 "Completion publishing must preserve the controller event and LastCompletedBurger API.");
+            Require(
+                publishedPayment != null &&
+                ReferenceEquals(publishedPayment, controller.LastPaymentResult) &&
+                publishedPayment.grade == Grade.Perfect &&
+                publishedPayment.ingredientCost > 0f,
+                "Cooking completion must publish its local grade, ingredient cost, and payment result.");
             GameObject stackRoot = RequireFind("BurgerStackRoot");
             PlacedIngredientView[] allPlacedIngredients = UnityEngine.Object
                 .FindObjectsByType<PlacedIngredientView>(FindObjectsSortMode.None);
@@ -283,6 +325,62 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             Require(burgerData.ingredients.Count == 3, "BurgerData must capture every scanned board placement.");
             Require(burgerData.ingredients[0].layerOrder < burgerData.ingredients[1].layerOrder, "BurgerData must be sorted by layer order.");
             Require(!board.TryRegisterPlacement(IngredientType.BunBottom, out _), "Completed board must reject new placements.");
+
+            CookingSceneSchema cookingSchema = CookingSceneSchema.CreatePrototypeDefaults();
+            Require(
+                cookingSchema.GetIngredient(IngredientType.Patty).grillable &&
+                Mathf.Approximately(cookingSchema.GetIngredient(IngredientType.Patty).cookTimeMin, 6f) &&
+                !cookingSchema.GetIngredient(IngredientType.ToppingLettuce).grillable,
+                "IngredientData must distinguish grillable ingredients and their cooking ranges.");
+            Require(
+                cookingSchema.GetRecipe(cookingSchema.defaultRecipeId).ingredients
+                    .Select(layer => layer.ingredientId)
+                    .SequenceEqual(new[] { (int)IngredientType.BunBottom, (int)IngredientType.BunTop }),
+                "RecipeData must reference stable ingredient ids through ordered RecipeLayer entries.");
+
+            var pricedBurger = new BurgerData(
+                burgerData.ingredients,
+                new[]
+                {
+                    new SauceStrokeData(
+                        IngredientType.SauceKetchup,
+                        new[] { Vector2.zero, Vector2.one },
+                        topLayer)
+                });
+            PaymentResult perfectPayment = cookingSchema.Evaluate(
+                pricedBurger,
+                cookingSchema.defaultRecipeId,
+                0,
+                false,
+                false);
+            Require(
+                perfectPayment.grade == Grade.Perfect &&
+                Mathf.Approximately(perfectPayment.ingredientCost, 0.9f) &&
+                Mathf.Approximately(
+                    perfectPayment.netIncome,
+                    perfectPayment.basePrice + perfectPayment.tip - perfectPayment.ingredientCost),
+                "PaymentResult must include each placed ingredient and each sauce use in net income.");
+            PaymentResult hintedPayment = cookingSchema.Evaluate(
+                pricedBurger,
+                cookingSchema.defaultRecipeId,
+                0,
+                true,
+                false);
+            Require(
+                hintedPayment.grade == Grade.Normal,
+                "Using a hint must skip grades whose GradeConfig requires no hint.");
+            PaymentResult badPayment = cookingSchema.Evaluate(
+                pricedBurger,
+                cookingSchema.defaultRecipeId,
+                3,
+                false,
+                true);
+            Require(
+                badPayment.grade == Grade.Bad &&
+                Mathf.Approximately(badPayment.basePrice, 0f) &&
+                Mathf.Approximately(badPayment.tip, 0f) &&
+                badPayment.wasAttacked,
+                "Bad orders must preserve costs and attack state while paying no base price or tip.");
 
             var incompleteBoard = new BurgerAssemblyState();
             Require(!incompleteBoard.TryRegisterPlacement(IngredientType.BunTop, out _), "Top bun must be rejected on an empty board.");
@@ -388,6 +486,15 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
                 LoadSprite(ProvidedArtDirectory + "/patty_raw.png"),
                 LoadSprite(ProvidedArtDirectory + "/patty_cooked.png"),
                 LoadSprite(ProvidedArtDirectory + "/patty_burnt.png"),
+                new[]
+                {
+                    LoadSprite(ProvidedArtDirectory + "/PattyCooking/patty_cooking_00.png"),
+                    LoadSprite(ProvidedArtDirectory + "/PattyCooking/patty_cooking_01.png"),
+                    LoadSprite(ProvidedArtDirectory + "/PattyCooking/patty_cooking_02.png"),
+                    LoadSprite(ProvidedArtDirectory + "/PattyCooking/patty_cooking_03.png"),
+                    LoadSprite(ProvidedArtDirectory + "/PattyCooking/patty_cooking_04.png"),
+                    LoadSprite(ProvidedArtDirectory + "/PattyCooking/patty_cooking_05.png")
+                },
                 LoadSprite(ProvidedArtDirectory + "/bacon_pile.png"),
                 LoadSprite(ProvidedArtDirectory + "/bacon_raw.png"),
                 LoadSprite(ProvidedArtDirectory + "/bacon_cooked.png"),
@@ -397,7 +504,7 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
                 LoadSprite(ProvidedArtDirectory + "/egg_cooked.png"),
                 LoadSprite(ProvidedArtDirectory + "/egg_burnt.png"));
             catalog.ConfigureAssembly(
-                LoadSprite(SpriteDirectory + "/Ingredients/bun_bottom.png"),
+                LoadSprite(ProvidedArtDirectory + "/bun_bottom.png"),
                 LoadSprite(ProvidedArtDirectory + "/bun_top.png"),
                 LoadSprite(ProvidedArtDirectory + "/lettuce_topdown.png"),
                 LoadSprite(ProvidedArtDirectory + "/lettuce_topdown.png"),
@@ -410,8 +517,10 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
                 LoadSprite(ProvidedArtDirectory + "/pickle_pile.png"),
                 LoadSprite(ProvidedArtDirectory + "/jalapeno_slices.png"),
                 LoadSprite(ProvidedArtDirectory + "/jalapeno_pile.png"),
-                LoadSprite(SpriteDirectory + "/Ingredients/ketchup.png"),
-                LoadSprite(SpriteDirectory + "/Ingredients/mustard.png"),
+                LoadSprite(ProvidedArtDirectory + "/ketchup_placed.png"),
+                LoadSprite(ProvidedArtDirectory + "/ketchup_cursor.png"),
+                LoadSprite(ProvidedArtDirectory + "/mustard_placed.png"),
+                LoadSprite(ProvidedArtDirectory + "/mustard_cursor.png"),
                 LoadSprite(ProvidedArtDirectory + "/burger_complete.png"));
             Require(catalog.IsConfigured, "Every burger Sprite must be assigned through the scene.");
             return catalog;

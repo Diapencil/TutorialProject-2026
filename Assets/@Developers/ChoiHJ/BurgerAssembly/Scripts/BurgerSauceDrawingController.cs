@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 namespace SheepSheepBurger.BurgerAssembly
 {
@@ -13,14 +14,20 @@ namespace SheepSheepBurger.BurgerAssembly
         IDragHandler,
         IPointerUpHandler
     {
+        private static readonly Vector2 SauceCursorSize = new Vector2(120f, 140f);
+        private static readonly Vector2 SauceCursorNozzlePivot = new Vector2(0.16f, 0.12f);
+
         private readonly List<SauceStrokeGraphic> boardStrokes = new List<SauceStrokeGraphic>();
 
         private RectTransform boardLayerRoot;
+        private RectTransform cursorLayer;
         private BurgerStackAssembler stackAssembler;
         private CookingCameraSlider pageSlider;
         private Action drawingChanged;
         private Action<string, bool> setBoardStatus;
         private SauceStrokeGraphic activeStroke;
+        private SimpleShapeGraphic sauceCursorGraphic;
+        private Camera pointerEventCamera;
         private IngredientType selectedSauce;
         private Vector2 lastPoint;
         private bool hasSelectedSauce;
@@ -35,6 +42,8 @@ namespace SheepSheepBurger.BurgerAssembly
         public int PointCount => boardStrokes
             .Where(stroke => stroke != null)
             .Sum(stroke => stroke.PointCount);
+
+        public SimpleShapeGraphic SauceCursorGraphic => sauceCursorGraphic;
 
         internal void Configure(
             RectTransform targetBoardLayerRoot,
@@ -52,6 +61,38 @@ namespace SheepSheepBurger.BurgerAssembly
                 throw new ArgumentNullException(nameof(targetPageSlider));
             drawingChanged = onDrawingChanged;
             setBoardStatus = boardStatusSetter;
+            Canvas canvas = boardLayerRoot.GetComponentInParent<Canvas>();
+            cursorLayer = canvas != null
+                ? canvas.transform as RectTransform
+                : boardLayerRoot;
+            pointerEventCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+                ? canvas.worldCamera
+                : null;
+            CreateSauceCursor();
+        }
+
+        private void OnDestroy()
+        {
+            if (sauceCursorGraphic == null)
+            {
+                return;
+            }
+
+            GameObject cursorObject = sauceCursorGraphic.gameObject;
+            sauceCursorGraphic = null;
+            cursorObject.SetActive(false);
+            DestroyObject(cursorObject);
+        }
+
+        private void LateUpdate()
+        {
+            if (!hasSelectedSauce || Pointer.current == null)
+            {
+                HideSauceCursor();
+                return;
+            }
+
+            PositionSauceCursor(Pointer.current.position.ReadValue(), pointerEventCamera);
         }
 
         internal bool CanSelect(IngredientType type)
@@ -91,6 +132,7 @@ namespace SheepSheepBurger.BurgerAssembly
                     false);
             }
 
+            RefreshSauceCursorSprite();
             drawingChanged?.Invoke();
         }
 
@@ -108,6 +150,8 @@ namespace SheepSheepBurger.BurgerAssembly
                 pageSlider?.OnBeginDrag(eventData);
                 return;
             }
+
+            PositionSauceCursor(eventData.position, eventData.pressEventCamera);
 
             if (TryGetBoardPoint(eventData, out Vector2 local))
             {
@@ -127,6 +171,8 @@ namespace SheepSheepBurger.BurgerAssembly
             {
                 return;
             }
+
+            PositionSauceCursor(eventData.position, eventData.pressEventCamera);
 
             if (!TryGetBoardPoint(eventData, out Vector2 local))
             {
@@ -153,6 +199,7 @@ namespace SheepSheepBurger.BurgerAssembly
             else
             {
                 EndStroke();
+                PositionSauceCursor(eventData.position, eventData.pressEventCamera);
             }
 
             forwardedPageGesture = false;
@@ -173,6 +220,7 @@ namespace SheepSheepBurger.BurgerAssembly
 
             EndStroke();
             hasSelectedSauce = false;
+            HideSauceCursor();
             Vector2 burgerBoardPosition = burgerRoot.anchoredPosition;
             float padding = CookingPrototypeRules.SauceBurgerAttachPadding;
 
@@ -226,6 +274,7 @@ namespace SheepSheepBurger.BurgerAssembly
         {
             EndStroke();
             hasSelectedSauce = false;
+            HideSauceCursor();
             drawingGesture = false;
             forwardedPageGesture = false;
             foreach (SauceStrokeGraphic stroke in boardStrokes)
@@ -238,6 +287,70 @@ namespace SheepSheepBurger.BurgerAssembly
             boardStrokes.Clear();
             drawnStrokeCount = 0;
             drawingChanged?.Invoke();
+        }
+
+        private void CreateSauceCursor()
+        {
+            if (sauceCursorGraphic != null)
+            {
+                DestroyObject(sauceCursorGraphic.gameObject);
+            }
+
+            sauceCursorGraphic = BurgerUiFactory.CreateShape(
+                "SauceCursor",
+                cursorLayer,
+                SimpleShape.Rectangle,
+                Color.white,
+                Vector2.zero,
+                SauceCursorSize,
+                false);
+            sauceCursorGraphic.rectTransform.pivot = SauceCursorNozzlePivot;
+            sauceCursorGraphic.rectTransform.SetAsLastSibling();
+            sauceCursorGraphic.gameObject.SetActive(false);
+        }
+
+        private void RefreshSauceCursorSprite()
+        {
+            if (!hasSelectedSauce || sauceCursorGraphic == null)
+            {
+                HideSauceCursor();
+                return;
+            }
+
+            sauceCursorGraphic.SourceSprite = BurgerSpriteCatalog.RequireActive().GetSauceCursor(selectedSauce);
+            sauceCursorGraphic.color = Color.white;
+        }
+
+        private void PositionSauceCursor(Vector2 screenPosition, Camera eventCamera)
+        {
+            if (!hasSelectedSauce || sauceCursorGraphic == null || cursorLayer == null)
+            {
+                HideSauceCursor();
+                return;
+            }
+
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    cursorLayer,
+                    screenPosition,
+                    eventCamera,
+                    out Vector2 cursorLocal) ||
+                !cursorLayer.rect.Contains(cursorLocal))
+            {
+                HideSauceCursor();
+                return;
+            }
+
+            sauceCursorGraphic.rectTransform.anchoredPosition = cursorLocal;
+            sauceCursorGraphic.rectTransform.SetAsLastSibling();
+            sauceCursorGraphic.gameObject.SetActive(true);
+        }
+
+        private void HideSauceCursor()
+        {
+            if (sauceCursorGraphic != null)
+            {
+                sauceCursorGraphic.gameObject.SetActive(false);
+            }
         }
 
         private void BeginStroke(Vector2 local)

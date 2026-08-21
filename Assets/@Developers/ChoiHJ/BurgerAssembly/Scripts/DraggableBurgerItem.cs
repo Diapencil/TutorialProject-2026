@@ -319,6 +319,7 @@ namespace SheepSheepBurger.BurgerAssembly
     {
         private BurgerAssemblyController controller;
         private SimpleShapeGraphic graphic;
+        private SimpleShapeGraphic pattyCookingEffect;
         private Text phaseText;
         private bool isHeld;
         private bool ownsActiveDrag;
@@ -328,6 +329,8 @@ namespace SheepSheepBurger.BurgerAssembly
         public IngredientType GrillIngredientType { get; private set; }
 
         public bool IsHeld => isHeld;
+
+        public SimpleShapeGraphic PattyCookingEffect => pattyCookingEffect;
 
         public void Configure(
             BurgerAssemblyController targetController,
@@ -344,6 +347,7 @@ namespace SheepSheepBurger.BurgerAssembly
             GrillIngredientType = ingredientType;
             graphic = targetGraphic;
             phaseText = targetPhaseText;
+            EnsurePattyCookingEffect();
             State = existingState ?? new PattyGrillState(ingredientType);
             State.PhaseChanged += HandlePhaseChanged;
             RefreshAppearance();
@@ -354,6 +358,21 @@ namespace SheepSheepBurger.BurgerAssembly
             if (State != null)
             {
                 State.PhaseChanged -= HandlePhaseChanged;
+            }
+
+            if (pattyCookingEffect != null)
+            {
+                GameObject effectObject = pattyCookingEffect.gameObject;
+                pattyCookingEffect = null;
+                effectObject.SetActive(false);
+                if (Application.isPlaying)
+                {
+                    Destroy(effectObject);
+                }
+                else
+                {
+                    DestroyImmediate(effectObject);
+                }
             }
         }
 
@@ -439,10 +458,76 @@ namespace SheepSheepBurger.BurgerAssembly
                 graphic.rectTransform.localEulerAngles = Vector3.zero;
             }
 
+            RefreshPattyCookingEffect(sprites, phase);
+
             if (phaseText != null)
             {
                 phaseText.text = GetPhaseLabel(GrillIngredientType, phase);
             }
+        }
+
+        private void EnsurePattyCookingEffect()
+        {
+            if (GrillIngredientType != IngredientType.Patty || graphic == null || pattyCookingEffect != null)
+            {
+                return;
+            }
+
+            RectTransform parent = graphic.rectTransform.parent as RectTransform;
+            if (parent == null)
+            {
+                return;
+            }
+
+            BurgerSpriteCatalog sprites = BurgerSpriteCatalog.RequireActive();
+            pattyCookingEffect = BurgerUiFactory.CreateShape(
+                graphic.gameObject.name + "CookingEffect",
+                parent,
+                SimpleShape.Circle,
+                Color.white,
+                graphic.rectTransform.anchoredPosition,
+                graphic.rectTransform.sizeDelta,
+                false,
+                sprites.GetPattyCookingFrame(0f));
+            pattyCookingEffect.rectTransform.SetSiblingIndex(graphic.rectTransform.GetSiblingIndex());
+            pattyCookingEffect.gameObject.SetActive(false);
+        }
+
+        private void RefreshPattyCookingEffect(BurgerSpriteCatalog sprites, PattyGrillPhase phase)
+        {
+            if (GrillIngredientType != IngredientType.Patty)
+            {
+                return;
+            }
+
+            EnsurePattyCookingEffect();
+            if (pattyCookingEffect == null)
+            {
+                return;
+            }
+
+            RectTransform sourceRect = graphic.rectTransform;
+            RectTransform effectRect = pattyCookingEffect.rectTransform;
+            effectRect.anchoredPosition = sourceRect.anchoredPosition;
+            effectRect.sizeDelta = sourceRect.sizeDelta;
+            effectRect.localScale = sourceRect.localScale;
+            effectRect.localEulerAngles = Vector3.zero;
+
+            bool showEffect = IsPattyCookingPhase(phase);
+            if (showEffect)
+            {
+                pattyCookingEffect.SourceSprite = sprites.GetPattyCookingFrame(State.PhaseElapsed);
+                pattyCookingEffect.color = Color.white;
+            }
+            pattyCookingEffect.gameObject.SetActive(showEffect);
+        }
+
+        private static bool IsPattyCookingPhase(PattyGrillPhase phase)
+        {
+            return phase == PattyGrillPhase.CookingSide1 ||
+                phase == PattyGrillPhase.ReadyToFlip ||
+                phase == PattyGrillPhase.Flipping ||
+                phase == PattyGrillPhase.CookingSide2;
         }
 
         public static string GetPhaseLabel(IngredientType type, PattyGrillPhase phase)

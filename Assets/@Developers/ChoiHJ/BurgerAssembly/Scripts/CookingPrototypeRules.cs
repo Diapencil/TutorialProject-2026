@@ -7,6 +7,7 @@ namespace SheepSheepBurger.BurgerAssembly
         public const bool ShowTemporaryInteractionAreas = true;
 
         public const float FirstSideCookSeconds = 3f;
+        public const float PattyCookingAnimationFrameSeconds = 0.19f;
         public const float ReadyToFlipBurnSeconds = 5f;
         public const float SecondSideCookSeconds = 3f;
         public const float FlipAnimationSeconds = 0.25f;

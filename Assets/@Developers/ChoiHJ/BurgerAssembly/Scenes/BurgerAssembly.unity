@@ -158,6 +158,13 @@ MonoBehaviour:
     pattyRaw: {fileID: 21300000, guid: a703f6c894fe44ca95c9fda4254dad43, type: 3}
     pattyCooked: {fileID: 21300000, guid: 399d81a0acce48229a8c09a67aae9028, type: 3}
     pattyBurnt: {fileID: 21300000, guid: f84e40bfd2a14fafa4a36758aa947372, type: 3}
+    pattyCookingFrames:
+    - {fileID: 21300000, guid: 8af9897d40614a9f9c906723ef69a584, type: 3}
+    - {fileID: 21300000, guid: fac9282bbfcc430e90e664f79a7ec398, type: 3}
+    - {fileID: 21300000, guid: de1d31f084ed43a9b421d0970565a266, type: 3}
+    - {fileID: 21300000, guid: 141bf463b9124c8290ce73c4386ca4b3, type: 3}
+    - {fileID: 21300000, guid: 2dc12b899f9f4ce2b2d5799af63e6553, type: 3}
+    - {fileID: 21300000, guid: e5368ead5ce9416daf2ed18d05f3a8cf, type: 3}
     baconPile: {fileID: 21300000, guid: b2a10ef8bab94463b344d4ecc84c73f1, type: 3}
     baconRaw: {fileID: 21300000, guid: 0e776e9e2dd84abcaa18cfa2e98b2c83, type: 3}
     baconCooked: {fileID: 21300000, guid: a87d20e7162f4a31bd183e97c4faa10e, type: 3}
@@ -166,7 +173,7 @@ MonoBehaviour:
     eggRaw: {fileID: 21300000, guid: 50276300897b44248d80944a2b444dca, type: 3}
     eggCooked: {fileID: 21300000, guid: b792ac8243ea4897b4c1cf5c27725b80, type: 3}
     eggBurnt: {fileID: 21300000, guid: 334514e1a67e45dfbefa3ff61dd6103b, type: 3}
-    bunBottom: {fileID: 7189501038438112788, guid: d859a5f07ab6dbc48a04940bf0d97cd4, type: 3}
+    bunBottom: {fileID: 21300000, guid: ec7cce702d1549078d5a88d264dc2d98, type: 3}
     bunTop: {fileID: 21300000, guid: fb8b9c946b474c72a925cc8891a642dd, type: 3}
     lettuce: {fileID: 21300000, guid: c2f7daa831a944f7900f316f1721e133, type: 3}
     lettucePile: {fileID: 21300000, guid: c2f7daa831a944f7900f316f1721e133, type: 3}
@@ -179,8 +186,10 @@ MonoBehaviour:
     picklePile: {fileID: 21300000, guid: 2e911923fc87473699cd486bd03afd6b, type: 3}
     jalapeno: {fileID: 21300000, guid: bf1ca70e5cb94d8898d9c234814933a7, type: 3}
     jalapenoPile: {fileID: 21300000, guid: 8a31721adaff4bfc9b655cd395c0049e, type: 3}
-    ketchup: {fileID: -9032648240131754058, guid: 836449c064b7d2c4d86636bb5cc90531, type: 3}
-    mustard: {fileID: -2314699757929624426, guid: 0d9501d1eba066f48bb5d5f1492223e9, type: 3}
+    ketchup: {fileID: 21300000, guid: 82a4d895416a429f8a66c55bb7cc5eeb, type: 3}
+    ketchupCursor: {fileID: 21300000, guid: c247fedc21e8405080a5ec7e7bb6753c, type: 3}
+    mustard: {fileID: 21300000, guid: 49b7edef09ad46e79e5f1ff6a356c173, type: 3}
+    mustardCursor: {fileID: 21300000, guid: ea08120613ce49ad8e0e989b72b934cd, type: 3}
     completedBurger: {fileID: 21300000, guid: da0e8af7bc0547e2bfa490d874fd54c4, type: 3}
 --- !u!4 &429437631
 Transform:

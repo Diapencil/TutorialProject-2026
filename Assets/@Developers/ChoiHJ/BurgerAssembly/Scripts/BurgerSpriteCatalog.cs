@@ -20,6 +20,7 @@ namespace SheepSheepBurger.BurgerAssembly
         [SerializeField] private Sprite pattyRaw;
         [SerializeField] private Sprite pattyCooked;
         [SerializeField] private Sprite pattyBurnt;
+        [SerializeField] private Sprite[] pattyCookingFrames;
 
         [Header("Grill - Bacon")]
         [SerializeField] private Sprite baconPile;
@@ -48,7 +49,9 @@ namespace SheepSheepBurger.BurgerAssembly
         [SerializeField] private Sprite jalapeno;
         [SerializeField] private Sprite jalapenoPile;
         [SerializeField] private Sprite ketchup;
+        [SerializeField] private Sprite ketchupCursor;
         [SerializeField] private Sprite mustard;
+        [SerializeField] private Sprite mustardCursor;
         [SerializeField] private Sprite completedBurger;
 
         internal static BurgerSpriteCatalog Active { get; private set; }
@@ -58,6 +61,7 @@ namespace SheepSheepBurger.BurgerAssembly
         public Sprite PattyRaw => pattyRaw;
         public Sprite PattyCooked => pattyCooked;
         public Sprite PattyBurnt => pattyBurnt;
+        public int PattyCookingFrameCount => pattyCookingFrames?.Length ?? 0;
         public Sprite BaconPile => baconPile;
         public Sprite BaconRaw => baconRaw;
         public Sprite BaconCooked => baconCooked;
@@ -80,7 +84,9 @@ namespace SheepSheepBurger.BurgerAssembly
         public Sprite Jalapeno => jalapeno;
         public Sprite JalapenoPile => jalapenoPile;
         public Sprite Ketchup => ketchup;
+        public Sprite KetchupCursor => ketchupCursor;
         public Sprite Mustard => mustard;
+        public Sprite MustardCursor => mustardCursor;
         public Sprite CompletedBurger => completedBurger;
 
         public bool IsConfigured =>
@@ -93,6 +99,9 @@ namespace SheepSheepBurger.BurgerAssembly
             pattyRaw != null &&
             pattyCooked != null &&
             pattyBurnt != null &&
+            pattyCookingFrames != null &&
+            pattyCookingFrames.Length > 0 &&
+            Array.TrueForAll(pattyCookingFrames, sprite => sprite != null) &&
             baconPile != null &&
             baconRaw != null &&
             baconCooked != null &&
@@ -115,7 +124,9 @@ namespace SheepSheepBurger.BurgerAssembly
             jalapeno != null &&
             jalapenoPile != null &&
             ketchup != null &&
+            ketchupCursor != null &&
             mustard != null &&
+            mustardCursor != null &&
             completedBurger != null;
 
         public void ConfigureSharedUi(
@@ -140,6 +151,7 @@ namespace SheepSheepBurger.BurgerAssembly
             Sprite rawPattySprite,
             Sprite cookedPattySprite,
             Sprite burntPattySprite,
+            Sprite[] cookingPattySprites,
             Sprite baconPileSprite,
             Sprite rawBaconSprite,
             Sprite cookedBaconSprite,
@@ -153,6 +165,9 @@ namespace SheepSheepBurger.BurgerAssembly
             pattyRaw = rawPattySprite;
             pattyCooked = cookedPattySprite;
             pattyBurnt = burntPattySprite;
+            pattyCookingFrames = cookingPattySprites != null
+                ? (Sprite[])cookingPattySprites.Clone()
+                : Array.Empty<Sprite>();
             baconPile = baconPileSprite;
             baconRaw = rawBaconSprite;
             baconCooked = cookedBaconSprite;
@@ -178,7 +193,9 @@ namespace SheepSheepBurger.BurgerAssembly
             Sprite jalapenoSprite,
             Sprite jalapenoPileSprite,
             Sprite ketchupSprite,
+            Sprite ketchupCursorSprite,
             Sprite mustardSprite,
+            Sprite mustardCursorSprite,
             Sprite completedBurgerSprite)
         {
             bunBottom = bottomBunSprite;
@@ -195,7 +212,9 @@ namespace SheepSheepBurger.BurgerAssembly
             jalapeno = jalapenoSprite;
             jalapenoPile = jalapenoPileSprite;
             ketchup = ketchupSprite;
+            ketchupCursor = ketchupCursorSprite;
             mustard = mustardSprite;
+            mustardCursor = mustardCursorSprite;
             completedBurger = completedBurgerSprite;
         }
 
@@ -272,6 +291,16 @@ namespace SheepSheepBurger.BurgerAssembly
             }
         }
 
+        public Sprite GetSauceCursor(IngredientType type)
+        {
+            switch (type)
+            {
+                case IngredientType.SauceKetchup: return ketchupCursor;
+                case IngredientType.SauceMustard: return mustardCursor;
+                default: return null;
+            }
+        }
+
         public Sprite GetRawGrillIngredient(IngredientType type)
         {
             switch (type)
@@ -286,6 +315,21 @@ namespace SheepSheepBurger.BurgerAssembly
         public Sprite GetInitialGrillIngredient(IngredientType type)
         {
             return type == IngredientType.Patty ? pattyBall : GetRawGrillIngredient(type);
+        }
+
+        public Sprite GetPattyCookingFrame(float elapsedSeconds)
+        {
+            if (PattyCookingFrameCount == 0)
+            {
+                return pattyRaw;
+            }
+
+            int frameIndex = Mathf.FloorToInt(
+                Mathf.Max(0f, elapsedSeconds) /
+                CookingPrototypeRules.PattyCookingAnimationFrameSeconds) % pattyCookingFrames.Length;
+            return pattyCookingFrames[frameIndex] != null
+                ? pattyCookingFrames[frameIndex]
+                : pattyRaw;
         }
 
         public Sprite GetCookedGrillIngredient(IngredientType type)
