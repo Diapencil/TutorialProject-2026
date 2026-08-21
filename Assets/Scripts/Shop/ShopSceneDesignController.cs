@@ -32,6 +32,8 @@ namespace SheepSheepBurger.Shop
         [SerializeField] private VerticalLayoutGroup sideBarLayout;
         [SerializeField] private RectTransform gridPanel;
         [SerializeField] private Image gridPanelBackground;
+        [SerializeField] private ScrollRect slotScrollRect;
+        [SerializeField] private RectTransform slotViewport;
         [SerializeField] private RectTransform slotParent;
         [SerializeField] private GridLayoutGroup slotGrid;
         [SerializeField] private RectTransform debtPanel;
@@ -70,6 +72,8 @@ namespace SheepSheepBurger.Shop
                          VerticalLayoutGroup boundSideBarLayout,
                          RectTransform boundGridPanel,
                          Image boundGridPanelBackground,
+                         ScrollRect boundSlotScrollRect,
+                         RectTransform boundSlotViewport,
                          RectTransform boundSlotParent,
                          GridLayoutGroup boundSlotGrid,
                          RectTransform boundDebtPanel,
@@ -100,6 +104,8 @@ namespace SheepSheepBurger.Shop
             sideBarLayout = boundSideBarLayout;
             gridPanel = boundGridPanel;
             gridPanelBackground = boundGridPanelBackground;
+            slotScrollRect = boundSlotScrollRect;
+            slotViewport = boundSlotViewport;
             slotParent = boundSlotParent;
             slotGrid = boundSlotGrid;
             debtPanel = boundDebtPanel;
@@ -238,11 +244,32 @@ namespace SheepSheepBurger.Shop
 
             if (slotGrid != null)
             {
+                SetAnchors(slotViewport, Vector2.zero, Vector2.one,
+                           new Vector2(layout.slotViewportPaddingLeft, layout.slotViewportPaddingBottom),
+                           new Vector2(-layout.slotViewportPaddingRight, -layout.slotViewportPaddingTop));
+                SetLeftAnchoredMiddle(slotParent);
+
                 slotGrid.cellSize = layout.slotCellSize;
                 slotGrid.spacing = layout.slotSpacing;
-                slotGrid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-                slotGrid.constraintCount = Mathf.Max(1, layout.slotColumnCount);
-                slotGrid.childAlignment = TextAnchor.MiddleCenter;
+                slotGrid.startAxis = GridLayoutGroup.Axis.Horizontal;
+                slotGrid.constraint = GridLayoutGroup.Constraint.FixedRowCount;
+                slotGrid.constraintCount = Mathf.Max(1, layout.slotRowCount);
+                slotGrid.childAlignment = TextAnchor.MiddleLeft;
+                slotGrid.padding = new RectOffset(Mathf.RoundToInt(layout.slotContentPaddingLeft),
+                                                  Mathf.RoundToInt(layout.slotContentPaddingRight),
+                                                  0, 0);
+            }
+
+            if (slotScrollRect != null)
+            {
+                slotScrollRect.horizontal = true;
+                slotScrollRect.vertical = false;
+                slotScrollRect.inertia = true;
+                slotScrollRect.movementType = ScrollRect.MovementType.Elastic;
+                slotScrollRect.elasticity = layout.slotScrollElasticity;
+                slotScrollRect.scrollSensitivity = layout.slotScrollSensitivity;
+                slotScrollRect.viewport = slotViewport;
+                slotScrollRect.content = slotParent;
             }
 
             ApplyDebtLayout(layout);
@@ -543,6 +570,19 @@ namespace SheepSheepBurger.Shop
             Vector3 localPosition = rect.localPosition;
             localPosition.z = z;
             rect.localPosition = localPosition;
+        }
+
+        private static void SetLeftAnchoredMiddle(RectTransform rect)
+        {
+            if (rect == null)
+            {
+                return;
+            }
+
+            rect.anchorMin = new Vector2(0f, 0.5f);
+            rect.anchorMax = new Vector2(0f, 0.5f);
+            rect.pivot = new Vector2(0f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
         }
 
         private static void SetAnchors(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax,

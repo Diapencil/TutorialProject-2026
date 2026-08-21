@@ -30,6 +30,7 @@ namespace SheepSheepBurger.Shop
         [SerializeField] private GameObject debtPanel;
 
         [Header("슬롯")]
+        [SerializeField] private ScrollRect slotScrollRect;
         [SerializeField] private Transform slotParent;
         [SerializeField] private ShopSlotUI slotPrefab;
         [SerializeField] private int slotCount = 4;
@@ -79,7 +80,8 @@ namespace SheepSheepBurger.Shop
             }
 
             // 탭을 바꿀 때마다 파괴/생성하지 않고 미리 만들어 두고 재사용한다.
-            for (int i = 0; i < slotCount; i++)
+            int poolSize = GetRequiredSlotPoolSize();
+            for (int i = 0; i < poolSize; i++)
             {
                 ShopSlotUI slot = Instantiate(slotPrefab, slotParent);
                 slot.gameObject.SetActive(false);
@@ -150,9 +152,59 @@ namespace SheepSheepBurger.Shop
             else
             {
                 RefreshGrid();
+                ResetSlotScroll();
             }
 
             RefreshHud();
+        }
+
+        private int GetRequiredSlotPoolSize()
+        {
+            int result = Mathf.Max(0, slotCount);
+            result = Mathf.Max(result, GetToppingShopItemCount());
+            result = Mathf.Max(result, allUpgrades != null ? allUpgrades.Length : 0);
+            result = Mathf.Max(result, allDecorations != null ? allDecorations.Length : 0);
+            return result;
+        }
+
+        private int GetToppingShopItemCount()
+        {
+            int count = 0;
+
+            if (allIngredients == null)
+            {
+                return count;
+            }
+
+            for (int i = 0; i < allIngredients.Length; i++)
+            {
+                IngredientData data = allIngredients[i];
+                if (data != null && !data.isDefaultUnlocked)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private void ResetSlotScroll()
+        {
+            if (slotScrollRect == null)
+            {
+                return;
+            }
+
+            Canvas.ForceUpdateCanvases();
+            slotScrollRect.StopMovement();
+            slotScrollRect.horizontalNormalizedPosition = 0f;
+
+            if (slotScrollRect.content != null)
+            {
+                Vector2 position = slotScrollRect.content.anchoredPosition;
+                position.x = 0f;
+                slotScrollRect.content.anchoredPosition = position;
+            }
         }
 
         private static void SetTabInteractable(Button button, bool interactable)

@@ -120,6 +120,7 @@ namespace SheepSheepBurger.Shop
         [Serializable]
         public struct LayoutSettings
         {
+            [HideInInspector] public int slotLayoutVersion;
             [Min(0f)] public float topHudHeight;
             [Min(0f)] public float sideBarWidth;
             [Min(0f)] public float messageAreaHeight;
@@ -130,9 +131,38 @@ namespace SheepSheepBurger.Shop
             [Min(0f)] public float tabButtonHeight;
             [Min(0f)] public float hudHorizontalPadding;
             [Min(0f)] public float messageHorizontalPadding;
-            [Min(1)] public int slotColumnCount;
+            [Tooltip("슬롯을 몇 줄로 배치할지 정합니다. 1이면 가로 슬라이드 한 줄입니다.")]
+            [Min(1)] public int slotRowCount;
+
+            [Tooltip("슬롯이 보이는 마스크 영역의 왼쪽 여백입니다.")]
+            [Min(0f)] public float slotViewportPaddingLeft;
+
+            [Tooltip("슬롯이 보이는 마스크 영역의 오른쪽 여백입니다.")]
+            [Min(0f)] public float slotViewportPaddingRight;
+
+            [Tooltip("슬롯이 보이는 마스크 영역의 위쪽 여백입니다. 값이 커질수록 슬롯 영역이 아래로 내려옵니다.")]
+            [Min(0f)] public float slotViewportPaddingTop;
+
+            [Tooltip("슬롯이 보이는 마스크 영역의 아래쪽 여백입니다. 값이 커질수록 슬롯 영역이 위로 올라옵니다.")]
+            [Min(0f)] public float slotViewportPaddingBottom;
+
+            [Tooltip("첫 슬롯이 시작되는 안쪽 왼쪽 여백입니다.")]
+            [Min(0f)] public float slotContentPaddingLeft;
+
+            [Tooltip("마지막 슬롯 뒤의 안쪽 오른쪽 여백입니다.")]
+            [Min(0f)] public float slotContentPaddingRight;
+
+            [Tooltip("슬롯 하나의 가로/세로 크기입니다.")]
             public Vector2 slotCellSize;
+
+            [Tooltip("슬롯 사이의 가로/세로 간격입니다.")]
             public Vector2 slotSpacing;
+
+            [Tooltip("슬라이드를 끝까지 밀었을 때 살짝 튕기는 정도입니다.")]
+            [Min(0f)] public float slotScrollElasticity;
+
+            [Tooltip("마우스 휠/트랙패드 스크롤 민감도입니다.")]
+            [Min(0f)] public float slotScrollSensitivity;
             public Vector2 debtInputSize;
             public Vector2 debtButtonSize;
             [Min(0f)] public float debtTextHeight;
@@ -141,6 +171,7 @@ namespace SheepSheepBurger.Shop
 
             public static LayoutSettings Default => new LayoutSettings
             {
+                slotLayoutVersion = 1,
                 topHudHeight = 96f,
                 sideBarWidth = 360f,
                 messageAreaHeight = 80f,
@@ -151,14 +182,22 @@ namespace SheepSheepBurger.Shop
                 tabButtonHeight = 132f,
                 hudHorizontalPadding = 20f,
                 messageHorizontalPadding = 0f,
-                slotColumnCount = 4,
-                slotCellSize = new Vector2(330f, 480f),
-                slotSpacing = new Vector2(32f, 32f),
+                slotRowCount = 1,
+                slotViewportPaddingLeft = 0f,
+                slotViewportPaddingRight = 0f,
+                slotViewportPaddingTop = 48f,
+                slotViewportPaddingBottom = 296f,
+                slotContentPaddingLeft = 72f,
+                slotContentPaddingRight = 72f,
+                slotCellSize = new Vector2(388f, 560f),
+                slotSpacing = new Vector2(52f, 0f),
+                slotScrollElasticity = 0.08f,
+                slotScrollSensitivity = 35f,
                 debtInputSize = new Vector2(520f, 80f),
                 debtButtonSize = new Vector2(320f, 80f),
                 debtTextHeight = 120f,
                 debtElementSpacing = 40f,
-                inputHorizontalPadding = 12f
+                inputHorizontalPadding = 28f
             };
         }
 

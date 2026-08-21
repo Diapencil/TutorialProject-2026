@@ -58,11 +58,20 @@ namespace SheepSheepBurger.EditorTools
         private const float TabButtonHeight = 132f;
         private const float MessageAreaHeight = 80f;
 
-        private const float SlotCellWidth = 330f;
-        private const float SlotCellHeight = 480f;
-        private const float SlotSpacingX = 32f;
-        private const float SlotSpacingY = 32f;
-        private const int SlotColumnCount = 4;
+        private const float SlotCellWidth = 388f;
+        private const float SlotCellHeight = 560f;
+        private const float SlotSpacingX = 52f;
+        private const float SlotSpacingY = 0f;
+        private const int SlotRowCount = 1;
+        private const float SlotViewportPaddingLeft = 0f;
+        private const float SlotViewportPaddingRight = 0f;
+        private const float SlotViewportPaddingTop = 48f;
+        private const float SlotViewportPaddingBottom = 296f;
+        private const float SlotContentPaddingLeft = 72f;
+        private const float SlotContentPaddingRight = 72f;
+        private const float SlotScrollElasticity = 0.08f;
+        private const float SlotScrollSensitivity = 35f;
+        private const int ScrollableSlotLayoutVersion = 1;
         private const int ShopSlotCount = 4;
 
         private const float HudFontSize = 40f;
@@ -412,6 +421,8 @@ namespace SheepSheepBurger.EditorTools
                 ApplyReferenceArtDefaults(preset);
             }
 
+            ApplyScrollableSlotDefaultsIfNeeded(preset);
+
             EditorUtility.SetDirty(preset);
             AssetDatabase.SaveAssets();
         }
@@ -536,6 +547,31 @@ namespace SheepSheepBurger.EditorTools
             }
         }
 
+        private static void ApplyScrollableSlotDefaultsIfNeeded(ShopSceneDesignPreset preset)
+        {
+            ShopSceneDesignPreset.LayoutSettings layout = preset.layout;
+
+            if (layout.slotLayoutVersion >= ScrollableSlotLayoutVersion)
+            {
+                return;
+            }
+
+            layout.slotLayoutVersion = ScrollableSlotLayoutVersion;
+            layout.slotRowCount = SlotRowCount;
+            layout.slotViewportPaddingLeft = SlotViewportPaddingLeft;
+            layout.slotViewportPaddingRight = SlotViewportPaddingRight;
+            layout.slotViewportPaddingTop = SlotViewportPaddingTop;
+            layout.slotViewportPaddingBottom = SlotViewportPaddingBottom;
+            layout.slotContentPaddingLeft = SlotContentPaddingLeft;
+            layout.slotContentPaddingRight = SlotContentPaddingRight;
+            layout.slotCellSize = new Vector2(SlotCellWidth, SlotCellHeight);
+            layout.slotSpacing = new Vector2(SlotSpacingX, SlotSpacingY);
+            layout.slotScrollElasticity = SlotScrollElasticity;
+            layout.slotScrollSensitivity = SlotScrollSensitivity;
+            layout.inputHorizontalPadding = SlotInnerPadding;
+            preset.layout = layout;
+        }
+
         private static void ApplyReferenceArtDefaults(ShopSceneDesignPreset preset)
         {
             preset.referenceResolution = new Vector2(ReferenceWidth, ReferenceHeight);
@@ -563,6 +599,7 @@ namespace SheepSheepBurger.EditorTools
 
             preset.layout = new ShopSceneDesignPreset.LayoutSettings
             {
+                slotLayoutVersion = ScrollableSlotLayoutVersion,
                 topHudHeight = TopHudHeight,
                 sideBarWidth = SideBarWidth,
                 messageAreaHeight = MessageAreaHeight,
@@ -573,9 +610,17 @@ namespace SheepSheepBurger.EditorTools
                 tabButtonHeight = TabButtonHeight,
                 hudHorizontalPadding = 20f,
                 messageHorizontalPadding = 0f,
-                slotColumnCount = SlotColumnCount,
+                slotRowCount = SlotRowCount,
+                slotViewportPaddingLeft = SlotViewportPaddingLeft,
+                slotViewportPaddingRight = SlotViewportPaddingRight,
+                slotViewportPaddingTop = SlotViewportPaddingTop,
+                slotViewportPaddingBottom = SlotViewportPaddingBottom,
+                slotContentPaddingLeft = SlotContentPaddingLeft,
+                slotContentPaddingRight = SlotContentPaddingRight,
                 slotCellSize = new Vector2(SlotCellWidth, SlotCellHeight),
                 slotSpacing = new Vector2(SlotSpacingX, SlotSpacingY),
+                slotScrollElasticity = SlotScrollElasticity,
+                slotScrollSensitivity = SlotScrollSensitivity,
                 debtInputSize = new Vector2(DebtInputWidth, DebtInputHeight),
                 debtButtonSize = new Vector2(DebtButtonWidth, DebtButtonHeight),
                 debtTextHeight = DebtTextHeight,
@@ -802,16 +847,41 @@ namespace SheepSheepBurger.EditorTools
             Image gridPanelBackground = gridPanel.AddComponent<Image>();
             gridPanelBackground.color = Color.clear;
             gridPanelBackground.raycastTarget = false;
+            ScrollRect slotScrollRect = gridPanel.AddComponent<ScrollRect>();
+            slotScrollRect.horizontal = true;
+            slotScrollRect.vertical = false;
+            slotScrollRect.inertia = true;
+            slotScrollRect.movementType = ScrollRect.MovementType.Elastic;
+            slotScrollRect.elasticity = SlotScrollElasticity;
+            slotScrollRect.scrollSensitivity = SlotScrollSensitivity;
 
-            GameObject slotParent = CreateUIObject("SlotParent", gridPanel.transform);
+            GameObject slotViewport = CreateUIObject("SlotViewport", gridPanel.transform);
+            RectTransform slotViewportRect = (RectTransform)slotViewport.transform;
+            SetAnchors(slotViewportRect, Vector2.zero, Vector2.one,
+                       new Vector2(SlotViewportPaddingLeft, SlotViewportPaddingBottom),
+                       new Vector2(-SlotViewportPaddingRight, -SlotViewportPaddingTop));
+            Image slotViewportImage = slotViewport.AddComponent<Image>();
+            slotViewportImage.color = Color.clear;
+            slotViewportImage.raycastTarget = true;
+            slotViewport.AddComponent<RectMask2D>();
+
+            GameObject slotParent = CreateUIObject("SlotParent", slotViewport.transform);
             RectTransform slotParentRect = (RectTransform)slotParent.transform;
-            StretchFull(slotParentRect);
+            SetLeftAnchoredMiddle(slotParentRect);
             GridLayoutGroup grid = slotParent.AddComponent<GridLayoutGroup>();
+            grid.startAxis = GridLayoutGroup.Axis.Horizontal;
             grid.cellSize = new Vector2(SlotCellWidth, SlotCellHeight);
             grid.spacing = new Vector2(SlotSpacingX, SlotSpacingY);
-            grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            grid.constraintCount = SlotColumnCount;
-            grid.childAlignment = TextAnchor.MiddleCenter;
+            grid.constraint = GridLayoutGroup.Constraint.FixedRowCount;
+            grid.constraintCount = SlotRowCount;
+            grid.childAlignment = TextAnchor.MiddleLeft;
+            grid.padding = new RectOffset((int)SlotContentPaddingLeft,
+                                          (int)SlotContentPaddingRight, 0, 0);
+            ContentSizeFitter slotContentSizeFitter = slotParent.AddComponent<ContentSizeFitter>();
+            slotContentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            slotContentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            slotScrollRect.viewport = slotViewportRect;
+            slotScrollRect.content = slotParentRect;
 
             GameObject debtPanel = CreateUIObject("DebtPanel", canvasObject.transform);
             RectTransform debtPanelRect = (RectTransform)debtPanel.transform;
@@ -869,7 +939,7 @@ namespace SheepSheepBurger.EditorTools
 
             WireShopManager(shopManager, slotPrefab, ingredients, upgrades, decorations,
                             toppingTabButton, upgradeTabButton, decorationTabButton, debtTabButton,
-                            gridPanel, debtPanel, slotParent.transform,
+                            gridPanel, debtPanel, slotScrollRect, slotParent.transform,
                             goldText, dDayText, messageText,
                             debtRemainingText, repayInputField, repayConfirmButton);
 
@@ -883,6 +953,7 @@ namespace SheepSheepBurger.EditorTools
                                   topHudRect, topHudBackground,
                                   sideBarRect, sideBarBackground, layout,
                                   gridPanelRect, gridPanelBackground,
+                                  slotScrollRect, slotViewportRect,
                                   slotParentRect, grid,
                                   debtPanelRect, debtPanelBackground,
                                   messageBarRect, messageBarBackground,
@@ -919,6 +990,7 @@ namespace SheepSheepBurger.EditorTools
                                             Button toppingTab, Button upgradeTab,
                                             Button decorationTab, Button debtTab,
                                             GameObject gridPanel, GameObject debtPanel,
+                                            ScrollRect slotScrollRect,
                                             Transform slotParent,
                                             TMP_Text goldText, TMP_Text dDayText, TMP_Text messageText,
                                             TMP_Text debtRemainingText, TMP_InputField repayInputField,
@@ -938,6 +1010,7 @@ namespace SheepSheepBurger.EditorTools
             serialized.FindProperty("gridPanel").objectReferenceValue = gridPanel;
             serialized.FindProperty("debtPanel").objectReferenceValue = debtPanel;
 
+            serialized.FindProperty("slotScrollRect").objectReferenceValue = slotScrollRect;
             serialized.FindProperty("slotParent").objectReferenceValue = slotParent;
             serialized.FindProperty("slotPrefab").objectReferenceValue = slotPrefab;
             serialized.FindProperty("slotCount").intValue = ShopSlotCount;
@@ -1152,6 +1225,14 @@ namespace SheepSheepBurger.EditorTools
         private static void StretchFull(RectTransform rect)
         {
             SetAnchors(rect, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        }
+
+        private static void SetLeftAnchoredMiddle(RectTransform rect)
+        {
+            rect.anchorMin = new Vector2(0f, 0.5f);
+            rect.anchorMax = new Vector2(0f, 0.5f);
+            rect.pivot = new Vector2(0f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
         }
 
         private static void SetAnchors(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax,

@@ -39,6 +39,7 @@ MonoBehaviour:
     messageBarZ: 0
     backgroundZ: 0
   layout:
+    slotLayoutVersion: 1
     topHudHeight: 96
     sideBarWidth: 360
     messageAreaHeight: 80
@@ -49,9 +50,17 @@ MonoBehaviour:
     tabButtonHeight: 132
     hudHorizontalPadding: 20
     messageHorizontalPadding: 0
-    slotColumnCount: 4
-    slotCellSize: {x: 330, y: 480}
-    slotSpacing: {x: 32, y: 32}
+    slotRowCount: 1
+    slotViewportPaddingLeft: 0
+    slotViewportPaddingRight: 0
+    slotViewportPaddingTop: 48
+    slotViewportPaddingBottom: 296
+    slotContentPaddingLeft: 72
+    slotContentPaddingRight: 72
+    slotCellSize: {x: 388, y: 560}
+    slotSpacing: {x: 52, y: 0}
+    slotScrollElasticity: 0.08
+    slotScrollSensitivity: 35
     debtInputSize: {x: 520, y: 80}
     debtButtonSize: {x: 320, y: 80}
     debtTextHeight: 120
