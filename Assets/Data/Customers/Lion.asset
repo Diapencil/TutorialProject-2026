@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.CustomerData
   id: 3
   customerName: "\uC0AC\uC790"
-  spritePath:
-  - Customers/lion
+  sprites: []
   appearWeight: 0
   patienceTime: 60
   attackChance: 0.1
