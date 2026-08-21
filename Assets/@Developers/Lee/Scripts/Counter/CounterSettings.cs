@@ -11,7 +11,7 @@ namespace Lee.Counter
         [Min(1f), SerializeField] private float patienceSeconds = 60f;
         [Min(0f), SerializeField] private float reactionSeconds = 2f;
         [SerializeField] private string cookingSceneName = "Cooking";
-        [SerializeField] private List<CustomerData> availableCustomers = new();
+        [SerializeField] private List<SheepSheepBurger.Core.CustomerData> availableCustomers = new();
         [SerializeField] private List<OrderData> availableOrders = new();
         [TextArea, SerializeField] private string perfectReaction = "Perfect!";
         [TextArea, SerializeField] private string goodReaction = "Good!";
@@ -21,7 +21,7 @@ namespace Lee.Counter
         public float PatienceSeconds => patienceSeconds;
         public float ReactionSeconds => reactionSeconds;
         public string CookingSceneName => cookingSceneName;
-        public IReadOnlyList<CustomerData> AvailableCustomers => availableCustomers;
+        public IReadOnlyList<SheepSheepBurger.Core.CustomerData> AvailableCustomers => availableCustomers;
         public IReadOnlyList<OrderData> AvailableOrders => availableOrders;
         public string GetReaction(Grade grade) => grade switch
         {

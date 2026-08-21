@@ -8,6 +8,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using UnityEngine.TextCore.LowLevel;
 using UnityEngine.UI;
 
 namespace SheepSheepBurger.EditorTools
@@ -27,6 +28,10 @@ namespace SheepSheepBurger.EditorTools
         private const string UpgradesFolder = "Assets/Data/Shop/Upgrades";
         private const string DecorationsFolder = "Assets/Data/Shop/Decorations";
         private const string TmpSettingsPath = "Assets/TextMesh Pro/Resources/TMP Settings.asset";
+        private const string TmpFontMaterialsFolder = "Assets/TextMesh Pro/Resources/Fonts & Materials";
+        private const string ShopFontSourcePath = "Assets/@Developers/Lee/Fonts/NanumGothic.ttf";
+        private const string ShopFontAssetPath = TmpFontMaterialsFolder + "/Shop Korean SDF.asset";
+        private const string ExistingKoreanFontAssetPath = "Assets/@Developers/Lee/Fonts/NanumGothic SDF.asset";
 
         private const string ScenePath = ScenesFolder + "/ShopScene.unity";
         private const string SlotPrefabPath = PrefabsFolder + "/ShopSlot.prefab";
@@ -57,6 +62,9 @@ namespace SheepSheepBurger.EditorTools
         private const float MessageFontSize = 30f;
         private const float DebtFontSize = 60f;
         private const float InputFontSize = 32f;
+        private const int ShopFontSamplingPointSize = 90;
+        private const int ShopFontAtlasPadding = 9;
+        private const int ShopFontAtlasSize = 2048;
 
         // TODO(기획확인): 최초 스펙은 Screen Space - Overlay였지만, Game view 카메라 렌더링 확인을 위해 UI 카메라를 둔다.
         private static readonly Color CameraBackgroundColor = new Color(0.08f, 0.08f, 0.08f, 1f);
@@ -99,6 +107,16 @@ namespace SheepSheepBurger.EditorTools
         // TODO(기획확인): 장식 가격은 전부 임시값이다.
         private static readonly int[] DecorationCosts = { 1000, 2000, 3000, 5000 };
 
+        private static readonly string ShopFontCharacters = string.Concat(
+            "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+            " .,!?:;+-*/()[]{}<>%#&'\"₩C",
+            "토핑업수리장식상환하기갚을금액입력구매불가공사중캐이나인이부족합니다올바른보유빚모두갚았습니다를찾을수없습니다",
+            "베이컨계란후라이피클할라피뇨튀김기그릴판꽃화분배너피규어마네키네코",
+            "잔여부채레벨"
+        );
+
+        private static TMP_FontAsset activeFontAsset;
+
         [MenuItem("SheepSheep/Build Shop Scene")]
         public static void BuildShopScene()
         {
@@ -119,6 +137,10 @@ namespace SheepSheepBurger.EditorTools
             EnsureFolder(IngredientsFolder);
             EnsureFolder(UpgradesFolder);
             EnsureFolder(DecorationsFolder);
+            EnsureFolder(TmpFontMaterialsFolder);
+
+            activeFontAsset = EnsureShopFontAsset();
+            ConfigureTextMeshProSettings(activeFontAsset);
 
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -172,6 +194,151 @@ namespace SheepSheepBurger.EditorTools
 
             Debug.LogError("[ShopSceneBuilder] TMP Essential Resources 임포트에 실패했습니다.");
             return false;
+        }
+
+        private static TMP_FontAsset EnsureShopFontAsset()
+        {
+            TMP_FontAsset fontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(ShopFontAssetPath);
+
+            if (fontAsset == null)
+            {
+                Font sourceFont = AssetDatabase.LoadAssetAtPath<Font>(ShopFontSourcePath);
+
+                if (sourceFont != null)
+                {
+                    Debug.Log($"[ShopSceneBuilder] 상점 한글 TMP 폰트 에셋을 생성합니다: {ShopFontAssetPath}");
+                    fontAsset = TMP_FontAsset.CreateFontAsset(sourceFont,
+                                                              ShopFontSamplingPointSize,
+                                                              ShopFontAtlasPadding,
+                                                              GlyphRenderMode.SDFAA,
+                                                              ShopFontAtlasSize,
+                                                              ShopFontAtlasSize,
+                                                              AtlasPopulationMode.Dynamic,
+                                                              true);
+
+                    if (fontAsset != null)
+                    {
+                        fontAsset.name = "Shop Korean SDF";
+                        fontAsset.material.name = "Shop Korean SDF Material";
+                        fontAsset.atlasTextures[0].name = "Shop Korean SDF Atlas";
+                        AssetDatabase.CreateAsset(fontAsset, ShopFontAssetPath);
+                    }
+                }
+            }
+
+            if (fontAsset == null)
+            {
+                fontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(ExistingKoreanFontAssetPath);
+
+                if (fontAsset == null)
+                {
+                    Debug.LogWarning("[ShopSceneBuilder] 한글 TMP 폰트 에셋을 찾지 못해 TMP 기본 폰트를 사용합니다.");
+                    return null;
+                }
+
+                Debug.LogWarning($"[ShopSceneBuilder] 상점 전용 폰트 생성에 실패해 기존 한글 폰트를 사용합니다: {ExistingKoreanFontAssetPath}");
+                return fontAsset;
+            }
+
+            AddShopCharacters(fontAsset);
+            AddFontSubAssets(fontAsset);
+            fontAsset.atlasPopulationMode = AtlasPopulationMode.Static;
+            EditorUtility.SetDirty(fontAsset);
+            AssetDatabase.SaveAssets();
+
+            return fontAsset;
+        }
+
+        private static void AddShopCharacters(TMP_FontAsset fontAsset)
+        {
+            AtlasPopulationMode originalMode = fontAsset.atlasPopulationMode;
+            fontAsset.atlasPopulationMode = AtlasPopulationMode.Dynamic;
+
+            if (!fontAsset.TryAddCharacters(ShopFontCharacters, out string missingCharacters))
+            {
+                Debug.LogWarning($"[ShopSceneBuilder] 상점 폰트에 넣지 못한 문자가 있습니다: {missingCharacters}");
+            }
+
+            fontAsset.atlasPopulationMode = originalMode;
+        }
+
+        private static void AddFontSubAssets(TMP_FontAsset fontAsset)
+        {
+            AddSubAssetIfNeeded(fontAsset.material, fontAsset);
+
+            Texture2D[] atlasTextures = fontAsset.atlasTextures;
+            if (atlasTextures == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < atlasTextures.Length; i++)
+            {
+                Texture2D atlasTexture = atlasTextures[i];
+                if (atlasTexture != null && string.IsNullOrEmpty(atlasTexture.name))
+                {
+                    atlasTexture.name = i == 0 ? "Shop Korean SDF Atlas" : $"Shop Korean SDF Atlas {i}";
+                }
+
+                AddSubAssetIfNeeded(atlasTexture, fontAsset);
+            }
+        }
+
+        private static void AddSubAssetIfNeeded(Object subAsset, TMP_FontAsset fontAsset)
+        {
+            if (subAsset == null)
+            {
+                return;
+            }
+
+            string assetPath = AssetDatabase.GetAssetPath(subAsset);
+            if (assetPath == ShopFontAssetPath)
+            {
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(assetPath))
+            {
+                return;
+            }
+
+            AssetDatabase.AddObjectToAsset(subAsset, fontAsset);
+        }
+
+        private static void ConfigureTextMeshProSettings(TMP_FontAsset fontAsset)
+        {
+            TMP_Settings settings = TMP_Settings.instance;
+
+            if (settings == null || fontAsset == null)
+            {
+                return;
+            }
+
+            SerializedObject serialized = new SerializedObject(settings);
+            serialized.FindProperty("m_defaultFontAsset").objectReferenceValue = fontAsset;
+            serialized.FindProperty("m_defaultFontAssetPath").stringValue = "Fonts & Materials/";
+
+            SerializedProperty fallbackFonts = serialized.FindProperty("m_fallbackFontAssets");
+            bool hasFont = false;
+
+            for (int i = 0; i < fallbackFonts.arraySize; i++)
+            {
+                if (fallbackFonts.GetArrayElementAtIndex(i).objectReferenceValue == fontAsset)
+                {
+                    hasFont = true;
+                    break;
+                }
+            }
+
+            if (!hasFont)
+            {
+                int index = fallbackFonts.arraySize;
+                fallbackFonts.InsertArrayElementAtIndex(index);
+                fallbackFonts.GetArrayElementAtIndex(index).objectReferenceValue = fontAsset;
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(settings);
         }
 
         // ══════════════════════════════════════════════════════
@@ -661,8 +828,11 @@ namespace SheepSheepBurger.EditorTools
             text.alignment = alignment;
             text.color = color;
 
-            // TODO(기획확인): 한글 폰트 애셋이 아직 없어 TMP 기본 폰트를 쓴다.
-            // 기본 폰트에는 한글 글리프가 없으므로 폰트 애셋 입고 후 교체해야 한다.
+            if (activeFontAsset != null)
+            {
+                text.font = activeFontAsset;
+            }
+
             return text;
         }
 
