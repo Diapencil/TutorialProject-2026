@@ -240,13 +240,23 @@ namespace SheepSheepBurger.EditorTools
                 return fontAsset;
             }
 
-            AddShopCharacters(fontAsset);
+            if (!HasAllShopCharacters(fontAsset))
+            {
+                AddShopCharacters(fontAsset);
+            }
+
             AddFontSubAssets(fontAsset);
             fontAsset.atlasPopulationMode = AtlasPopulationMode.Static;
             EditorUtility.SetDirty(fontAsset);
             AssetDatabase.SaveAssets();
 
             return fontAsset;
+        }
+
+        private static bool HasAllShopCharacters(TMP_FontAsset fontAsset)
+        {
+            _ = fontAsset.characterLookupTable;
+            return fontAsset.HasCharacters(ShopFontCharacters, out _);
         }
 
         private static void AddShopCharacters(TMP_FontAsset fontAsset)
