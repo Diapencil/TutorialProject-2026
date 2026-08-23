@@ -16,7 +16,6 @@ MonoBehaviour:
   - 
   - 
   hintLine: 
-  perfectLine: 
-  goodLine: 
-  normalLine: 
-  badLine: 
+  perfectLine: "\uC624..\uB098\uC758 \uD560\uB77C\uD038"
+  normalLine: "\uC880 \uC88B\uB124\uC694"
+  badLine: "\uC774\uAC74 \uD14C\uBB34\uC0B0 \uD560\uB77C\uD038\uC778\uAC00\uC694?"

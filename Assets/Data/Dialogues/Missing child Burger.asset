@@ -18,7 +18,6 @@ MonoBehaviour:
   - "\uC81C \uACF5\uD5C8\uD55C \uB9C8\uC74C\uC744 \uADF8\uB300\uB85C \uBC84\uAC70\uC5D0
     \uAD6C\uD604\uD574\uC8FC\uC138\uC694."
   hintLine: "\uBC00\uAC00\uB8E8\uB9CC \uC8FC\uC138\uC694."
-  perfectLine: 
-  goodLine: 
-  normalLine: 
-  badLine: 
+  perfectLine: '?'
+  normalLine: "\uADF8\uB798\uB3C4 \uD558\uB098\uB294 \uC788\uB124\uC694"
+  badLine: "\uC808 \uBAA8\uC695\uD558\uB294 \uAC74\uAC00\uC694?"

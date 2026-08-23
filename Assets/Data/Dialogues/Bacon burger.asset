@@ -10,14 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76e52d79f05fec84da88b585a329c43e, type: 3}
-  m_Name: Vegetarian Burger
+  m_Name: Bacon burger
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.Dialogue
   orderLines:
   - "\uC800\uB294 \uD3C9\uD654\uC8FC\uC758\uC790\uC5D0\uC694."
   - "\uC804 \uCC44\uC2DD\uC8FC\uC758\uC790\uC5D0\uC694."
   hintLine: "\uC6B0\uB9AC\uB294 \uCC44\uC18C\uB9CC \uBA39\uC744 \uD544\uC694\uAC00
     \uC788\uC5B4\uC694."
-  perfectLine: "\uC544,, \uB2F9\uC2E0\uC758 \uC190\uAE38\uC740 \uB9C8\uCE58 \uB9C8\uB354
-    \uD14C\uB808\uC0AC..?"
-  normalLine: "\uD760..\uC774\uC815\uB3C4\uBA74 \uAD1C\uCC2E\uB124\uC694"
-  badLine: "\uC774 \uBED1\uD0B9 \uB808\uC774\uC2DC\uC2A4\uD2B8!"
+  perfectLine: "\uBCA0\uC774\uCEE8! \uBCA0\uC774\uCEE8! \uBCA0\uC774\uCEE8!"
+  normalLine: "\uBCA0\uC774\uCEE8\uC774 \uBC14\uC0AD\uD574\uC11C \uB9DB\uC788\uB124\uC694"
+  badLine: "\uC774\uB534 \uAC78 \uB204\uAC00 \uBA39\uC5B4"
