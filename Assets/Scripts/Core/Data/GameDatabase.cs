@@ -8,9 +8,9 @@ namespace Core.Data
     public class GameDatabase : ScriptableObject
     {
         [SerializeField] private List<IngredientData> ingredients;
-        [SerializeField] private List<RecipeData> recipes;
+        [SerializeField] private List<SheepSheepBurger.Core.RecipeData> recipes;
         [SerializeField] private List<OrderData> orders;
-        [SerializeField] private List<CustomerData> customers;
+        [SerializeField] private List<SheepSheepBurger.Core.CustomerData> customers;
         [SerializeField] private List<SpecialCustomerData> specialCustomers;
 
         public IngredientData GetIngredient(int id)
@@ -18,7 +18,7 @@ namespace Core.Data
             return ingredients.Find(x => x.id == id);
         }
 
-        public RecipeData GetRecipe(int id)
+        public SheepSheepBurger.Core.RecipeData GetRecipe(int id)
         {
             return recipes.Find(x => x.id == id);
         }
@@ -28,7 +28,7 @@ namespace Core.Data
             return orders.Find(x => x.id == id);
         }
 
-        public CustomerData GetCustomer(int id)
+        public SheepSheepBurger.Core.CustomerData GetCustomer(int id)
         {
             return customers.Find(x => x.id == id);
         }
@@ -39,7 +39,7 @@ namespace Core.Data
         }
 
         public IReadOnlyList<IngredientData> GetAllIngredients() => ingredients;
-        public IReadOnlyList<RecipeData> GetAllRecipes() => recipes;
+        public IReadOnlyList<SheepSheepBurger.Core.RecipeData> GetAllRecipes() => recipes;
         public IReadOnlyList<OrderData> GetAllOrders() => orders;
     }
 }

@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a7513e84b1cf409ebf7d27e25c446fd, type: 3}
+  m_Name: SettingsLayerDesignPreset
+  m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Settings.SettingsLayerDesignPreset
+  memo: "\uB2E4\uB978 \uC52C \uC704\uC5D0 \uC5B9\uB294 \uC124\uC815 \uB808\uC774\uC5B4
+    \uD504\uB9AC\uC14B\uC785\uB2C8\uB2E4. \uC704\uCE58/\uD06C\uAE30\uB294 \uD504\uB9AC\uD339\uC758
+    RectTransform\uC744 \uC9C1\uC811 \uB4DC\uB798\uADF8\uD574\uC11C \uC218\uC815\uD558\uB294
+    \uBC29\uC2DD\uC744 \uAE30\uBCF8\uC73C\uB85C \uB461\uB2C8\uB2E4."
+  referenceResolution: {x: 1920, y: 1080}
+  matchWidthOrHeight: 0.5
+  canvasSortingOrder: 500
+  fontAsset: {fileID: 11400000, guid: 2c9c1b2d3a5864e3db7e2bc26ca8975a, type: 2}
+  applyDesignOnAwake: 0
+  applyDesignOnValidate: 0
+  applyToOpenLayersOnValidate: 0
+  applyRectTransformLayout: 0
+  layout:
+    panelSize: {x: 1240, y: 720}
+    panelAnchoredPosition: {x: 0, y: 0}
+    settingsButtonSize: {x: 118, y: 118}
+    settingsButtonMargin: {x: 48, y: 44}
+    innerBorderInset: {x: 48, y: 48}
+    titleSize: {x: 520, y: 140}
+    titleAnchoredPosition: {x: 0, y: 330}
+    rowStartY: 90
+    rowSpacing: 180
+    iconX: -420
+    sliderX: 60
+    valueBoxX: 500
+    iconSize: 118
+    sliderSize: {x: 650, y: 96}
+    sliderTrackHeight: 20
+    sliderHandleSize: 82
+    valueBoxSize: {x: 150, y: 86}
+  text:
+    titleFontSize: 70
+    settingsButtonFontSize: 44
+    valueFontSize: 46
+  colors:
+    backdrop: {r: 0.06, g: 0.1, b: 0.08, a: 0.48}
+    panelBackground: {r: 0.59, g: 0.73, b: 0.6, a: 1}
+    panelOutline: {r: 0.12, g: 0.3, b: 0.21, a: 1}
+    innerOutline: {r: 0.24, g: 0.45, b: 0.32, a: 1}
+    titleBackground: {r: 0.48, g: 0.64, b: 0.49, a: 1}
+    titleOutline: {r: 0.1, g: 0.26, b: 0.2, a: 1}
+    titleText: {r: 0.07, g: 0.14, b: 0.1, a: 1}
+    settingsButtonBackground: {r: 0.46, g: 0.62, b: 0.46, a: 1}
+    settingsButtonHighlighted: {r: 0.55, g: 0.7, b: 0.55, a: 1}
+    settingsButtonPressed: {r: 0.34, g: 0.51, b: 0.36, a: 1}
+    settingsButtonOutline: {r: 0.08, g: 0.22, b: 0.15, a: 1}
+    settingsButtonText: {r: 0.07, g: 0.14, b: 0.1, a: 1}
+    iconBackground: {r: 0.72, g: 0.83, b: 0.71, a: 1}
+    iconOutline: {r: 0.13, g: 0.3, b: 0.2, a: 1}
+    sliderTrack: {r: 0.31, g: 0.45, b: 0.31, a: 1}
+    sliderFill: {r: 0.16, g: 0.36, b: 0.23, a: 1}
+    sliderHandle: {r: 0.2, g: 0.44, b: 0.27, a: 1}
+    sliderHandleOutline: {r: 0.05, g: 0.16, b: 0.1, a: 1}
+    valueBoxBackground: {r: 0.76, g: 0.86, b: 0.75, a: 1}
+    valueBoxOutline: {r: 0.12, g: 0.3, b: 0.21, a: 1}
+    valueText: {r: 0.08, g: 0.15, b: 0.11, a: 1}

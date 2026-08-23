@@ -49,7 +49,7 @@ namespace Lee.Counter
 
         private bool TryCreateOrder(out OrderInstance nextOrder)
         {
-            var customers = new List<CustomerData>();
+            var customers = new List<SheepSheepBurger.Core.CustomerData>();
             foreach (var candidate in settings.AvailableCustomers) // TODO settings 수정
                 if (candidate != null) customers.Add(candidate);
             var orders = new List<OrderData>();
