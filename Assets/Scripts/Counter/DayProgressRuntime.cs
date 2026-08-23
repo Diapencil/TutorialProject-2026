@@ -39,7 +39,10 @@ namespace Lee.Counter
         private void Initialize()
         {
             if (GameState != null) return;
-            GameState = new GameState { currentDay = 1 };
+
+            // 상점(GameManager)과 같은 GameState 인스턴스를 공유해야 한다.
+            // 따로 new GameState()를 만들면 카운터 매출이 상점 보유 금액에 반영되지 않는다.
+            GameState = GameManager.GetOrCreate().State;
             DayState = new DayState { count = new System.Collections.Generic.List<int>() };
         }
 

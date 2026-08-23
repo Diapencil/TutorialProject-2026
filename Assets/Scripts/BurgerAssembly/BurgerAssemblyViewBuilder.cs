@@ -324,7 +324,7 @@ namespace SheepSheepBurger.BurgerAssembly
         {
             BurgerIngredientVisual visual = BurgerIngredientCatalog.GetTrayVisual(type);
             RectTransform card = CreateRoundedPanel(name, parent, Color.clear, position, size, true, 0f);
-            card.gameObject.AddComponent<CanvasGroup>();
+            CanvasGroup cardGroup = card.gameObject.AddComponent<CanvasGroup>();
             float iconLimit = Mathf.Min(78f, size.y * 0.72f);
             float iconScale = Mathf.Min(
                 iconLimit / Mathf.Max(1f, visual.Size.x),
@@ -349,6 +349,18 @@ namespace SheepSheepBurger.BurgerAssembly
                 visual.Size,
                 visual.SourceSprite);
             view.TraySources.Add(source);
+
+            // 상점에서 아직 해금하지 않은 재료는 트레이 칸을 비워 둔다.
+            // 상점 토핑 탭에서 구매하면 다음 진입 때 이 칸이 채워진다.
+            // Core.IngredientType과 이름이 겹치므로 using 대신 전체 이름으로 부른다.
+            if (!SheepSheepBurger.Core.ShopProgressBridge.IsCookingIngredientUnlocked(type))
+            {
+                cardGroup.alpha = 0f;
+                cardGroup.interactable = false;
+                cardGroup.blocksRaycasts = false;
+                source.enabled = false;
+            }
+
             return source;
         }
 

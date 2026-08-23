@@ -27,7 +27,7 @@ namespace SheepSheepBurger.EditorTools
         private const string ShopArtFolder = ShopGameAssetsFolder + "/UI";
         private const string DataFolder = "Assets/Data";
         private const string ShopDataFolder = "Assets/Data/Shop";
-        private const string IngredientsFolder = "Assets/Data/Shop/Ingredients";
+        private const string IngredientsFolder = "Assets/Data/Ingredients";
         private const string UpgradesFolder = "Assets/Data/Shop/Upgrades";
         private const string DecorationsFolder = "Assets/Data/Shop/Decorations";
         private const string TmpSettingsPath = "Assets/TextMesh Pro/Resources/TMP Settings.asset";
@@ -1061,36 +1061,38 @@ namespace SheepSheepBurger.EditorTools
         // ══════════════════════════════════════════════════════
         private static IngredientData[] ConfigureSampleIngredients()
         {
+            // 상점 전용 재료 애셋을 새로 만들지 않는다.
+            // 레시피/주문 애셋이 이미 참조하는 Assets/Data/Ingredients 의 원본을 그대로 쓴다.
+            // (새로 만들면 id 1~4가 BunBottom/BunTop/Patty/Cheese와 충돌해서
+            //  해금 목록에 엉뚱한 재료가 들어간다.)
             List<IngredientData> result = new List<IngredientData>();
 
-            AddIngredient(result, "Bacon", 1, "베이컨", SheepSheepBurger.Core.IngredientType.Topping,
-                          IngredientGrillableUnlockCost, IngredientGrillableCostPerUse, true);
-            AddIngredient(result, "FriedEgg", 2, "계란후라이", SheepSheepBurger.Core.IngredientType.Topping,
-                          IngredientGrillableUnlockCost, IngredientGrillableCostPerUse, true);
-            AddIngredient(result, "Pickle", 3, "피클", SheepSheepBurger.Core.IngredientType.Topping,
-                          IngredientRawUnlockCost, IngredientRawCostPerUse, false);
-            AddIngredient(result, "Jalapeno", 4, "할라피뇨", SheepSheepBurger.Core.IngredientType.Topping,
-                          IngredientRawUnlockCost, IngredientRawCostPerUse, false);
+            AddIngredient(result, "Bacon", IngredientGrillableUnlockCost,
+                          IngredientGrillableCostPerUse, true);
+            AddIngredient(result, "egg", IngredientGrillableUnlockCost,
+                          IngredientGrillableCostPerUse, true);
+            AddIngredient(result, "Pickle", IngredientRawUnlockCost,
+                          IngredientRawCostPerUse, false);
+            AddIngredient(result, "Jalapeno", IngredientRawUnlockCost,
+                          IngredientRawCostPerUse, false);
 
             return result.ToArray();
         }
 
-        private static void AddIngredient(List<IngredientData> result, string assetName, int id,
-                                          string ingredientName, SheepSheepBurger.Core.IngredientType type,
+        private static void AddIngredient(List<IngredientData> result, string assetName,
                                           int unlockCost, int costPerUse, bool grillable)
         {
             string path = $"{IngredientsFolder}/{assetName}.asset";
             IngredientData data = AssetDatabase.LoadAssetAtPath<IngredientData>(path);
-            bool isNew = data == null;
 
-            if (isNew)
+            if (data == null)
             {
-                data = ScriptableObject.CreateInstance<IngredientData>();
+                Debug.LogWarning($"[ShopSceneBuilder] 재료 애셋을 찾지 못했습니다: {path}");
+                return;
             }
 
-            data.id = id;
-            data.ingredientName = ingredientName;
-            data.type = type;
+            // id / ingredientName / type / cookTime은 원본 값을 유지한다.
+            // 다른 씬의 레시피·주문 데이터가 이 값들을 참조하고 있다.
             data.unlockCost = unlockCost;
             data.costPerUse = costPerUse;
             data.grillable = grillable;
@@ -1098,19 +1100,7 @@ namespace SheepSheepBurger.EditorTools
             // 상점에서 해금하는 재료이므로 기본 해금이 아니다.
             data.isDefaultUnlocked = false;
 
-            // TODO(기획확인): 샘플 재료별 cookTimeMin/Max가 확정되지 않아 기본값으로 둔다.
-            data.cookTimeMin = 0f;
-            data.cookTimeMax = 0f;
-
-            if (isNew)
-            {
-                AssetDatabase.CreateAsset(data, path);
-            }
-            else
-            {
-                EditorUtility.SetDirty(data);
-            }
-
+            EditorUtility.SetDirty(data);
             result.Add(data);
         }
 

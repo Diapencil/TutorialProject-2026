@@ -15,11 +15,46 @@ namespace SheepSheepBurger.Core
 
         public GameState State => state;
 
+        /// <summary>
+        /// 어느 씬에서 플레이를 시작하든 GameState가 반드시 하나 존재하도록 보장한다.
+        /// 씬에 GameManagerObj가 있으면 그것을 쓰고, 없으면 런타임에 만든다.
+        /// </summary>
+        public static GameManager GetOrCreate()
+        {
+            if (Instance != null)
+            {
+                return Instance;
+            }
+
+            GameManager found = FindFirstObjectByType<GameManager>();
+            if (found != null)
+            {
+                // Awake가 아직 안 돌았을 수 있으므로 여기서 Instance를 확정한다.
+                found.EnsureInitialized();
+                return Instance;
+            }
+
+            GameObject owner = new GameObject(nameof(GameManager));
+            GameManager created = owner.AddComponent<GameManager>();
+            created.EnsureInitialized();
+            return created;
+        }
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);
+                return;
+            }
+
+            EnsureInitialized();
+        }
+
+        private void EnsureInitialized()
+        {
+            if (Instance != null && Instance != this)
+            {
                 return;
             }
 
@@ -30,7 +65,10 @@ namespace SheepSheepBurger.Core
                 state = new GameState();
             }
 
-            DontDestroyOnLoad(gameObject);
+            if (Application.isPlaying)
+            {
+                DontDestroyOnLoad(gameObject);
+            }
         }
 
         private void OnDestroy()

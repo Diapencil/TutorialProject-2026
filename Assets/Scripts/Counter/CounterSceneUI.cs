@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using SheepSheepBurger.Core;
+using SheepSheepBurger.Util;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -105,7 +106,8 @@ namespace Lee.Counter
         public void SetTop(DayProgressRuntime day, int customersPerDay)
         {
             dayText.text = $"D + {day.CurrentDay}";
-            revenueText.text = $"{day.DailyRevenue:N0} C";
+            // 금액은 10배 정수로 저장되므로 표시할 때만 CurrencyUtil로 환산한다.
+            revenueText.text = CurrencyUtil.ToDisplay(day.DailyRevenue);
             progressText.text = $"{day.ServedCustomerCount} / {customersPerDay}";
         }
 
@@ -123,7 +125,7 @@ namespace Lee.Counter
         public void ShowResult(Grade result, int reward, string reaction)
         {
             resultRoot.SetActive(true);
-            resultText.text = $"{result}\nReward: {reward:N0}\n{reaction}";
+            resultText.text = $"{result}\nReward: {CurrencyUtil.ToDisplay(reward)}\n{reaction}";
             TypeText(reaction);
         }
     }
