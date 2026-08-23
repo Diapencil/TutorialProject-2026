@@ -13,6 +13,8 @@ namespace SheepSheepBurger.BurgerAssembly
 
         public Font UiFont { get; set; }
 
+        public Text CookingTimerText { get; set; }
+
         public RectTransform DragLayer { get; set; }
 
         public RectTransform GrillDropArea { get; set; }
@@ -122,6 +124,7 @@ namespace SheepSheepBurger.BurgerAssembly
             view.PackagingController = packagingPage.gameObject.AddComponent<BurgerPackagingController>();
             view.PackagingController.Configure(packagingPage, view.UiFont);
             BuildTrashResetHotspots();
+            BuildCookingTimerOverlay();
 
             GameObject dragLayerObject = new GameObject("DragLayer", typeof(RectTransform));
             view.DragLayer = dragLayerObject.GetComponent<RectTransform>();
@@ -134,6 +137,30 @@ namespace SheepSheepBurger.BurgerAssembly
 
             EnsureEventSystem();
             return view;
+        }
+
+        private void BuildCookingTimerOverlay()
+        {
+            RectTransform panel = CreateRoundedPanel(
+                "CookingTimerPanel",
+                canvasRoot,
+                new Color(0.08f, 0.09f, 0.08f, 0.78f),
+                new Vector2(0f, 490f),
+                new Vector2(190f, 64f),
+                false,
+                18f);
+            view.CookingTimerText = CreateText(
+                "CookingTimerText",
+                panel,
+                "01:00",
+                34,
+                FontStyle.Bold,
+                Color.white,
+                Vector2.zero,
+                panel.sizeDelta);
+            Outline outline = view.CookingTimerText.gameObject.AddComponent<Outline>();
+            outline.effectColor = new Color(0f, 0f, 0f, 0.85f);
+            outline.effectDistance = new Vector2(1.5f, -1.5f);
         }
 
         private void BuildTrashResetHotspots()

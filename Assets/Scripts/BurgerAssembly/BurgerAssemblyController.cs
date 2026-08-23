@@ -31,6 +31,7 @@ namespace SheepSheepBurger.BurgerAssembly
         private Text grillStatusText;
         private Text boardStatusText;
         private Text boardSummaryText;
+        private Text cookingTimerText;
         private Text toastText;
         private GameObject toastObject;
         private Font uiFont;
@@ -51,6 +52,9 @@ namespace SheepSheepBurger.BurgerAssembly
         private int currentOrderErrors;
         private bool currentOrderUsedHint;
         private bool currentOrderWasAttacked;
+        private float cookingTimeRemaining = CookingPrototypeRules.CookingTimeLimitSeconds;
+        private bool hasCookingTimeExpired;
+        private int displayedCookingSeconds = -1;
 
         public event Action<BurgerData> OnBurgerCompleted
         {
@@ -67,6 +71,12 @@ namespace SheepSheepBurger.BurgerAssembly
         }
 
         public PaymentResult LastPaymentResult => completionPublisher.LastPaymentResult;
+
+        public event Action OnCookingTimeExpired;
+
+        public float CookingTimeRemaining => cookingTimeRemaining;
+
+        public bool HasCookingTimeExpired => hasCookingTimeExpired;
 
         public CookingSceneSchema CookingSchema => cookingSchema;
 
@@ -160,6 +170,8 @@ namespace SheepSheepBurger.BurgerAssembly
 
         private void Update()
         {
+            TickCookingTimer(Time.deltaTime);
+
             if (hasActivePointerDrag && dragGhost != null)
             {
                 PositionDragGhost(lastPointerScreen);
@@ -646,6 +658,7 @@ namespace SheepSheepBurger.BurgerAssembly
             grillStatusText = view.GrillStatusText;
             boardStatusText = view.BoardStatusText;
             boardSummaryText = view.BoardSummaryText;
+            cookingTimerText = view.CookingTimerText;
             toastText = view.ToastText;
             toastObject = view.ToastObject;
             stackAssembler.Configure(boardLayerRoot);
@@ -657,6 +670,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 SetBoardStatus);
             traySources.AddRange(view.TraySources);
             cameraSlider.ZoneChanged += HandleCameraZoneChanged;
+            ResetCookingTimer();
         }
 
         private void HandleSauceDrawingChanged()
@@ -1216,6 +1230,61 @@ namespace SheepSheepBurger.BurgerAssembly
             SetBoardStatus("재료를 자유롭게 놓을 수 있습니다. 하단 번 가까이에 놓으면 자동으로 쌓입니다.", false);
             RefreshBoardSummary();
             RefreshControls();
+        }
+
+        private void TickCookingTimer(float deltaTime)
+        {
+            if (hasCookingTimeExpired || LastCompletedBurger != null || deltaTime <= 0f)
+            {
+                return;
+            }
+
+            cookingTimeRemaining = Mathf.Max(0f, cookingTimeRemaining - deltaTime);
+            RefreshCookingTimerText();
+            if (cookingTimeRemaining > 0f)
+            {
+                return;
+            }
+
+            hasCookingTimeExpired = true;
+            RefreshCookingTimerText();
+            Debug.Log("[BurgerAssembly] Cooking time expired. Dummy timeout event invoked.");
+            OnCookingTimeExpired?.Invoke();
+        }
+
+        private void ResetCookingTimer()
+        {
+            cookingTimeRemaining = CookingPrototypeRules.CookingTimeLimitSeconds;
+            hasCookingTimeExpired = false;
+            displayedCookingSeconds = -1;
+            RefreshCookingTimerText();
+        }
+
+        private void RefreshCookingTimerText()
+        {
+            if (cookingTimerText == null)
+            {
+                return;
+            }
+
+            int wholeSeconds = Mathf.CeilToInt(cookingTimeRemaining);
+            if (wholeSeconds == displayedCookingSeconds &&
+                cookingTimerText.color == (hasCookingTimeExpired
+                    ? BurgerPrototypeTheme.Warning
+                    : wholeSeconds <= 10
+                        ? BurgerPrototypeTheme.Attention
+                        : Color.white))
+            {
+                return;
+            }
+
+            displayedCookingSeconds = wholeSeconds;
+            cookingTimerText.text = $"{wholeSeconds / 60:00}:{wholeSeconds % 60:00}";
+            cookingTimerText.color = hasCookingTimeExpired
+                ? BurgerPrototypeTheme.Warning
+                : wholeSeconds <= 10
+                    ? BurgerPrototypeTheme.Attention
+                    : Color.white;
         }
 
         private void RefreshControls()

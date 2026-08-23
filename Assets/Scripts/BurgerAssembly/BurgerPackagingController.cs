@@ -72,6 +72,7 @@ namespace SheepSheepBurger.BurgerAssembly
             isPackaged = false;
 
             currentBurgerRoot.SetParent(burgerTray, false);
+            currentBurgerRoot.gameObject.SetActive(true);
             SetRect(
                 currentBurgerRoot,
                 ClampBurgerPosition(trayLocalPosition),
@@ -164,6 +165,7 @@ namespace SheepSheepBurger.BurgerAssembly
             isPackaged = true;
             packageButton.interactable = false;
             CreatePackageWrap();
+            currentBurgerRoot.gameObject.SetActive(false);
             Packaged?.Invoke();
         }
 

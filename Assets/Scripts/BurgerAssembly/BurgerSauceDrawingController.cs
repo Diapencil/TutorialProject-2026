@@ -18,6 +18,7 @@ namespace SheepSheepBurger.BurgerAssembly
         private static readonly Vector2 SauceCursorNozzlePivot = new Vector2(0.16f, 0.12f);
 
         private readonly List<SauceStrokeGraphic> boardStrokes = new List<SauceStrokeGraphic>();
+        private readonly List<SauceStrokeGraphic> burgerStrokes = new List<SauceStrokeGraphic>();
 
         private RectTransform boardLayerRoot;
         private RectTransform cursorLayer;
@@ -40,6 +41,7 @@ namespace SheepSheepBurger.BurgerAssembly
         public int StrokeCount => drawnStrokeCount;
 
         public int PointCount => boardStrokes
+            .Concat(burgerStrokes)
             .Where(stroke => stroke != null)
             .Sum(stroke => stroke.PointCount);
 
@@ -115,6 +117,7 @@ namespace SheepSheepBurger.BurgerAssembly
             }
 
             EndStroke();
+            CommitSauceNearBurger();
             if (hasSelectedSauce && selectedSauce == type)
             {
                 hasSelectedSauce = false;
@@ -177,6 +180,7 @@ namespace SheepSheepBurger.BurgerAssembly
             if (!TryGetBoardPoint(eventData, out Vector2 local))
             {
                 EndStroke();
+                CommitSauceNearBurger();
                 return;
             }
 
@@ -199,6 +203,7 @@ namespace SheepSheepBurger.BurgerAssembly
             else
             {
                 EndStroke();
+                CommitSauceNearBurger();
                 PositionSauceCursor(eventData.position, eventData.pressEventCamera);
             }
 
@@ -212,15 +217,17 @@ namespace SheepSheepBurger.BurgerAssembly
             float stackMinY,
             float stackMaxY)
         {
-            var attachedData = new List<SauceStrokeData>();
             if (burgerRoot == null || boardLayerRoot == null || stackAssembler == null)
             {
-                return attachedData;
+                return new List<SauceStrokeData>();
             }
 
             EndStroke();
-            hasSelectedSauce = false;
-            HideSauceCursor();
+            if (stackAssembler.IsCompleted)
+            {
+                hasSelectedSauce = false;
+                HideSauceCursor();
+            }
             Vector2 burgerBoardPosition = burgerRoot.anchoredPosition;
             float padding = CookingPrototypeRules.SauceBurgerAttachPadding;
 
@@ -254,10 +261,7 @@ namespace SheepSheepBurger.BurgerAssembly
                     rootLocalPoints);
                 stackAssembler.InsertDecorationAtLayer(attachedStroke.rectTransform, boardStroke.LayerOrder);
                 stackAssembler.IncludeDecorationBounds(rootLocalPoints, attachedStroke.Diameter);
-                attachedData.Add(new SauceStrokeData(
-                    boardStroke.SauceType,
-                    nearbyBoardPoints,
-                    boardStroke.LayerOrder));
+                burgerStrokes.Add(attachedStroke);
 
                 if (boardStroke.PointCount == 0)
                 {
@@ -267,7 +271,7 @@ namespace SheepSheepBurger.BurgerAssembly
             }
 
             drawingChanged?.Invoke();
-            return attachedData;
+            return CaptureBurgerStrokeData(burgerRoot);
         }
 
         internal void ResetDrawing()
@@ -285,8 +289,43 @@ namespace SheepSheepBurger.BurgerAssembly
                 }
             }
             boardStrokes.Clear();
+            foreach (SauceStrokeGraphic stroke in burgerStrokes)
+            {
+                if (stroke != null)
+                {
+                    DestroyObject(stroke.gameObject);
+                }
+            }
+            burgerStrokes.Clear();
             drawnStrokeCount = 0;
             drawingChanged?.Invoke();
+        }
+
+        private void CommitSauceNearBurger()
+        {
+            if (stackAssembler == null || stackAssembler.BurgerStackRoot == null)
+            {
+                return;
+            }
+
+            AttachSauceNearBurger(
+                stackAssembler.BurgerStackRoot,
+                stackAssembler.StackHalfWidth,
+                stackAssembler.StackMinY,
+                stackAssembler.StackMaxY);
+        }
+
+        private List<SauceStrokeData> CaptureBurgerStrokeData(RectTransform burgerRoot)
+        {
+            Vector2 burgerBoardPosition = burgerRoot.anchoredPosition;
+            return burgerStrokes
+                .Where(stroke => stroke != null && stroke.PointCount > 0)
+                .Select(stroke => new SauceStrokeData(
+                    stroke.SauceType,
+                    stroke.Points.Select(point => point + burgerBoardPosition),
+                    stroke.LayerOrder))
+                .OrderBy(stroke => stroke.layerOrder)
+                .ToList();
         }
 
         private void CreateSauceCursor()

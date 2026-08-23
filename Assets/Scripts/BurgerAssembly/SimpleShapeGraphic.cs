@@ -63,7 +63,7 @@ namespace SheepSheepBurger.BurgerAssembly
                     ? catalog.GetShape(shape)
                     : null;
             type = Type.Simple;
-            preserveAspect = false;
+            preserveAspect = sourceSprite != null;
             SetAllDirty();
         }
     }

@@ -76,6 +76,29 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             InvokePrivate(controller, "BuildInterface");
             InvokePrivate(controller, "RefreshControls");
 
+            Text cookingTimer = RequireFind("CookingTimerText").GetComponent<Text>();
+            Require(
+                cookingTimer != null &&
+                cookingTimer.text == "01:00" &&
+                Mathf.Approximately(controller.CookingTimeRemaining, CookingPrototypeRules.CookingTimeLimitSeconds) &&
+                !controller.HasCookingTimeExpired,
+                "Cooking must start with a visible one-minute time limit.");
+            int timeoutEventCount = 0;
+            controller.OnCookingTimeExpired += () => timeoutEventCount++;
+            InvokePrivate(controller, "TickCookingTimer", CookingPrototypeRules.CookingTimeLimitSeconds);
+            InvokePrivate(controller, "TickCookingTimer", 1f);
+            Require(
+                controller.HasCookingTimeExpired &&
+                Mathf.Approximately(controller.CookingTimeRemaining, 0f) &&
+                cookingTimer.text == "00:00" &&
+                timeoutEventCount == 1,
+                "The one-minute timer must invoke its dummy timeout event exactly once.");
+            InvokePrivate(controller, "ResetCookingTimer");
+            InvokePrivate(controller, "TickCookingTimer", 7f);
+            Require(
+                Mathf.Approximately(controller.CookingTimeRemaining, 53f) && cookingTimer.text == "00:53",
+                "Verification must leave a partially elapsed timer for the trash-reset regression check.");
+
             RequireFind("CookingCanvas");
             RequireFind("GrillPage");
             RequireFind("BoardPage");
@@ -108,7 +131,9 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
                 Mathf.Approximately(rawTray.GetComponent<SimpleShapeGraphic>().color.a, 0f),
                 "Ingredient sources must use the illustrated bins without a card background.");
             SimpleShapeGraphic rawPattyIcon = RequireFind("RawPattySourceIcon").GetComponent<SimpleShapeGraphic>();
-            Require(rawPattyIcon != null && rawPattyIcon.SourceSprite != null, "Tray art must use a serialized Sprite reference.");
+            Require(
+                rawPattyIcon != null && rawPattyIcon.SourceSprite != null && rawPattyIcon.preserveAspect,
+                "Tray art must use a serialized Sprite reference without distorting its aspect ratio.");
             Require(controller.SpriteCatalog.PattyCookingFrameCount == 6, "Patty cooking animation must contain all six source frames.");
             Require(
                 RequireFind("BottomBunTrayIcon").GetComponent<SimpleShapeGraphic>().SourceSprite == controller.SpriteCatalog.BunBottom,
@@ -219,6 +244,20 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             Require(
                 GameObject.Find("BurgerStackRoot") != null,
                 "Dropping the bottom bun on the visible board rectangle must create the burger stack regardless of the current camera stop.");
+            RectTransform burgerRootForSauce = RequireFind("BurgerStackRoot").GetComponent<RectTransform>();
+            controller.ToggleSauceTool(IngredientType.SauceKetchup);
+            InvokePrivate(sauceController, "BeginStroke", burgerRootForSauce.anchoredPosition);
+            InvokePrivate(sauceController, "EndStroke");
+            InvokePrivate(sauceController, "CommitSauceNearBurger");
+            controller.ToggleSauceTool(IngredientType.SauceKetchup);
+            SauceStrokeGraphic attachedSauce = UnityEngine.Object
+                .FindObjectsByType<SauceStrokeGraphic>(FindObjectsSortMode.None)
+                .Single(stroke => stroke.transform.parent == burgerRootForSauce);
+            Require(
+                attachedSauce.LayerOrder > burgerRootForSauce
+                    .GetComponentInChildren<PlacedIngredientView>()
+                    .LayerOrder,
+                "Sauce drawn on the burger must join the chronological stack layer immediately.");
             Require((bool)InvokePrivate(controller, "TryPlaceIngredient", IngredientType.ToppingTomato, new Vector2(350f, 0f)), "A distant topping must remain loose on the board.");
             Require((bool)InvokePrivate(controller, "TryPlaceIngredient", IngredientType.ToppingJalapeno, new Vector2(40f, 20f)), "A nearby topping must keep its exact top-view drop position.");
             Require((bool)InvokePrivate(controller, "TryPlaceIngredient", IngredientType.ToppingJalapeno, new Vector2(-30f, 30f)), "A consecutive duplicate topping must join the same layer.");
@@ -254,8 +293,15 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             Require((jalapenos[0].RectTransform.anchoredPosition - new Vector2(40f, 20f)).sqrMagnitude < 0.01f, "A central top-view placement must not be recentered.");
             Require(jalapenos[0].LayerOrder == jalapenos[1].LayerOrder, "Consecutive duplicate ingredients must share one layer.");
             Require(jalapenos[2].LayerOrder > onion.LayerOrder && onion.LayerOrder > jalapenos[1].LayerOrder, "A 1 -> 2 -> 1 sequence must create three distinct layers.");
+            Require(
+                attachedSauce.rectTransform.GetSiblingIndex() < jalapenos[0].RectTransform.GetSiblingIndex(),
+                "A topping placed after sauce must render above the sauce layer.");
             Require(onion.RectTransform.anchoredPosition.magnitude < 110f && onion.RectTransform.anchoredPosition.magnitude > 80f, "An edge placement must move only slightly toward the bun center.");
             Require(publishedBurger.ingredients.Select(item => item.layerOrder).Distinct().Count() == 5, "The completed top-view burger must contain the expected five logical layers including both buns.");
+            Require(
+                publishedBurger.sauceStrokes.Count == 1 &&
+                publishedBurger.sauceStrokes[0].layerOrder == attachedSauce.LayerOrder,
+                "Completed burger data must retain sauce that was attached before later toppings.");
             Require(bottomBun.GetComponent<SimpleShapeGraphic>().raycastTarget, "Placed ingredients must remain individually draggable.");
             GameObject completedBurgerDragHandle = RequireFind("CompletedBurgerDragHandle");
             BurgerPackagingController packaging = packagingPage.GetComponent<BurgerPackagingController>();
@@ -269,7 +315,13 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             Require(packageButton.interactable, "Packaging button must enable after the actual burger is placed on the tray.");
             InvokePrivate(packaging, "PackageBurger");
             Require(packaging.IsPackaged && !packageButton.interactable, "Packaging must complete once and disable the button.");
-            RequireFind("PackageWrap");
+            Require(!originalStackRoot.gameObject.activeSelf, "Packaging must hide the original layered burger object.");
+            SimpleShapeGraphic packagedBurgerArt = RequireFind("PackagedBurgerArt").GetComponent<SimpleShapeGraphic>();
+            Require(
+                packagedBurgerArt != null &&
+                packagedBurgerArt.gameObject.activeInHierarchy &&
+                packagedBurgerArt.SourceSprite == controller.SpriteCatalog.CompletedBurger,
+                "Packaging must replace the original stack with the supplied completed-burger image.");
             float grillGuideAlpha = RequireFind("GrillDropArea").GetComponent<SimpleShapeGraphic>().color.a;
             float boardGuideAlpha = RequireFind("BoardDropArea").GetComponent<SimpleShapeGraphic>().color.a;
             float packagingGuideAlpha = RequireFind("PackagingTray").GetComponent<SimpleShapeGraphic>().color.a;
@@ -285,10 +337,18 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             Require(
                 RequireFind("PackagingBoardFrame").GetComponent<RectTransform>().anchoredPosition.y > -100f,
                 "The packaging hit area must stay on the tabletop rather than the floor.");
+            float timeBeforeTrashReset = controller.CookingTimeRemaining;
+            bool expiredBeforeTrashReset = controller.HasCookingTimeExpired;
+            string timerTextBeforeTrashReset = cookingTimer.text;
             leftTrashReset.onClick.Invoke();
             Require(
-                controller.LastCompletedBurger == null && !packaging.HasBurger && !packageButton.interactable,
-                "Clicking either trash can must reset cooking, assembly, and packaging state.");
+                controller.LastCompletedBurger == null &&
+                !packaging.HasBurger &&
+                !packageButton.interactable &&
+                controller.HasCookingTimeExpired == expiredBeforeTrashReset &&
+                Mathf.Approximately(controller.CookingTimeRemaining, timeBeforeTrashReset) &&
+                cookingTimer.text == timerTextBeforeTrashReset,
+                "Clicking either trash can must reset cooking, assembly, and packaging without restarting the timer.");
         }
 
         private static void VerifyModel()
