@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c446cb8211755a24a936ecd3b816979c, type: 3}
-  m_Name: Shark
+  m_Name: Elephant
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.CustomerData
   id: 2
-  customerName: "\uC0C1\uC5B4"
+  customerName: "\uCF54\uB07C\uB9AC"
   sprites: []
   appearWeight: 0
   patienceTime: 60

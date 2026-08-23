@@ -10,13 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76e52d79f05fec84da88b585a329c43e, type: 3}
-  m_Name: Fried egg burger
+  m_Name: Fried Egg Burger
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.Dialogue
   orderLines:
-  - "\uC800\uB294 \uD3C9\uD654\uC8FC\uC758\uC790\uC5D0\uC694."
-  - "\uC804 \uCC44\uC2DD\uC8FC\uC758\uC790\uC5D0\uC694."
-  hintLine: "\uC6B0\uB9AC\uB294 \uCC44\uC18C\uB9CC \uBA39\uC744 \uD544\uC694\uAC00
-    \uC788\uC5B4\uC694."
+  - "\uB2EC\uAC40 \uBC84\uAC70 \uD558\uB098 \uC8FC\uC138\uC694."
+  - "\uACC4\uB780\uC73C\uB85C \uACE0\uAE30\uB97C \uC801\uC154\uC8FC\uC138\uC694."
+  hintLine: "\uACE0\uAE30 \uC704\uC5D0 \uD6C4\uB77C\uC774\uB97C \uC62C\uB824\uC8FC\uC138\uC694."
   perfectLine: "\uC0C8\uC0DD\uBA85\uC744 \uBA39\uC5B4\uC11C,,\uB9DB\uC788\uB124?"
-  normalLine: "\uACC4\uB780\uC774 \uB9DB\uC788\uB124\uC694"
-  badLine: "\uB2EC\uAC40 \uAECD\uC9C8\uC774 \uB4E4\uC5B4\uC788\uB294\uAC70 \uAC19\uB124\uC694"
+  normalLine: "\uACC4\uB780\uC774 \uB9DB\uC788\uB124\uC694."
+  badLine: "\uB2EC\uAC40 \uAECD\uC9C8\uC774 \uB4E4\uC5B4\uC788\uB294\uAC70 \uAC19\uB124\uC694."

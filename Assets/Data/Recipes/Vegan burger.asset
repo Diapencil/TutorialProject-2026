@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4eb6c15b4d87b2a4da2e338b5bd6985a, type: 3}
-  m_Name: Vegan burger
+  m_Name: Vegan Burger
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.RecipeData
   id: 6
   recipeName: "\uBE44\uAC74\uBC84\uAC70"

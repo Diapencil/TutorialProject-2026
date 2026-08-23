@@ -10,15 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76e52d79f05fec84da88b585a329c43e, type: 3}
-  m_Name: wild burger
+  m_Name: Wild Burger
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.Dialogue
   orderLines:
-  - "\uC800\uB294 \uD3C9\uD654\uC8FC\uC758\uC790\uC5D0\uC694."
-  - "\uC804 \uCC44\uC2DD\uC8FC\uC758\uC790\uC5D0\uC694."
-  hintLine: "\uC6B0\uB9AC\uB294 \uCC44\uC18C\uB9CC \uBA39\uC744 \uD544\uC694\uAC00
-    \uC788\uC5B4\uC694."
+  - "\uC57C\uC0DD\uC744 \uD600\uB85C \uB290\uAEF4\uBCF4\uACE0 \uC2F6\uC5B4\uC694."
+  - "\uB531 \uB2F4\uBC31\uD558\uAC8C \uC5B4\uB5A0\uD55C \uC870\uB9AC\uB3C4 \uC5C6\uC774"
+  hintLine: "\uACE0\uAE30\uC640 \uD480\uB9CC \uB123\uC5B4\uC8FC\uC138\uC694."
   perfectLine: "\uC57C\uC0DD\uC758 \uB4E4\uC9D0\uC2B9\uC774 \uB41C \uAC83 \uAC19\uC740
     \uB290\uB08C"
-  normalLine: "\uC640\uC77C\uB4DC\uD558\uB124\uC694"
+  normalLine: "\uC640\uC77C\uB4DC\uD558\uB124\uC694."
   badLine: "\uC774\uAC74 \uC8FC\uD1A0\uD53C\uC544\uC5D0 \uB098\uC624\uB294 \uB3D9\uBB3C\uB4E4\uB3C4
     \uC57D \uB123\uC5B4\uC11C \uBA39\uC5B4\uB3C4 \uC21C\uD574\uC9C8\uB4EF "

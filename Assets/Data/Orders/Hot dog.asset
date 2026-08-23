@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9ea9e2b0870e2014088880a5ac7ab508, type: 3}
-  m_Name: Hot dog
+  m_Name: Hot Dog
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.OrderData
   id: 5
   recipe: {fileID: 11400000, guid: 7bf00ca77f3f14348bf3a82b5674fe37, type: 2}
