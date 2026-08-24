@@ -16,8 +16,7 @@ MonoBehaviour:
   availableOrders:
   - {fileID: 11400000, guid: 4c47f096558cc6943b940db2ed1fae53, type: 2}
   customerName: "\uB291\uB300"
-  spritePath:
-  - Customers/wolf
+  sprites: []
   patienceTime: 60
   attackChance: 0.1
   tipMultiplier: 1

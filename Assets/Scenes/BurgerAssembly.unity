@@ -1,0 +1,386 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!29 &1
+OcclusionCullingSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_OcclusionBakeSettings:
+    smallestOccluder: 5
+    smallestHole: 0.25
+    backfaceThreshold: 100
+  m_SceneGUID: 00000000000000000000000000000000
+  m_OcclusionCullingData: {fileID: 0}
+--- !u!104 &2
+RenderSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 10
+  m_Fog: 0
+  m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  m_FogMode: 3
+  m_FogDensity: 0.01
+  m_LinearFogStart: 0
+  m_LinearFogEnd: 300
+  m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+  m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+  m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+  m_AmbientIntensity: 1
+  m_AmbientMode: 3
+  m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
+  m_SkyboxMaterial: {fileID: 0}
+  m_HaloStrength: 0.5
+  m_FlareStrength: 1
+  m_FlareFadeSpeed: 3
+  m_HaloTexture: {fileID: 0}
+  m_SpotCookie: {fileID: 10001, guid: 0000000000000000e000000000000000, type: 0}
+  m_DefaultReflectionMode: 0
+  m_DefaultReflectionResolution: 128
+  m_ReflectionBounces: 1
+  m_ReflectionIntensity: 1
+  m_CustomReflection: {fileID: 0}
+  m_Sun: {fileID: 0}
+  m_UseRadianceAmbientProbe: 0
+--- !u!157 &3
+LightmapSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 13
+  m_BakeOnSceneLoad: 0
+  m_GISettings:
+    serializedVersion: 2
+    m_BounceScale: 1
+    m_IndirectOutputScale: 1
+    m_AlbedoBoost: 1
+    m_EnvironmentLightingMode: 0
+    m_EnableBakedLightmaps: 0
+    m_EnableRealtimeLightmaps: 0
+  m_LightmapEditorSettings:
+    serializedVersion: 12
+    m_Resolution: 2
+    m_BakeResolution: 40
+    m_AtlasSize: 1024
+    m_AO: 0
+    m_AOMaxDistance: 1
+    m_CompAOExponent: 1
+    m_CompAOExponentDirect: 0
+    m_ExtractAmbientOcclusion: 0
+    m_Padding: 2
+    m_LightmapParameters: {fileID: 0}
+    m_LightmapsBakeMode: 1
+    m_TextureCompression: 1
+    m_ReflectionCompression: 2
+    m_MixedBakeMode: 2
+    m_BakeBackend: 2
+    m_PVRSampling: 1
+    m_PVRDirectSampleCount: 32
+    m_PVRSampleCount: 512
+    m_PVRBounces: 2
+    m_PVREnvironmentSampleCount: 256
+    m_PVREnvironmentReferencePointCount: 2048
+    m_PVRFilteringMode: 1
+    m_PVRDenoiserTypeDirect: 1
+    m_PVRDenoiserTypeIndirect: 1
+    m_PVRDenoiserTypeAO: 1
+    m_PVRFilterTypeDirect: 0
+    m_PVRFilterTypeIndirect: 0
+    m_PVRFilterTypeAO: 0
+    m_PVREnvironmentMIS: 1
+    m_PVRCulling: 1
+    m_PVRFilteringGaussRadiusDirect: 1
+    m_PVRFilteringGaussRadiusIndirect: 1
+    m_PVRFilteringGaussRadiusAO: 1
+    m_PVRFilteringAtrousPositionSigmaDirect: 0.5
+    m_PVRFilteringAtrousPositionSigmaIndirect: 2
+    m_PVRFilteringAtrousPositionSigmaAO: 1
+    m_ExportTrainingData: 0
+    m_TrainingDataDestination: TrainingData
+    m_LightProbeSampleCountMultiplier: 4
+  m_LightingDataAsset: {fileID: 20201, guid: 0000000000000000f000000000000000, type: 0}
+  m_LightingSettings: {fileID: 0}
+--- !u!196 &4
+NavMeshSettings:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_BuildSettings:
+    serializedVersion: 3
+    agentTypeID: 0
+    agentRadius: 0.5
+    agentHeight: 2
+    agentSlope: 45
+    agentClimb: 0.4
+    ledgeDropHeight: 0
+    maxJumpAcrossDistance: 0
+    minRegionArea: 2
+    manualCellSize: 0
+    cellSize: 0.16666667
+    manualTileSize: 0
+    tileSize: 256
+    buildHeightMesh: 0
+    maxJobWorkers: 0
+    preserveTilesOutsideBounds: 0
+    debug:
+      m_Flags: 0
+  m_NavMeshData: {fileID: 0}
+--- !u!1 &150139393
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 150139395}
+  - component: {fileID: 150139394}
+  m_Layer: 0
+  m_Name: CounterReturnBridge
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &150139394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 150139393}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c10ddf75b7ad1c43abcf3ae2df826d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lee.Counter.BurgerAssemblyCounterBridge
+  controller: {fileID: 429437630}
+  counterSceneName: Counter
+  returnDelaySeconds: 1.5
+  ingredientMap:
+  - burgerAssemblyType: 0
+    coreIngredient: {fileID: 11400000, guid: b0de1025bc5310e4d90fba051ab4ac01, type: 2}
+  - burgerAssemblyType: 1
+    coreIngredient: {fileID: 11400000, guid: 4e9590c32cef09b48b2efc1fbd675d58, type: 2}
+  - burgerAssemblyType: 2
+    coreIngredient: {fileID: 11400000, guid: 151c86a4dcfc6c64bbbfa2043195c5fc, type: 2}
+  - burgerAssemblyType: 3
+    coreIngredient: {fileID: 11400000, guid: 8df27fcfb27b137438426cac1253f5e3, type: 2}
+  - burgerAssemblyType: 4
+    coreIngredient: {fileID: 11400000, guid: 2e63ad892dc1b4044b7d6c595d9e87e8, type: 2}
+  - burgerAssemblyType: 5
+    coreIngredient: {fileID: 11400000, guid: 87d8e63a477497c45a381bb1f2088c7c, type: 2}
+  - burgerAssemblyType: 6
+    coreIngredient: {fileID: 11400000, guid: ee4177aa0f5a9924d9560b2af0015791, type: 2}
+  - burgerAssemblyType: 7
+    coreIngredient: {fileID: 11400000, guid: a9395f3a21dc52d418759082c45429ab, type: 2}
+  - burgerAssemblyType: 8
+    coreIngredient: {fileID: 11400000, guid: a5fdc566181da034a906fdb43b6e5973, type: 2}
+  - burgerAssemblyType: 9
+    coreIngredient: {fileID: 11400000, guid: d1b795ac805485d42bcd8bdc11e93c6b, type: 2}
+  - burgerAssemblyType: 10
+    coreIngredient: {fileID: 11400000, guid: 81903002c2f61144e95e521d93b8527c, type: 2}
+  - burgerAssemblyType: 11
+    coreIngredient: {fileID: 11400000, guid: 363fe7aa11d99f74c816d9f0f1cea467, type: 2}
+  - burgerAssemblyType: 12
+    coreIngredient: {fileID: 11400000, guid: 80b6650d616051f4a8d6017c2f2abd5b, type: 2}
+--- !u!4 &150139395
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 150139393}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &429437629
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 429437631}
+  - component: {fileID: 429437630}
+  m_Layer: 0
+  m_Name: BurgerAssemblyGame
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &429437630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 429437629}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6adfa981b099fc43b14ed4a7fafb1cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.BurgerAssembly.BurgerAssemblyController
+  spriteCatalog:
+    rectangle: {fileID: 8630838012316850449, guid: 3ed5dcd2077f4ea49983b91eab93eaff, type: 3}
+    circle: {fileID: -6231044458718751821, guid: 1a521a3c11adf4e438ab0bd660b0e4e6, type: 3}
+    triangle: {fileID: 9164359298635338950, guid: 5484b25e679dfdc4db251d852b4a17e5, type: 3}
+    roundedRectangle: {fileID: 7898183876960410391, guid: d2f96356c2fa53448bca79fd15aaf7dc, type: 3}
+    kitchenStationBackground: {fileID: 21300000, guid: 3f7235d61c6244d0b2e4b51571bf081f, type: 3}
+    pattyBall: {fileID: 21300000, guid: c6c505efe7b149d0baf759aa5822e5d7, type: 3}
+    pattyRaw: {fileID: 21300000, guid: a703f6c894fe44ca95c9fda4254dad43, type: 3}
+    pattyCooked: {fileID: 21300000, guid: 399d81a0acce48229a8c09a67aae9028, type: 3}
+    pattyBurnt: {fileID: 21300000, guid: f84e40bfd2a14fafa4a36758aa947372, type: 3}
+    pattyCookingFrames:
+    - {fileID: 21300000, guid: 8af9897d40614a9f9c906723ef69a584, type: 3}
+    - {fileID: 21300000, guid: fac9282bbfcc430e90e664f79a7ec398, type: 3}
+    - {fileID: 21300000, guid: de1d31f084ed43a9b421d0970565a266, type: 3}
+    - {fileID: 21300000, guid: 141bf463b9124c8290ce73c4386ca4b3, type: 3}
+    - {fileID: 21300000, guid: 2dc12b899f9f4ce2b2d5799af63e6553, type: 3}
+    - {fileID: 21300000, guid: e5368ead5ce9416daf2ed18d05f3a8cf, type: 3}
+    baconPile: {fileID: 21300000, guid: b2a10ef8bab94463b344d4ecc84c73f1, type: 3}
+    baconRaw: {fileID: 21300000, guid: 0e776e9e2dd84abcaa18cfa2e98b2c83, type: 3}
+    baconCooked: {fileID: 21300000, guid: a87d20e7162f4a31bd183e97c4faa10e, type: 3}
+    baconBurnt: {fileID: 21300000, guid: 4c5db5ac2406499a9bc65a9ac031bd89, type: 3}
+    eggCarton: {fileID: 21300000, guid: 138492ffedf7433b81700e5ee9991d0e, type: 3}
+    eggRaw: {fileID: 21300000, guid: 50276300897b44248d80944a2b444dca, type: 3}
+    eggCooked: {fileID: 21300000, guid: b792ac8243ea4897b4c1cf5c27725b80, type: 3}
+    eggBurnt: {fileID: 21300000, guid: 334514e1a67e45dfbefa3ff61dd6103b, type: 3}
+    bunBottom: {fileID: 21300000, guid: ec7cce702d1549078d5a88d264dc2d98, type: 3}
+    bunTop: {fileID: 21300000, guid: fb8b9c946b474c72a925cc8891a642dd, type: 3}
+    lettuce: {fileID: 21300000, guid: c2f7daa831a944f7900f316f1721e133, type: 3}
+    lettucePile: {fileID: 21300000, guid: c2f7daa831a944f7900f316f1721e133, type: 3}
+    tomato: {fileID: 21300000, guid: aec143a2a02747f4a56d6bdc300dc20a, type: 3}
+    tomatoPile: {fileID: 21300000, guid: b7ec580f901e4d759c1391c587ee3404, type: 3}
+    cheese: {fileID: -4470592730861715767, guid: cc1fcc415e7ff2542b33b3471aae77cd, type: 3}
+    onion: {fileID: 21300000, guid: e1e1116c8fdb40119f655b12e4380a43, type: 3}
+    onionPile: {fileID: 21300000, guid: f3fb0bbcc9d14750bbea9d48af30921c, type: 3}
+    pickle: {fileID: 21300000, guid: bb3ca46e68a4424d9c6910afee530a4f, type: 3}
+    picklePile: {fileID: 21300000, guid: 2e911923fc87473699cd486bd03afd6b, type: 3}
+    jalapeno: {fileID: 21300000, guid: bf1ca70e5cb94d8898d9c234814933a7, type: 3}
+    jalapenoPile: {fileID: 21300000, guid: 8a31721adaff4bfc9b655cd395c0049e, type: 3}
+    ketchup: {fileID: 21300000, guid: 82a4d895416a429f8a66c55bb7cc5eeb, type: 3}
+    ketchupCursor: {fileID: 21300000, guid: c247fedc21e8405080a5ec7e7bb6753c, type: 3}
+    mustard: {fileID: 21300000, guid: 49b7edef09ad46e79e5f1ff6a356c173, type: 3}
+    mustardCursor: {fileID: 21300000, guid: ea08120613ce49ad8e0e989b72b934cd, type: 3}
+    completedBurger: {fileID: 21300000, guid: da0e8af7bc0547e2bfa490d874fd54c4, type: 3}
+  cookingSchema:
+    defaultRecipeId: 0
+    ingredients: []
+    recipes: []
+    gradeConfigs: []
+--- !u!4 &429437631
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 429437629}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1694617209
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1694617212}
+  - component: {fileID: 1694617211}
+  - component: {fileID: 1694617210}
+  m_Layer: 0
+  m_Name: Main Camera
+  m_TagString: MainCamera
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!81 &1694617210
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1694617209}
+  m_Enabled: 1
+--- !u!20 &1694617211
+Camera:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1694617209}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 1, g: 0.95, b: 0.84, a: 1}
+  m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
+  m_Iso: 200
+  m_ShutterSpeed: 0.005
+  m_Aperture: 16
+  m_FocusDistance: 10
+  m_FocalLength: 50
+  m_BladeCount: 5
+  m_Curvature: {x: 2, y: 11}
+  m_BarrelClipping: 0.25
+  m_Anamorphism: 0
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0.3
+  far clip plane: 1000
+  field of view: 60
+  orthographic: 1
+  orthographic size: 5
+  m_Depth: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
+  m_TargetEye: 3
+  m_HDR: 1
+  m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 0
+  m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022
+--- !u!4 &1694617212
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1694617209}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1660057539 &9223372036854775807
+SceneRoots:
+  m_ObjectHideFlags: 0
+  m_Roots:
+  - {fileID: 1694617212}
+  - {fileID: 429437631}
+  - {fileID: 150139395}

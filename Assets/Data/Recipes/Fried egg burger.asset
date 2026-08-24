@@ -14,6 +14,39 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.RecipeData
   id: 12
   recipeName: "\uACC4\uB780\uD6C4\uB77C\uC774\uBC84\uAC70"
-  layers: []
-  basePrice: 100
+  layers:
+  - ingredient: {fileID: 11400000, guid: 4e9590c32cef09b48b2efc1fbd675d58, type: 2}
+    quantity: 1
+    cookRequirement: 0
+  - ingredient: {fileID: 11400000, guid: b0de1025bc5310e4d90fba051ab4ac01, type: 2}
+    quantity: 1
+    cookRequirement: 2
+  - ingredient: {fileID: 11400000, guid: 81903002c2f61144e95e521d93b8527c, type: 2}
+    quantity: 1
+    cookRequirement: 2
+  - ingredient: {fileID: 11400000, guid: 363fe7aa11d99f74c816d9f0f1cea467, type: 2}
+    quantity: 1
+    cookRequirement: 2
+  - ingredient: {fileID: 11400000, guid: ee4177aa0f5a9924d9560b2af0015791, type: 2}
+    quantity: 1
+    cookRequirement: 0
+  - ingredient: {fileID: 11400000, guid: 87d8e63a477497c45a381bb1f2088c7c, type: 2}
+    quantity: 1
+    cookRequirement: 0
+  - ingredient: {fileID: 11400000, guid: a9395f3a21dc52d418759082c45429ab, type: 2}
+    quantity: 1
+    cookRequirement: 0
+  - ingredient: {fileID: 11400000, guid: 2e63ad892dc1b4044b7d6c595d9e87e8, type: 2}
+    quantity: 1
+    cookRequirement: 0
+  - ingredient: {fileID: 11400000, guid: a5fdc566181da034a906fdb43b6e5973, type: 2}
+    quantity: 1
+    cookRequirement: 0
+  - ingredient: {fileID: 11400000, guid: 151c86a4dcfc6c64bbbfa2043195c5fc, type: 2}
+    quantity: 1
+    cookRequirement: 0
+  - ingredient: {fileID: 11400000, guid: d1b795ac805485d42bcd8bdc11e93c6b, type: 2}
+    quantity: 1
+    cookRequirement: 0
+  basePrice: 110
   unlockCondition: 

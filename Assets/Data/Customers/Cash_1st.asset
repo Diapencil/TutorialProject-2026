@@ -16,7 +16,7 @@ MonoBehaviour:
   availableOrders:
   - {fileID: 11400000, guid: 094f8eb87f005cd41914959723781a62, type: 2}
   customerName: "\uCE90\uC2DC"
-  spritePath: 
+  sprites: []
   patienceTime: 999
   attackChance: 0
   tipMultiplier: 0

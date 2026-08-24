@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9f685124575840a1ade6915491c74a1, type: 3}
+  m_Name: Banner
+  m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.DecorationData
+  id: 2
+  decorationName: "\uBC30\uB108"
+  sprite: {fileID: 0}
+  cost: 2000
+  counterPosition: {x: 0, y: 0}

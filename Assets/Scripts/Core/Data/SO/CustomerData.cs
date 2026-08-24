@@ -9,7 +9,7 @@ namespace SheepSheepBurger.Core
         public int id;
         // public List<OrderData> availableOrders;
         public string customerName;
-        public List<string> spritePath;
+        public List<Sprite> sprites;
         public float appearWeight;
         public int patienceTime;
         public float attackChance;

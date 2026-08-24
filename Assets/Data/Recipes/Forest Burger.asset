@@ -45,5 +45,5 @@ MonoBehaviour:
   - ingredient: {fileID: 11400000, guid: 151c86a4dcfc6c64bbbfa2043195c5fc, type: 2}
     quantity: 1
     cookRequirement: 0
-  basePrice: 100
+  basePrice: 120
   unlockCondition: "\uB291\uB300\uC758 \uC8FC\uBB38"
