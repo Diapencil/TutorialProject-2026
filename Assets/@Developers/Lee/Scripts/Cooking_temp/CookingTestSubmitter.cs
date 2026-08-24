@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Lee.Counter;
+using SheepSheepBurger.Counter;
 using SheepSheepBurger.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;

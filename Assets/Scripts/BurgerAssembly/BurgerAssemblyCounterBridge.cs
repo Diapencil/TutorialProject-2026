@@ -11,7 +11,7 @@ using CoreBurgerData = SheepSheepBurger.Core.BurgerData;
 using CorePlacedIngredient = SheepSheepBurger.Core.PlacedIngredient;
 using CoreIngredientData = SheepSheepBurger.Core.IngredientData;
 
-namespace Lee.Counter
+namespace SheepSheepBurger.Counter
 {
     /// <summary>
     /// Connects the (Counter-independent) BurgerAssembly prototype back to the Counter scene:

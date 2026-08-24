@@ -1,4 +1,4 @@
-using Lee.Counter;
+using SheepSheepBurger.Counter;
 using SheepSheepBurger.BurgerAssembly;
 using SheepSheepBurger.Core;
 using UnityEditor;
@@ -7,7 +7,7 @@ using UnityEngine;
 using BurgerAssemblyIngredientType = SheepSheepBurger.BurgerAssembly.IngredientType;
 using CoreIngredientData = SheepSheepBurger.Core.IngredientData;
 
-namespace Lee.Counter.Editor
+namespace SheepSheepBurger.Counter.Editor
 {
     /// <summary>
     /// One-shot editor tool that wires a BurgerAssemblyCounterBridge into the

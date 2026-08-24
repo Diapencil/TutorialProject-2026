@@ -6,7 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Lee.Counter
+namespace SheepSheepBurger.Counter
 {
     public sealed class CounterSceneUI : MonoBehaviour
     {
@@ -16,44 +16,51 @@ namespace Lee.Counter
         [SerializeField] private TMP_Text speechBubbleText;
         [SerializeField] private TMP_Text patienceText;
         [SerializeField] private Button confirmOrderButton;
+        [SerializeField] private TMP_Text confirmOrderButtonText;
         [SerializeField] private Button whatButton;
-        [SerializeField] private Button serveButton;
-        [SerializeField] private GameObject servingBurgerRoot;
+        [SerializeField] private TMP_Text whatButtonText;
+        [SerializeField] private BurgerDragServeHandle burgerDragHandle;
         [SerializeField] private GameObject resultRoot;
         [SerializeField] private TMP_Text resultText;
         [SerializeField] private float typingCharInterval = 0.03f;
+        [SerializeField] private float resultRiseDistance = 40f;
+        [SerializeField] private float resultRiseDuration = 0.35f;
 
         public event Action ConfirmClicked;
         public event Action ServeClicked;
+        /// <summary>"네?" 버튼(힌트 요청)을 눌렀을 때 발생. 서빙 판정에서 Perfect/Good 배제에 쓰인다.</summary>
+        public event Action ClarificationRequested;
         private string clarificationRequest;
         private bool clarificationShown;
         private Coroutine typingCoroutine;
+        private Coroutine resultRiseCoroutine;
+        private Vector2 resultTextBasePosition;
 
         private void Awake()
         {
             confirmOrderButton.onClick.AddListener(() => ConfirmClicked?.Invoke());
             whatButton.onClick.AddListener(ShowClarification);
-            serveButton.onClick.AddListener(() => ServeClicked?.Invoke());
+            burgerDragHandle.Dropped += () => ServeClicked?.Invoke();
+            resultTextBasePosition = resultText.rectTransform.anchoredPosition;
         }
 
         private void OnDestroy()
         {
             confirmOrderButton.onClick.RemoveAllListeners();
             whatButton.onClick.RemoveAllListeners();
-            serveButton.onClick.RemoveAllListeners();
         }
 
         public void ShowOrder(OrderInstance order)
         {
             var dialogue = order.order.dialogue;
             var line = dialogue != null && dialogue.orderLines != null && dialogue.orderLines.Count > 0
-                ? dialogue.orderLines[0]
+                ? dialogue.orderLines[UnityEngine.Random.Range(0, dialogue.orderLines.Count)]
                 : order.order.recipe.recipeName;
             TypeText(line);
             clarificationRequest = dialogue != null ? dialogue.hintLine : string.Empty;
             clarificationShown = false;
-            confirmOrderButton.interactable = true;
-            whatButton.interactable = !string.IsNullOrWhiteSpace(clarificationRequest);
+            SetConfirmOrderButtonInteractable(true);
+            SetWhatButtonInteractable(!string.IsNullOrWhiteSpace(clarificationRequest));
             resultRoot.SetActive(false);
         }
 
@@ -63,8 +70,8 @@ namespace Lee.Counter
             speechBubbleText.text = string.Empty;
             clarificationRequest = string.Empty;
             clarificationShown = false;
-            confirmOrderButton.interactable = false;
-            whatButton.interactable = false;
+            SetConfirmOrderButtonInteractable(false);
+            SetWhatButtonInteractable(false);
             resultRoot.SetActive(false);
         }
 
@@ -72,8 +79,21 @@ namespace Lee.Counter
         {
             if (clarificationShown) return;
             clarificationShown = true;
+            ClarificationRequested?.Invoke();
             TypeText(clarificationRequest);
-            whatButton.interactable = false;
+            SetWhatButtonInteractable(false);
+        }
+
+        private void SetConfirmOrderButtonInteractable(bool interactable)
+        {
+            confirmOrderButton.interactable = interactable;
+            confirmOrderButtonText.gameObject.SetActive(interactable);
+        }
+
+        private void SetWhatButtonInteractable(bool interactable)
+        {
+            whatButton.interactable = interactable;
+            whatButtonText.gameObject.SetActive(interactable);
         }
 
         private void TypeText(string text)
@@ -114,19 +134,42 @@ namespace Lee.Counter
         public void SetPatience(float seconds) => patienceText.text = $"Patience: {Mathf.CeilToInt(seconds)}s";
         public void SetOrderConfirmed(bool confirmed)
         {
-            confirmOrderButton.interactable = !confirmed;
-            whatButton.interactable = !confirmed && !clarificationShown && !string.IsNullOrWhiteSpace(clarificationRequest);
+            SetConfirmOrderButtonInteractable(!confirmed);
+            SetWhatButtonInteractable(!confirmed && !clarificationShown && !string.IsNullOrWhiteSpace(clarificationRequest));
         }
-        public void SetCookedBurgerAvailable(bool available)
-        {
-            servingBurgerRoot.SetActive(available);
-            serveButton.interactable = available;
-        }
+        public void SetCookedBurgerAvailable(bool available) => burgerDragHandle.gameObject.SetActive(available);
         public void ShowResult(Grade result, int reward, string reaction)
         {
             resultRoot.SetActive(true);
-            resultText.text = $"{result}\nReward: {CurrencyUtil.ToDisplay(reward)}\n{reaction}";
+            resultText.text = $"{result}\n+{CurrencyUtil.ToDisplay(reward)}";
             TypeText(reaction);
+            PlayResultRiseAnimation();
+        }
+
+        private void PlayResultRiseAnimation()
+        {
+            if (resultRiseCoroutine != null) StopCoroutine(resultRiseCoroutine);
+            resultRiseCoroutine = StartCoroutine(ResultRiseRoutine());
+        }
+
+        // 빠르게 올라가다 점점 느려지도록 ease-out(quad) 곡선을 사용한다.
+        private IEnumerator ResultRiseRoutine()
+        {
+            var rt = resultText.rectTransform;
+            rt.anchoredPosition = resultTextBasePosition;
+
+            var elapsed = 0f;
+            while (elapsed < resultRiseDuration)
+            {
+                elapsed += Time.deltaTime;
+                var t = Mathf.Clamp01(elapsed / resultRiseDuration);
+                var eased = 1f - (1f - t) * (1f - t);
+                rt.anchoredPosition = resultTextBasePosition + Vector2.up * (resultRiseDistance * eased);
+                yield return null;
+            }
+
+            rt.anchoredPosition = resultTextBasePosition + Vector2.up * resultRiseDistance;
+            resultRiseCoroutine = null;
         }
     }
 }

@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Lee.Counter
+namespace SheepSheepBurger.Counter
 {
     /// <summary>손님 프리팹의 표시/애니메이션 어댑터입니다. Animator는 선택 사항입니다.</summary>
     public sealed class CustomerPresenter : MonoBehaviour

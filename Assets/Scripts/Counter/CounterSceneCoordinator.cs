@@ -4,7 +4,7 @@ using SheepSheepBurger.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Lee.Counter
+namespace SheepSheepBurger.Counter
 {
     public sealed class CounterSceneCoordinator : MonoBehaviour
     {
@@ -24,6 +24,7 @@ namespace Lee.Counter
         {
             ui.ConfirmClicked += ConfirmOrder;
             ui.ServeClicked += ServeBurger;
+            ui.ClarificationRequested += CounterSceneSession.MarkHintUsed;
             dayProgress = DayProgressRuntime.GetOrCreate();
             ui.SetTop(dayProgress, settings.CustomersPerDay);
             customer.Hide();
@@ -38,6 +39,7 @@ namespace Lee.Counter
             if (ui == null) return;
             ui.ConfirmClicked -= ConfirmOrder;
             ui.ServeClicked -= ServeBurger;
+            ui.ClarificationRequested -= CounterSceneSession.MarkHintUsed;
         }
 
         private void CreateNextCustomer()
@@ -138,18 +140,19 @@ namespace Lee.Counter
         private void ServeBurger()
         {
             if (resolving || order == null || CounterSceneSession.CookedBurger == null) return;
-            StartCoroutine(Resolve(OrderJudge.Judge(order.order, CounterSceneSession.CookedBurger)));
+            var grade = OrderJudge.Judge(order.order, CounterSceneSession.CookedBurger, settings.GradeConfig, CounterSceneSession.HintUsed);
+            StartCoroutine(Resolve(grade));
         }
 
         private IEnumerator Resolve(Grade grade)
         {
             if (resolving) yield break;
             resolving = true;
-            var reward = OrderJudge.GetReward(order.order, grade);
+            var reward = OrderJudge.GetReward(order.order, grade, settings.GradeConfig);
             dayProgress.RegisterCustomer(reward);
             ui.SetTop(dayProgress, settings.CustomersPerDay);
             ui.SetCookedBurgerAvailable(false);
-            ui.ShowResult(grade, reward, settings.GetReaction(grade));
+            ui.ShowResult(grade, reward, settings.GetReaction(grade, order.order.dialogue));
             customer.Exit();
             yield return new WaitForSeconds(settings.ReactionSeconds);
             CounterSceneSession.ClearOrder();

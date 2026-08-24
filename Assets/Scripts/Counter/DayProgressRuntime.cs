@@ -1,7 +1,7 @@
 using SheepSheepBurger.Core;
 using UnityEngine;
 
-namespace Lee.Counter
+namespace SheepSheepBurger.Counter
 {
     /// <summary>Owns Core runtime state for the current day without mutating data assets.</summary>
     public sealed class DayProgressRuntime : MonoBehaviour
