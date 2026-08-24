@@ -120,7 +120,6 @@ namespace SheepSheepBurger.Counter
             if (order != enteringOrder || resolving) yield break;
 
             ui.ShowOrder(enteringOrder);
-            ui.SetOrderConfirmed(CounterSceneSession.HasConfirmedOrder);
         }
 
         private void ConfirmOrder()
@@ -152,7 +151,9 @@ namespace SheepSheepBurger.Counter
             dayProgress.RegisterCustomer(reward);
             ui.SetTop(dayProgress, settings.CustomersPerDay);
             ui.SetCookedBurgerAvailable(false);
-            ui.ShowResult(grade, reward, settings.GetReaction(grade, order.order.dialogue));
+            yield return ui.ShowResultRoutine(grade, reward, settings.GetReaction(grade, order.order.dialogue));
+            yield return new WaitForSeconds(settings.ExitDelaySeconds);
+            ui.HideSpeechBubble();
             customer.Exit();
             yield return new WaitForSeconds(settings.ReactionSeconds);
             CounterSceneSession.ClearOrder();

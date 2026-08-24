@@ -775,7 +775,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 0 C
+  m_text: 0.0C
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
   m_sharedMaterial: {fileID: -2366584325251309340, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
@@ -1658,6 +1658,7 @@ MonoBehaviour:
   dayText: {fileID: 2098315085}
   revenueText: {fileID: 728709091}
   progressText: {fileID: 1687361222}
+  customerAreaPanel: {fileID: 1727874024}
   speechBubbleText: {fileID: 1804051955}
   patienceText: {fileID: 1021244079}
   confirmOrderButton: {fileID: 1554531488}
@@ -1668,7 +1669,7 @@ MonoBehaviour:
   resultRoot: {fileID: 1301159498}
   resultText: {fileID: 2061007404}
   typingCharInterval: 0.03
-  resultRiseDistance: 250
+  resultRiseDistance: 150
   resultRiseDuration: 0.35
 --- !u!114 &1515904600
 MonoBehaviour:
@@ -2651,10 +2652,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uAC00\uB098\uB2E4\uB77C"
+  m_text: + 0C
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
-  m_sharedMaterial: {fileID: -2366584325251309340, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 82b086a2becc65e44a789b7681e2ce5a, type: 2}
+  m_sharedMaterial: {fileID: -2366584325251309340, guid: 82b086a2becc65e44a789b7681e2ce5a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

@@ -10,6 +10,7 @@ namespace SheepSheepBurger.Counter
         [Min(1), SerializeField] private int customersPerDay = 8;
         [Min(1f), SerializeField] private float patienceSeconds = 60f;
         [Min(0f), SerializeField] private float reactionSeconds = 2f;
+        [Min(0f), SerializeField] private float exitDelaySeconds = 0.5f;
         [SerializeField] private string cookingSceneName = "Cooking";
         [SerializeField] private GradeConfig gradeConfig;
         [SerializeField] private List<SheepSheepBurger.Core.CustomerData> availableCustomers = new();
@@ -21,6 +22,8 @@ namespace SheepSheepBurger.Counter
         public int CustomersPerDay => customersPerDay;
         public float PatienceSeconds => patienceSeconds;
         public float ReactionSeconds => reactionSeconds;
+        /// <summary>수령 대사가 다 출력된 후 퇴장 애니메이션이 시작되기까지의 텀입니다.</summary>
+        public float ExitDelaySeconds => exitDelaySeconds;
         public string CookingSceneName => cookingSceneName;
         public GradeConfig GradeConfig => gradeConfig;
         public IReadOnlyList<SheepSheepBurger.Core.CustomerData> AvailableCustomers => availableCustomers;

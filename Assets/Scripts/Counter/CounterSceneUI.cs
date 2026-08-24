@@ -13,6 +13,8 @@ namespace SheepSheepBurger.Counter
         [SerializeField] private TMP_Text dayText;
         [SerializeField] private TMP_Text revenueText;
         [SerializeField] private TMP_Text progressText;
+        [Tooltip("대사가 표시되는 말풍선 패널입니다. 대사가 떠 있지 않을 때는 비활성화됩니다.")]
+        [SerializeField] private GameObject customerAreaPanel;
         [SerializeField] private TMP_Text speechBubbleText;
         [SerializeField] private TMP_Text patienceText;
         [SerializeField] private Button confirmOrderButton;
@@ -56,22 +58,38 @@ namespace SheepSheepBurger.Counter
             var line = dialogue != null && dialogue.orderLines != null && dialogue.orderLines.Count > 0
                 ? dialogue.orderLines[UnityEngine.Random.Range(0, dialogue.orderLines.Count)]
                 : order.order.recipe.recipeName;
-            TypeText(line);
             clarificationRequest = dialogue != null ? dialogue.hintLine : string.Empty;
             clarificationShown = false;
-            SetConfirmOrderButtonInteractable(true);
-            SetWhatButtonInteractable(!string.IsNullOrWhiteSpace(clarificationRequest));
+            var hasClarification = !string.IsNullOrWhiteSpace(clarificationRequest);
+            // 주문 대사가 다 출력되기 전에는 버튼을 숨겨둔다.
+            SetConfirmOrderButtonInteractable(false);
+            SetWhatButtonInteractable(false);
             resultRoot.SetActive(false);
+            if (customerAreaPanel != null) customerAreaPanel.SetActive(true);
+            TypeText(line, () =>
+            {
+                SetConfirmOrderButtonInteractable(true);
+                SetWhatButtonInteractable(hasClarification);
+            });
         }
 
         public void HideOrder()
         {
-            StopTyping();
-            speechBubbleText.text = string.Empty;
+            HideSpeechBubble();
             clarificationRequest = string.Empty;
             clarificationShown = false;
             SetConfirmOrderButtonInteractable(false);
             SetWhatButtonInteractable(false);
+            resultRoot.SetActive(false);
+        }
+
+        /// <summary>말풍선과 대사를 감춘다. 대사가 떠 있지 않은 동안(시작 시점, 수령 직후 등)에는 CustomerArea 패널 자체를 비활성화한다.
+        /// 결과 텍스트(resultText)도 말풍선과 같은 시점에 함께 사라진다.</summary>
+        public void HideSpeechBubble()
+        {
+            StopTyping();
+            speechBubbleText.text = string.Empty;
+            if (customerAreaPanel != null) customerAreaPanel.SetActive(false);
             resultRoot.SetActive(false);
         }
 
@@ -96,10 +114,10 @@ namespace SheepSheepBurger.Counter
             whatButtonText.gameObject.SetActive(interactable);
         }
 
-        private void TypeText(string text)
+        private void TypeText(string text, Action onComplete = null)
         {
             StopTyping();
-            typingCoroutine = StartCoroutine(TypeTextRoutine(text));
+            typingCoroutine = StartCoroutine(TypeTextRoutine(text, onComplete));
         }
 
         private void StopTyping()
@@ -109,18 +127,20 @@ namespace SheepSheepBurger.Counter
             typingCoroutine = null;
         }
 
-        private IEnumerator TypeTextRoutine(string text)
+        private IEnumerator TypeTextRoutine(string text, Action onComplete)
         {
             speechBubbleText.text = string.Empty;
-            if (string.IsNullOrEmpty(text)) yield break;
-
-            for (var i = 0; i < text.Length; i++)
+            if (!string.IsNullOrEmpty(text))
             {
-                speechBubbleText.text += text[i];
-                yield return new WaitForSeconds(typingCharInterval);
+                for (var i = 0; i < text.Length; i++)
+                {
+                    speechBubbleText.text += text[i];
+                    yield return new WaitForSeconds(typingCharInterval);
+                }
             }
 
             typingCoroutine = null;
+            onComplete?.Invoke();
         }
 
         public void SetTop(DayProgressRuntime day, int customersPerDay)
@@ -138,12 +158,17 @@ namespace SheepSheepBurger.Counter
             SetWhatButtonInteractable(!confirmed && !clarificationShown && !string.IsNullOrWhiteSpace(clarificationRequest));
         }
         public void SetCookedBurgerAvailable(bool available) => burgerDragHandle.gameObject.SetActive(available);
-        public void ShowResult(Grade result, int reward, string reaction)
+        /// <summary>결과 표시 후 수령 대사가 다 출력될 때까지 대기하는 코루틴입니다. 호출부에서 대사 출력이 끝난 뒤의 연출(예: 손님 퇴장)을 이어붙일 때 사용합니다.</summary>
+        public IEnumerator ShowResultRoutine(Grade result, int reward, string reaction)
         {
             resultRoot.SetActive(true);
             resultText.text = $"{result}\n+{CurrencyUtil.ToDisplay(reward)}";
-            TypeText(reaction);
             PlayResultRiseAnimation();
+
+            if (customerAreaPanel != null) customerAreaPanel.SetActive(true);
+            var typingDone = false;
+            TypeText(reaction, () => typingDone = true);
+            while (!typingDone) yield return null;
         }
 
         private void PlayResultRiseAnimation()

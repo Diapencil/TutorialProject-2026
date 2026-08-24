@@ -15,10 +15,10 @@ MonoBehaviour:
   customersPerDay: 8
   patienceSeconds: 60
   reactionSeconds: 2
+  exitDelaySeconds: 0.5
   cookingSceneName: BurgerAssembly
   gradeConfig: {fileID: 11400000, guid: 778bf514382c06942a5523ebaec0e973, type: 2}
   availableCustomers:
-  - {fileID: 11400000, guid: a2715f77db9e5c2429c02d297b9e0071, type: 2}
   - {fileID: 11400000, guid: 43ec81016a6938340abf0a439d5db1f5, type: 2}
   - {fileID: 11400000, guid: d0e52180fac18fd4eb238333c8d87490, type: 2}
   availableOrders:
