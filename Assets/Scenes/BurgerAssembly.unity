@@ -253,12 +253,15 @@ MonoBehaviour:
     lettucePile: {fileID: 21300000, guid: c2f7daa831a944f7900f316f1721e133, type: 3}
     tomato: {fileID: 21300000, guid: aec143a2a02747f4a56d6bdc300dc20a, type: 3}
     tomatoPile: {fileID: 21300000, guid: b7ec580f901e4d759c1391c587ee3404, type: 3}
-    cheese: {fileID: -4470592730861715767, guid: cc1fcc415e7ff2542b33b3471aae77cd, type: 3}
-    onion: {fileID: 21300000, guid: e1e1116c8fdb40119f655b12e4380a43, type: 3}
+    cheese: {fileID: 21300000, guid: 4b0dc725e775401bb33d378849d290e6, type: 3}
+    onion: {fileID: 21300000, guid: 5338f3da5bee4f419876c3bce162a1d1, type: 3}
+    onionTray: {fileID: 21300000, guid: e1e1116c8fdb40119f655b12e4380a43, type: 3}
     onionPile: {fileID: 21300000, guid: f3fb0bbcc9d14750bbea9d48af30921c, type: 3}
-    pickle: {fileID: 21300000, guid: bb3ca46e68a4424d9c6910afee530a4f, type: 3}
+    pickle: {fileID: 21300000, guid: ad49c4f8cfea4fbab203ae3378e62caf, type: 3}
+    pickleTray: {fileID: 21300000, guid: bb3ca46e68a4424d9c6910afee530a4f, type: 3}
     picklePile: {fileID: 21300000, guid: 2e911923fc87473699cd486bd03afd6b, type: 3}
-    jalapeno: {fileID: 21300000, guid: bf1ca70e5cb94d8898d9c234814933a7, type: 3}
+    jalapeno: {fileID: 21300000, guid: 33c00ceabf714ac8bc6a4d5e71bb1d30, type: 3}
+    jalapenoTray: {fileID: 21300000, guid: bf1ca70e5cb94d8898d9c234814933a7, type: 3}
     jalapenoPile: {fileID: 21300000, guid: 8a31721adaff4bfc9b655cd395c0049e, type: 3}
     ketchup: {fileID: 21300000, guid: 82a4d895416a429f8a66c55bb7cc5eeb, type: 3}
     ketchupCursor: {fileID: 21300000, guid: c247fedc21e8405080a5ec7e7bb6753c, type: 3}

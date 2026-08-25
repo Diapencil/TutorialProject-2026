@@ -6,10 +6,10 @@ This module implements the cooking, assembly, temporary packaging, and cooking-r
 
 ## Play
 
-1. Open `Assets/@Developers/ChoiHJ/BurgerAssembly/Scenes/BurgerAssembly.unity`.
+1. Open `Assets/Scenes/BurgerAssembly.unity`.
 2. Enter Play Mode. The grill zone is the default camera position.
-3. Slide to the board and place any ingredients freely. A bottom bun is only required when you want to start a burger stack.
-4. Choose patty, bacon, or egg from the grill tray and drag it to the grill. Multiple grill items can be active at once.
+3. Slide to the board and place any ingredients freely. Click a tray ingredient for automatic placement, or drag it to choose an exact position. A bottom bun is only required when you want to start a burger stack.
+4. Choose patty, bacon, or egg from the grill tray. Click to add it to an open grill slot, or drag it to the grill for exact placement. Multiple grill items can be active at once.
 5. For a patty, tap the dough to flatten it and start cooking. Bacon starts cooking on the first tap; egg cooks on one side for 3 seconds.
 6. Patty and bacon cook for 3 seconds per side. Tap within the five-second flip window, then wait another 3 seconds after flipping.
 7. Drag a raw, partially cooked, completed, or burnt patty, bacon, or egg to the right edge. The camera moves to the board zone and preserves its cooking state.
@@ -18,7 +18,7 @@ This module implements the cooking, assembly, temporary packaging, and cooking-r
 10. Drop the top bun to complete the burger.
 11. Drag the completed burger to the right edge, keep holding it while the camera slides, and drop that same burger object inside the central packaging tray. Then use the packaging button on the right.
 
-Swipe at least 20% of the screen width to move through the same-scene `grill ↔ board ↔ packaging` zones at any time. The page strip uses a smooth tween without moving or reconfiguring the scene camera. Pointer movement below 5 pixels remains a tap. The packaging button stays disabled until the completed burger is physically dropped inside the packaging tray.
+Drag horizontally to move continuously across the same kitchen panorama. The view follows the pointer and remains exactly where it is released instead of snapping to `grill`, `board`, or `packaging` pages. Those names now identify interaction regions only. Pointer movement below 5 pixels remains a tap, and the packaging button stays disabled until the completed burger is physically dropped inside the packaging tray.
 
 ## Confirmed rules
 
@@ -66,8 +66,8 @@ Use `Sheep Sheep Burger > Build Unified Cooking Scene` to rebuild the unified sc
 
 ## Art integration notes
 
-The supplied cooking art is stored in `Assets/@Developers/ChoiHJ/BurgerAssembly/Sprites/ProvidedArt` and is connected through serialized `BurgerSpriteCatalog` references. Runtime `Resources.Load` calls and string asset paths are not used. The grill uses the supplied patty, bacon, and egg raw/cooked/burnt images; while a patty is cooking, the six cropped frames from `IMG_0610.GIF` loop beneath the unchanged patty Sprite at the source frame timing. The board uses the supplied bottom bun, top bun, lettuce, tomato, onion, pickle, and jalapeno images and their pile variants. Ketchup and mustard use their placement-version images in the tray, and their click-version bottles follow the pointer over the board while sauce mode is selected. Packaging displays the supplied completed-burger image. Cheese keeps the existing project art because no replacement image was supplied. `shop_ui.png` is imported for future shop work but is not placed in the cooking scene. Custom ingredient sprites render with a white UI tint so their source pixels are used unchanged. Before a mobile build, replace the operating-system font fallback with a packaged Korean TextMeshPro font asset.
+The supplied cooking art is stored in `Assets/Sprites/ProvidedArt` and is connected through serialized `BurgerSpriteCatalog` references. Runtime `Resources.Load` calls and string asset paths are not used. The grill uses the supplied patty, bacon, and egg raw/cooked/burnt images; while a patty is cooking, the six cropped frames from `IMG_0610.GIF` loop beneath the unchanged patty Sprite at the source frame timing. The board uses the supplied bottom bun, top bun, lettuce, tomato, cheese, onion, pickle, and jalapeno images. Onion, pickle, and jalapeno use their grouped top-down art in the tray and the single-piece art when placed on the board; their pile variants remain available in the Sprite catalog. Ketchup and mustard use their placement-version images in the tray, and their click-version bottles follow the pointer over the board while sauce mode is selected. Packaging displays the supplied completed-burger image. `shop_ui.png` is imported for future shop work but is not placed in the cooking scene. Custom ingredient sprites render with a white UI tint so their source pixels are used unchanged. Before a mobile build, replace the operating-system font fallback with a packaged Korean TextMeshPro font asset.
 
-The shared kitchen-station background is stored in `Sprites/Environment/kitchen_station_reference.png`. The runtime page strip renders this Sprite exactly once as an aspect-preserved panoramic counter. The three slide stops show its left grill, center ingredient/assembly, and right packaging regions; the matching interaction UI is parented to the same strip, so the background and controls travel together without duplicating the image.
+The shared kitchen-station background is stored in `Sprites/Environment/kitchen_station_reference.png`. Runtime renders this Sprite exactly once as one aspect-preserved, continuously draggable panorama. Manual dragging follows the pointer and stops at the released position without snapping to three page stops. Grill, assembly, and packaging remain logical interaction regions parented to the same panorama, so the background and controls travel together without duplicating the image.
 
 See `OPEN_SOURCE_REFERENCES.md` for reviewed open-source projects and licensing notes.

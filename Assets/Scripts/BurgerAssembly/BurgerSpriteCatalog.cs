@@ -43,10 +43,13 @@ namespace SheepSheepBurger.BurgerAssembly
         [SerializeField] private Sprite tomatoPile;
         [SerializeField] private Sprite cheese;
         [SerializeField] private Sprite onion;
+        [SerializeField] private Sprite onionTray;
         [SerializeField] private Sprite onionPile;
         [SerializeField] private Sprite pickle;
+        [SerializeField] private Sprite pickleTray;
         [SerializeField] private Sprite picklePile;
         [SerializeField] private Sprite jalapeno;
+        [SerializeField] private Sprite jalapenoTray;
         [SerializeField] private Sprite jalapenoPile;
         [SerializeField] private Sprite ketchup;
         [SerializeField] private Sprite ketchupCursor;
@@ -78,10 +81,13 @@ namespace SheepSheepBurger.BurgerAssembly
         public Sprite TomatoPile => tomatoPile;
         public Sprite Cheese => cheese;
         public Sprite Onion => onion;
+        public Sprite OnionTray => onionTray;
         public Sprite OnionPile => onionPile;
         public Sprite Pickle => pickle;
+        public Sprite PickleTray => pickleTray;
         public Sprite PicklePile => picklePile;
         public Sprite Jalapeno => jalapeno;
+        public Sprite JalapenoTray => jalapenoTray;
         public Sprite JalapenoPile => jalapenoPile;
         public Sprite Ketchup => ketchup;
         public Sprite KetchupCursor => ketchupCursor;
@@ -118,10 +124,13 @@ namespace SheepSheepBurger.BurgerAssembly
             tomatoPile != null &&
             cheese != null &&
             onion != null &&
+            onionTray != null &&
             onionPile != null &&
             pickle != null &&
+            pickleTray != null &&
             picklePile != null &&
             jalapeno != null &&
+            jalapenoTray != null &&
             jalapenoPile != null &&
             ketchup != null &&
             ketchupCursor != null &&
@@ -187,10 +196,13 @@ namespace SheepSheepBurger.BurgerAssembly
             Sprite tomatoPileSprite,
             Sprite cheeseSprite,
             Sprite onionSprite,
+            Sprite onionTraySprite,
             Sprite onionPileSprite,
             Sprite pickleSprite,
+            Sprite pickleTraySprite,
             Sprite picklePileSprite,
             Sprite jalapenoSprite,
+            Sprite jalapenoTraySprite,
             Sprite jalapenoPileSprite,
             Sprite ketchupSprite,
             Sprite ketchupCursorSprite,
@@ -206,10 +218,13 @@ namespace SheepSheepBurger.BurgerAssembly
             tomatoPile = tomatoPileSprite;
             cheese = cheeseSprite;
             onion = onionSprite;
+            onionTray = onionTraySprite;
             onionPile = onionPileSprite;
             pickle = pickleSprite;
+            pickleTray = pickleTraySprite;
             picklePile = picklePileSprite;
             jalapeno = jalapenoSprite;
+            jalapenoTray = jalapenoTraySprite;
             jalapenoPile = jalapenoPileSprite;
             ketchup = ketchupSprite;
             ketchupCursor = ketchupCursorSprite;
@@ -284,9 +299,9 @@ namespace SheepSheepBurger.BurgerAssembly
                 // with the strictly top-down cooking station.
                 case IngredientType.ToppingLettuce: return lettuce;
                 case IngredientType.ToppingTomato: return tomato;
-                case IngredientType.ToppingOnion: return onion;
-                case IngredientType.ToppingPickle: return pickle;
-                case IngredientType.ToppingJalapeno: return jalapeno;
+                case IngredientType.ToppingOnion: return onionTray;
+                case IngredientType.ToppingPickle: return pickleTray;
+                case IngredientType.ToppingJalapeno: return jalapenoTray;
                 default: return GetIngredient(type);
             }
         }
