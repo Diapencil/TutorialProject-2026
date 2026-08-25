@@ -68,6 +68,7 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             var controllerObject = new GameObject("CookingPrototypeVerification", typeof(BurgerAssemblyController));
             BurgerAssemblyController controller = controllerObject.GetComponent<BurgerAssemblyController>();
             controller.SetSpriteCatalog(CreateSpriteCatalog());
+            controller.SetCustomerDialogue("검증 손님", "검증 주문 대사");
             BurgerData publishedBurger = null;
             PaymentResult publishedPayment = null;
             controller.OnBurgerCompleted += burger => publishedBurger = burger;
@@ -75,6 +76,24 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
 
             InvokePrivate(controller, "BuildInterface");
             InvokePrivate(controller, "RefreshControls");
+
+            Button customerDialogueButton = RequireFind("CustomerDialogueButton").GetComponent<Button>();
+            Require(
+                customerDialogueButton != null && !controller.IsCustomerDialoguePopupOpen,
+                "Cooking must provide a customer-dialogue button with a closed initial popup.");
+            customerDialogueButton.onClick.Invoke();
+            GameObject customerDialoguePopup = RequireFind("CustomerDialoguePopup");
+            Require(
+                controller.IsCustomerDialoguePopupOpen &&
+                customerDialoguePopup.activeSelf &&
+                RequireFind("CustomerDialogueSpeakerText").GetComponent<Text>().text == "검증 손님" &&
+                RequireFind("CustomerDialogueBodyText").GetComponent<Text>().text == "검증 주문 대사",
+                "The customer-dialogue button must open a popup with the active customer's stored line.");
+            Button customerDialogueCloseButton = RequireFind("CustomerDialogueCloseButton").GetComponent<Button>();
+            customerDialogueCloseButton.onClick.Invoke();
+            Require(
+                !controller.IsCustomerDialoguePopupOpen && !customerDialoguePopup.activeSelf,
+                "The button below the dialogue popup must close it again.");
 
             Text cookingTimer = RequireFind("CookingTimerText").GetComponent<Text>();
             Require(

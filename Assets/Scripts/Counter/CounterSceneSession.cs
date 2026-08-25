@@ -20,6 +20,7 @@ namespace SheepSheepBurger.Counter
         {
             ActiveOrder = order;
             ActiveOrder.phase = OrderPhase.Ordering;
+            ActiveOrder.selectedOrderLine = string.Empty;
             CookedBurger = null;
             HasConfirmedOrder = false;
             HintUsed = false;

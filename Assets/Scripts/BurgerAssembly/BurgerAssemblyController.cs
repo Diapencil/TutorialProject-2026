@@ -32,6 +32,9 @@ namespace SheepSheepBurger.BurgerAssembly
         private Text boardStatusText;
         private Text boardSummaryText;
         private Text cookingTimerText;
+        private GameObject customerDialoguePopup;
+        private Text customerDialogueSpeakerText;
+        private Text customerDialogueBodyText;
         private Text toastText;
         private GameObject toastObject;
         private Font uiFont;
@@ -55,6 +58,8 @@ namespace SheepSheepBurger.BurgerAssembly
         private float cookingTimeRemaining = CookingPrototypeRules.CookingTimeLimitSeconds;
         private bool hasCookingTimeExpired;
         private int displayedCookingSeconds = -1;
+        private string customerDialogueSpeaker = "손님";
+        private string customerDialogue = "현재 손님의 대사가 없습니다.";
 
         public event Action<BurgerData> OnBurgerCompleted
         {
@@ -78,6 +83,9 @@ namespace SheepSheepBurger.BurgerAssembly
 
         public bool HasCookingTimeExpired => hasCookingTimeExpired;
 
+        public bool IsCustomerDialoguePopupOpen =>
+            customerDialoguePopup != null && customerDialoguePopup.activeSelf;
+
         public CookingSceneSchema CookingSchema => cookingSchema;
 
         public BurgerSpriteCatalog SpriteCatalog => spriteCatalog;
@@ -89,6 +97,15 @@ namespace SheepSheepBurger.BurgerAssembly
         public void SetSpriteCatalog(BurgerSpriteCatalog value)
         {
             spriteCatalog = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        public void SetCustomerDialogue(string speaker, string dialogue)
+        {
+            customerDialogueSpeaker = string.IsNullOrWhiteSpace(speaker) ? "손님" : speaker.Trim();
+            customerDialogue = string.IsNullOrWhiteSpace(dialogue)
+                ? "현재 손님의 대사가 없습니다."
+                : dialogue.Trim();
+            RefreshCustomerDialoguePopup();
         }
 
         public void SetCookingSchema(CookingSceneSchema value)
@@ -646,7 +663,11 @@ namespace SheepSheepBurger.BurgerAssembly
 
             EnsureCookingSchema();
             spriteCatalog.Activate();
-            BurgerAssemblyViewReferences view = new BurgerAssemblyViewBuilder(this, ResetPrototype).Build();
+            BurgerAssemblyViewReferences view = new BurgerAssemblyViewBuilder(
+                this,
+                ResetPrototype,
+                OpenCustomerDialoguePopup,
+                CloseCustomerDialoguePopup).Build();
             mainCamera = view.MainCamera;
             uiFont = view.UiFont;
             dragLayer = view.DragLayer;
@@ -659,6 +680,9 @@ namespace SheepSheepBurger.BurgerAssembly
             boardStatusText = view.BoardStatusText;
             boardSummaryText = view.BoardSummaryText;
             cookingTimerText = view.CookingTimerText;
+            customerDialoguePopup = view.CustomerDialoguePopup;
+            customerDialogueSpeakerText = view.CustomerDialogueSpeakerText;
+            customerDialogueBodyText = view.CustomerDialogueBodyText;
             toastText = view.ToastText;
             toastObject = view.ToastObject;
             stackAssembler.Configure(boardLayerRoot);
@@ -671,6 +695,7 @@ namespace SheepSheepBurger.BurgerAssembly
             traySources.AddRange(view.TraySources);
             cameraSlider.ZoneChanged += HandleCameraZoneChanged;
             ResetCookingTimer();
+            RefreshCustomerDialoguePopup();
         }
 
         private void HandleSauceDrawingChanged()
@@ -1187,6 +1212,7 @@ namespace SheepSheepBurger.BurgerAssembly
         private void ResetPrototype()
         {
             CleanupPointerDrag();
+            CloseCustomerDialoguePopup();
             isDraggingCompletedBurger = false;
             if (toastRoutine != null)
             {
@@ -1230,6 +1256,38 @@ namespace SheepSheepBurger.BurgerAssembly
             SetBoardStatus("재료를 자유롭게 놓을 수 있습니다. 하단 번 가까이에 놓으면 자동으로 쌓입니다.", false);
             RefreshBoardSummary();
             RefreshControls();
+        }
+
+        private void OpenCustomerDialoguePopup()
+        {
+            if (customerDialoguePopup == null)
+            {
+                return;
+            }
+
+            RefreshCustomerDialoguePopup();
+            customerDialoguePopup.transform.SetAsLastSibling();
+            customerDialoguePopup.SetActive(true);
+        }
+
+        private void CloseCustomerDialoguePopup()
+        {
+            if (customerDialoguePopup != null)
+            {
+                customerDialoguePopup.SetActive(false);
+            }
+        }
+
+        private void RefreshCustomerDialoguePopup()
+        {
+            if (customerDialogueSpeakerText != null)
+            {
+                customerDialogueSpeakerText.text = customerDialogueSpeaker;
+            }
+            if (customerDialogueBodyText != null)
+            {
+                customerDialogueBodyText.text = customerDialogue;
+            }
         }
 
         private void TickCookingTimer(float deltaTime)

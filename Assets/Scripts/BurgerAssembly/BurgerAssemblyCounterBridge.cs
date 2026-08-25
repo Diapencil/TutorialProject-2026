@@ -43,6 +43,41 @@ namespace SheepSheepBurger.Counter
             foreach (var entry in ingredientMap)
                 if (entry.coreIngredient != null)
                     ingredientLookup[entry.burgerAssemblyType] = entry.coreIngredient;
+
+            ApplyActiveCustomerDialogue();
+        }
+
+        private void ApplyActiveCustomerDialogue()
+        {
+            if (controller == null) return;
+
+            OrderInstance activeOrder = CounterSceneSession.ActiveOrder;
+            if (activeOrder == null) return;
+
+            string speaker = activeOrder.customer != null
+                ? activeOrder.customer.customerName
+                : string.Empty;
+            string line = activeOrder.selectedOrderLine;
+            if (string.IsNullOrWhiteSpace(line) &&
+                activeOrder.order != null &&
+                activeOrder.order.dialogue != null &&
+                activeOrder.order.dialogue.orderLines != null)
+            {
+                foreach (string candidate in activeOrder.order.dialogue.orderLines)
+                {
+                    if (string.IsNullOrWhiteSpace(candidate)) continue;
+                    line = candidate;
+                    break;
+                }
+            }
+            if (string.IsNullOrWhiteSpace(line) &&
+                activeOrder.order != null &&
+                activeOrder.order.recipe != null)
+            {
+                line = activeOrder.order.recipe.recipeName;
+            }
+
+            controller.SetCustomerDialogue(speaker, line);
         }
 
         private void Start()

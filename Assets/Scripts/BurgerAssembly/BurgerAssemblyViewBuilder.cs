@@ -15,6 +15,12 @@ namespace SheepSheepBurger.BurgerAssembly
 
         public Text CookingTimerText { get; set; }
 
+        public GameObject CustomerDialoguePopup { get; set; }
+
+        public Text CustomerDialogueSpeakerText { get; set; }
+
+        public Text CustomerDialogueBodyText { get; set; }
+
         public RectTransform DragLayer { get; set; }
 
         public RectTransform GrillDropArea { get; set; }
@@ -54,17 +60,27 @@ namespace SheepSheepBurger.BurgerAssembly
 
         private readonly BurgerAssemblyController controller;
         private readonly Action resetPrototype;
+        private readonly Action openCustomerDialogue;
+        private readonly Action closeCustomerDialogue;
         private readonly BurgerAssemblyViewReferences view = new BurgerAssemblyViewReferences();
 
         private RectTransform canvasRoot;
         private RectTransform pageStrip;
 
-        public BurgerAssemblyViewBuilder(BurgerAssemblyController controller, Action resetPrototype)
+        public BurgerAssemblyViewBuilder(
+            BurgerAssemblyController controller,
+            Action resetPrototype,
+            Action openCustomerDialogue,
+            Action closeCustomerDialogue)
         {
             this.controller = controller != null
                 ? controller
                 : throw new ArgumentNullException(nameof(controller));
             this.resetPrototype = resetPrototype ?? throw new ArgumentNullException(nameof(resetPrototype));
+            this.openCustomerDialogue = openCustomerDialogue ??
+                throw new ArgumentNullException(nameof(openCustomerDialogue));
+            this.closeCustomerDialogue = closeCustomerDialogue ??
+                throw new ArgumentNullException(nameof(closeCustomerDialogue));
         }
 
         public BurgerAssemblyViewReferences Build()
@@ -125,6 +141,7 @@ namespace SheepSheepBurger.BurgerAssembly
             view.PackagingController.Configure(packagingPage, view.UiFont);
             BuildTrashResetHotspots();
             BuildCookingTimerOverlay();
+            BuildCustomerDialogueOverlay();
 
             GameObject dragLayerObject = new GameObject("DragLayer", typeof(RectTransform));
             view.DragLayer = dragLayerObject.GetComponent<RectTransform>();
@@ -161,6 +178,89 @@ namespace SheepSheepBurger.BurgerAssembly
             Outline outline = view.CookingTimerText.gameObject.AddComponent<Outline>();
             outline.effectColor = new Color(0f, 0f, 0f, 0.85f);
             outline.effectDistance = new Vector2(1.5f, -1.5f);
+        }
+
+        private void BuildCustomerDialogueOverlay()
+        {
+            RectTransform openButtonRect = CreateRoundedPanel(
+                "CustomerDialogueButton",
+                canvasRoot,
+                BurgerPrototypeTheme.Accent,
+                new Vector2(800f, 490f),
+                new Vector2(210f, 64f),
+                true,
+                18f);
+            Button openButton = openButtonRect.gameObject.AddComponent<Button>();
+            openButton.targetGraphic = openButtonRect.GetComponent<Graphic>();
+            openButton.onClick.AddListener(() => openCustomerDialogue());
+            CreateText(
+                "CustomerDialogueButtonLabel",
+                openButtonRect,
+                "손님 대사",
+                25,
+                FontStyle.Bold,
+                Color.white,
+                Vector2.zero,
+                openButtonRect.sizeDelta);
+
+            RectTransform popupRoot = CreateRoundedPanel(
+                "CustomerDialoguePopup",
+                canvasRoot,
+                new Color(0f, 0f, 0f, 0.48f),
+                Vector2.zero,
+                new Vector2(ReferenceWidth, ReferenceHeight),
+                true,
+                0f);
+            RectTransform dialoguePanel = CreateRoundedPanel(
+                "CustomerDialoguePanel",
+                popupRoot,
+                BurgerPrototypeTheme.Card,
+                new Vector2(0f, 30f),
+                new Vector2(760f, 330f),
+                false,
+                32f);
+            view.CustomerDialogueSpeakerText = CreateText(
+                "CustomerDialogueSpeakerText",
+                dialoguePanel,
+                "손님",
+                30,
+                FontStyle.Bold,
+                BurgerPrototypeTheme.Ink,
+                new Vector2(0f, 108f),
+                new Vector2(640f, 54f));
+            view.CustomerDialogueBodyText = CreateText(
+                "CustomerDialogueBodyText",
+                dialoguePanel,
+                "현재 손님의 대사가 없습니다.",
+                30,
+                FontStyle.Normal,
+                BurgerPrototypeTheme.Ink,
+                new Vector2(0f, -10f),
+                new Vector2(640f, 170f));
+
+            RectTransform closeButtonRect = CreateRoundedPanel(
+                "CustomerDialogueCloseButton",
+                popupRoot,
+                BurgerPrototypeTheme.Accent,
+                new Vector2(0f, -200f),
+                new Vector2(190f, 62f),
+                true,
+                18f);
+            Button closeButton = closeButtonRect.gameObject.AddComponent<Button>();
+            closeButton.targetGraphic = closeButtonRect.GetComponent<Graphic>();
+            closeButton.onClick.AddListener(() => closeCustomerDialogue());
+            CreateText(
+                "CustomerDialogueCloseButtonLabel",
+                closeButtonRect,
+                "닫기",
+                25,
+                FontStyle.Bold,
+                Color.white,
+                Vector2.zero,
+                closeButtonRect.sizeDelta);
+
+            view.CustomerDialoguePopup = popupRoot.gameObject;
+            view.CustomerDialoguePopup.SetActive(false);
         }
 
         private void BuildTrashResetHotspots()

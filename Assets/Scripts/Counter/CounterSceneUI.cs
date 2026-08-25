@@ -33,6 +33,7 @@ namespace SheepSheepBurger.Counter
         /// <summary>"네?" 버튼(힌트 요청)을 눌렀을 때 발생. 서빙 판정에서 Perfect/Good 배제에 쓰인다.</summary>
         public event Action ClarificationRequested;
         private string clarificationRequest;
+        private OrderInstance displayedOrder;
         private bool clarificationShown;
         private Coroutine typingCoroutine;
         private Coroutine resultRiseCoroutine;
@@ -54,10 +55,14 @@ namespace SheepSheepBurger.Counter
 
         public void ShowOrder(OrderInstance order)
         {
+            displayedOrder = order;
             var dialogue = order.order.dialogue;
-            var line = dialogue != null && dialogue.orderLines != null && dialogue.orderLines.Count > 0
-                ? dialogue.orderLines[UnityEngine.Random.Range(0, dialogue.orderLines.Count)]
-                : order.order.recipe.recipeName;
+            var line = !string.IsNullOrWhiteSpace(order.selectedOrderLine)
+                ? order.selectedOrderLine
+                : dialogue != null && dialogue.orderLines != null && dialogue.orderLines.Count > 0
+                    ? dialogue.orderLines[UnityEngine.Random.Range(0, dialogue.orderLines.Count)]
+                    : order.order.recipe.recipeName;
+            order.selectedOrderLine = line ?? string.Empty;
             clarificationRequest = dialogue != null ? dialogue.hintLine : string.Empty;
             clarificationShown = false;
             var hasClarification = !string.IsNullOrWhiteSpace(clarificationRequest);
@@ -76,6 +81,7 @@ namespace SheepSheepBurger.Counter
         public void HideOrder()
         {
             HideSpeechBubble();
+            displayedOrder = null;
             clarificationRequest = string.Empty;
             clarificationShown = false;
             SetConfirmOrderButtonInteractable(false);
@@ -97,6 +103,8 @@ namespace SheepSheepBurger.Counter
         {
             if (clarificationShown) return;
             clarificationShown = true;
+            if (displayedOrder != null && !string.IsNullOrWhiteSpace(clarificationRequest))
+                displayedOrder.selectedOrderLine = clarificationRequest;
             ClarificationRequested?.Invoke();
             TypeText(clarificationRequest);
             SetWhatButtonInteractable(false);
