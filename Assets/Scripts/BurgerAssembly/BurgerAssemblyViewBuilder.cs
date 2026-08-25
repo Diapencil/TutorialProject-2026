@@ -357,7 +357,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 iconLimit / Mathf.Max(1f, visual.Size.x),
                 iconLimit / Mathf.Max(1f, visual.Size.y));
             Vector2 iconSize = visual.Size * iconScale;
-            BurgerUiFactory.CreateShape(
+            SimpleShapeGraphic trayIcon = BurgerUiFactory.CreateShape(
                 name + "Icon",
                 card,
                 visual.Shape,
@@ -374,7 +374,8 @@ namespace SheepSheepBurger.BurgerAssembly
                 visual.Shape,
                 visual.Color,
                 visual.Size,
-                visual.SourceSprite);
+                visual.SourceSprite,
+                trayIcon);
             view.TraySources.Add(source);
 
             // 상점에서 아직 해금하지 않은 재료는 트레이 칸을 비워 둔다.

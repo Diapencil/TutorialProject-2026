@@ -20,6 +20,7 @@ namespace SheepSheepBurger.BurgerAssembly
         private Color ghostColor;
         private Vector2 ghostSize;
         private Sprite ghostSprite;
+        private SimpleShapeGraphic trayIcon;
         private bool ownsActiveDrag;
 
         public CookingDragKind Kind { get; private set; }
@@ -33,7 +34,8 @@ namespace SheepSheepBurger.BurgerAssembly
             SimpleShape shape,
             Color color,
             Vector2 size,
-            Sprite sourceSprite)
+            Sprite sourceSprite,
+            SimpleShapeGraphic iconGraphic)
         {
             controller = targetController;
             Kind = kind;
@@ -42,6 +44,7 @@ namespace SheepSheepBurger.BurgerAssembly
             ghostColor = color;
             ghostSize = size;
             ghostSprite = sourceSprite;
+            trayIcon = iconGraphic;
             canvasGroup = GetComponent<CanvasGroup>();
             RefreshAppearance();
         }
@@ -62,6 +65,10 @@ namespace SheepSheepBurger.BurgerAssembly
                 controller != null &&
                 controller.IsSauceToolSelected(IngredientType);
             canvasGroup.alpha = selected ? 1f : available ? 0.86f : 0.48f;
+            if (trayIcon != null)
+            {
+                trayIcon.gameObject.SetActive(!selected);
+            }
 
             Outline outline = GetComponent<Outline>();
             if (outline != null)

@@ -138,9 +138,11 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             Require(
                 RequireFind("BottomBunTrayIcon").GetComponent<SimpleShapeGraphic>().SourceSprite == controller.SpriteCatalog.BunBottom,
                 "Bottom-bun tray and placement must use the supplied top-down Sprite.");
+            GameObject ketchupTrayIcon = RequireFind("KetchupTrayIcon");
+            GameObject mustardTrayIcon = RequireFind("MustardTrayIcon");
             Require(
-                RequireFind("KetchupTrayIcon").GetComponent<SimpleShapeGraphic>().SourceSprite == controller.SpriteCatalog.Ketchup &&
-                RequireFind("MustardTrayIcon").GetComponent<SimpleShapeGraphic>().SourceSprite == controller.SpriteCatalog.Mustard,
+                ketchupTrayIcon.GetComponent<SimpleShapeGraphic>().SourceSprite == controller.SpriteCatalog.Ketchup &&
+                mustardTrayIcon.GetComponent<SimpleShapeGraphic>().SourceSprite == controller.SpriteCatalog.Mustard,
                 "Sauce tray items must use the supplied placement-version Sprites.");
             BurgerSauceDrawingController sauceController = RequireFind("BoardDropArea").GetComponent<BurgerSauceDrawingController>();
             Require(
@@ -150,14 +152,20 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
                 "Sauce mode must create a non-blocking pointer-follow visual.");
             controller.ToggleSauceTool(IngredientType.SauceKetchup);
             Require(
-                sauceController.SauceCursorGraphic.SourceSprite == controller.SpriteCatalog.KetchupCursor,
-                "Ketchup mode must use the supplied click-version cursor Sprite.");
+                sauceController.SauceCursorGraphic.SourceSprite == controller.SpriteCatalog.KetchupCursor &&
+                !ketchupTrayIcon.activeSelf &&
+                mustardTrayIcon.activeSelf,
+                "Ketchup mode must use the supplied cursor and hide only the selected sauce bottle.");
             controller.ToggleSauceTool(IngredientType.SauceKetchup);
+            Require(ketchupTrayIcon.activeSelf, "Turning ketchup mode off from its empty tray spot must restore the bottle.");
             controller.ToggleSauceTool(IngredientType.SauceMustard);
             Require(
-                sauceController.SauceCursorGraphic.SourceSprite == controller.SpriteCatalog.MustardCursor,
-                "Mustard mode must use the supplied click-version cursor Sprite.");
+                sauceController.SauceCursorGraphic.SourceSprite == controller.SpriteCatalog.MustardCursor &&
+                !mustardTrayIcon.activeSelf &&
+                ketchupTrayIcon.activeSelf,
+                "Mustard mode must use the supplied cursor and hide only the selected sauce bottle.");
             controller.ToggleSauceTool(IngredientType.SauceMustard);
+            Require(mustardTrayIcon.activeSelf, "Turning mustard mode off from its empty tray spot must restore the bottle.");
             SimpleShapeGraphic grillBackdrop = RequireFind("KitchenStationBackground").GetComponent<SimpleShapeGraphic>();
             Require(
                 grillBackdrop != null && grillBackdrop.SourceSprite == controller.SpriteCatalog.KitchenStationBackground,
