@@ -53,7 +53,7 @@ namespace SheepSheepBurger.Counter
 
             if (TryGetPointerDown(out Vector2 downPosition))
             {
-                pressedRenderer = IsPointerOverUi() ? null : HitTest(downPosition);
+                pressedRenderer = ShouldIgnoreShortcutInput() ? null : HitTest(downPosition);
             }
 
             if (!TryGetPointerUp(out Vector2 upPosition))
@@ -61,7 +61,7 @@ namespace SheepSheepBurger.Counter
                 return;
             }
 
-            if (IsPointerOverUi())
+            if (ShouldIgnoreShortcutInput())
             {
                 pressedRenderer = null;
                 return;
@@ -257,6 +257,11 @@ namespace SheepSheepBurger.Counter
         private static bool IsPointerOverUi()
         {
             return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+        }
+
+        private bool ShouldIgnoreShortcutInput()
+        {
+            return settingsLayer != null && settingsLayer.IsOpen && IsPointerOverUi();
         }
 
         private static bool TryGetPointerDown(out Vector2 screenPosition)
