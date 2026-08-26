@@ -254,6 +254,36 @@ namespace SheepSheepBurger.BurgerAssembly
             return true;
         }
 
+        public bool TryUseTrayItemOnClick(CookingDragKind kind, IngredientType type)
+        {
+            if (!CanBeginTrayDrag(kind, type))
+            {
+                ExplainBlockedTrayDrag(kind, type);
+                return false;
+            }
+
+            bool used;
+            if (kind == CookingDragKind.RawGrillItem)
+            {
+                SpawnRawGrillItem(type, GetAutomaticGrillSpawnPosition());
+                used = true;
+            }
+            else if (kind == CookingDragKind.Ingredient)
+            {
+                Vector2 boardPosition = stackAssembler.BurgerStackRoot != null
+                    ? stackAssembler.BurgerStackRoot.anchoredPosition
+                    : Vector2.zero;
+                used = TryPlaceIngredient(type, boardPosition);
+            }
+            else
+            {
+                used = false;
+            }
+
+            RefreshControls();
+            return used;
+        }
+
         public void UpdatePointerDrag(Vector2 screenPosition)
         {
             if (!hasActivePointerDrag)
@@ -748,6 +778,14 @@ namespace SheepSheepBurger.BurgerAssembly
         private void SpawnRawGrillItem(IngredientType type, Vector2 localPosition)
         {
             SpawnGrillItem(type, localPosition, null);
+        }
+
+        private Vector2 GetAutomaticGrillSpawnPosition()
+        {
+            int slot = grillItems.Count % 6;
+            int column = slot % 3;
+            int row = slot / 3;
+            return new Vector2((column - 1) * 180f, 90f - row * 180f);
         }
 
         private void SpawnGrillItem(

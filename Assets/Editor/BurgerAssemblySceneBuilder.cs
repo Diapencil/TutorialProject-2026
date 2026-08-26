@@ -119,9 +119,9 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
                 "Verification must leave a partially elapsed timer for the trash-reset regression check.");
 
             RequireFind("CookingCanvas");
-            RequireFind("GrillPage");
-            RequireFind("BoardPage");
-            GameObject packagingPage = RequireFind("PackagingPage");
+            RequireFind("GrillRegion");
+            RequireFind("BoardRegion");
+            GameObject packagingPage = RequireFind("PackagingRegion");
             RequireFind("GrillDropArea");
             RequireFind("BoardDropArea");
             RequireFind("IngredientTray");
@@ -157,6 +157,20 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             Require(
                 RequireFind("BottomBunTrayIcon").GetComponent<SimpleShapeGraphic>().SourceSprite == controller.SpriteCatalog.BunBottom,
                 "Bottom-bun tray and placement must use the supplied top-down Sprite.");
+            Require(
+                RequireFind("CheeseTrayIcon").GetComponent<SimpleShapeGraphic>().SourceSprite == controller.SpriteCatalog.Cheese,
+                "Cheese must be available from the board tray and use the supplied Sprite.");
+            Require(
+                RequireFind("OnionTrayIcon").GetComponent<SimpleShapeGraphic>().SourceSprite == controller.SpriteCatalog.OnionTray &&
+                RequireFind("PickleTrayIcon").GetComponent<SimpleShapeGraphic>().SourceSprite == controller.SpriteCatalog.PickleTray &&
+                RequireFind("JalapenoTrayIcon").GetComponent<SimpleShapeGraphic>().SourceSprite == controller.SpriteCatalog.JalapenoTray &&
+                RequireFind("OnionTray").GetComponent<CookingTrayDragSource>().DragSprite == controller.SpriteCatalog.Onion &&
+                RequireFind("PickleTray").GetComponent<CookingTrayDragSource>().DragSprite == controller.SpriteCatalog.Pickle &&
+                RequireFind("JalapenoTray").GetComponent<CookingTrayDragSource>().DragSprite == controller.SpriteCatalog.Jalapeno &&
+                controller.SpriteCatalog.GetIngredient(IngredientType.ToppingOnion) == controller.SpriteCatalog.Onion &&
+                controller.SpriteCatalog.GetIngredient(IngredientType.ToppingPickle) == controller.SpriteCatalog.Pickle &&
+                controller.SpriteCatalog.GetIngredient(IngredientType.ToppingJalapeno) == controller.SpriteCatalog.Jalapeno,
+                "Tray toppings must use their grouped top-down Sprites while placement uses the supplied single-piece Sprites.");
             GameObject ketchupTrayIcon = RequireFind("KetchupTrayIcon");
             GameObject mustardTrayIcon = RequireFind("MustardTrayIcon");
             Require(
@@ -191,15 +205,15 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
                 "The cooking canvas must use the serialized kitchen-station background exactly once.");
             Require(
                 grillBackdrop.transform.parent != null &&
-                grillBackdrop.transform.parent.name == "CookingPageStrip" &&
+                grillBackdrop.transform.parent.name == "CookingPanorama" &&
                 grillBackdrop.rectTransform.sizeDelta.x > canvasScaler.referenceResolution.x &&
                 Mathf.Approximately(grillBackdrop.rectTransform.sizeDelta.y, canvasScaler.referenceResolution.y),
                 "The kitchen background must fit the full reference height without vertical cropping.");
             Require(
-                GameObject.Find("GrillPageEnvironmentBackdrop") == null &&
-                GameObject.Find("BoardPageEnvironmentBackdrop") == null &&
-                GameObject.Find("PackagingPageEnvironmentBackdrop") == null,
-                "Cooking pages must not create duplicated or cropped environment backgrounds.");
+                GameObject.Find("GrillRegionEnvironmentBackdrop") == null &&
+                GameObject.Find("BoardRegionEnvironmentBackdrop") == null &&
+                GameObject.Find("PackagingRegionEnvironmentBackdrop") == null,
+                "Cooking regions must not create duplicated or cropped environment backgrounds.");
             Require(
                 GameObject.Find("GrillTitle") == null &&
                 GameObject.Find("CookingGuide") == null &&
@@ -211,14 +225,36 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             CookingTrayDragSource eggSource = RequireFind("RawEggSource").GetComponent<CookingTrayDragSource>();
             Require(
                 baconSource != null &&
+                baconSource.enabled &&
                 baconSource.Kind == CookingDragKind.RawGrillItem &&
                 baconSource.IngredientType == IngredientType.Bacon,
                 "Bacon must be available from the grill tray.");
             Require(
                 eggSource != null &&
+                eggSource.enabled &&
                 eggSource.Kind == CookingDragKind.RawGrillItem &&
                 eggSource.IngredientType == IngredientType.Egg,
                 "Egg must be available from the grill tray.");
+            Require(
+                RequireFind("PickleTray").GetComponent<CookingTrayDragSource>().enabled &&
+                RequireFind("JalapenoTray").GetComponent<CookingTrayDragSource>().enabled,
+                "Pickle and jalapeno must remain interactive in the cooking tray.");
+            Require(
+                controller.TryUseTrayItemOnClick(CookingDragKind.RawGrillItem, IngredientType.Bacon),
+                "Clicking bacon in the tray must create a raw grill item.");
+            Require(
+                RequireFind("CookableBacon").GetComponent<SimpleShapeGraphic>().SourceSprite == controller.SpriteCatalog.BaconRaw,
+                "Clicked bacon must use the supplied raw-bacon Sprite on the grill.");
+            Require(
+                controller.TryUseTrayItemOnClick(CookingDragKind.Ingredient, IngredientType.ToppingPickle),
+                "Clicking pickle in the tray must place it on the board.");
+            PlacedIngredientView clickedPickle = UnityEngine.Object
+                .FindObjectsByType<PlacedIngredientView>(FindObjectsSortMode.None)
+                .Single(view => view.IngredientType == IngredientType.ToppingPickle);
+            Require(
+                clickedPickle.GetComponent<SimpleShapeGraphic>().SourceSprite == controller.SpriteCatalog.Pickle,
+                "A clicked pickle must use the supplied single-piece Sprite.");
+            InvokePrivate(controller, "ResetPrototype");
 
             GameObject topBunTray = RequireFind("TopBunTray");
             CookingTrayDragSource topBunSource = topBunTray.GetComponent<CookingTrayDragSource>();
@@ -228,6 +264,26 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             Require(slider != null, "Cooking canvas must provide same-scene grill/board/packaging camera sliding.");
             Require(slider.GrillX < slider.BoardX && slider.BoardX < slider.PackagingX, "Camera zones must be arranged grill, board, then packaging from left to right.");
             Require(slider.CanMoveToZone == null || slider.CanMoveToZone(CookingCameraZone.Packaging), "Packaging must be accessible before assembly is complete.");
+            float testScreenWidth = Mathf.Max(1f, Screen.width);
+            var continuousDragStart = new PointerEventData(existingEventSystemObject.GetComponent<EventSystem>())
+            {
+                position = new Vector2(testScreenWidth * 0.75f, 100f)
+            };
+            var continuousDragEnd = new PointerEventData(existingEventSystemObject.GetComponent<EventSystem>())
+            {
+                position = new Vector2(testScreenWidth * 0.55f, 100f)
+            };
+            slider.OnBeginDrag(continuousDragStart);
+            slider.OnDrag(continuousDragEnd);
+            float releasedContentX = slider.CurrentContentX;
+            slider.OnEndDrag(continuousDragEnd);
+            Require(
+                Mathf.Approximately(slider.CurrentContentX, releasedContentX) &&
+                !Mathf.Approximately(releasedContentX, slider.GetContentX(CookingCameraZone.Grill)) &&
+                !Mathf.Approximately(releasedContentX, slider.GetContentX(CookingCameraZone.Board)) &&
+                !Mathf.Approximately(releasedContentX, slider.GetContentX(CookingCameraZone.Packaging)),
+                "Manual panorama dragging must stop at the released position instead of snapping to a page.");
+            slider.SetImmediate(CookingCameraZone.Grill);
 
             EventSystem eventSystem = existingEventSystemObject.GetComponent<EventSystem>();
             InputSystemUIInputModule inputModule = eventSystem.GetComponent<InputSystemUIInputModule>();
@@ -597,11 +653,14 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
                 LoadSprite(ProvidedArtDirectory + "/lettuce_topdown.png"),
                 LoadSprite(ProvidedArtDirectory + "/tomato_slice.png"),
                 LoadSprite(ProvidedArtDirectory + "/tomato_pile.png"),
-                LoadSprite(SpriteDirectory + "/Ingredients/cheese.png"),
+                LoadSprite(ProvidedArtDirectory + "/cheese.png"),
+                LoadSprite(ProvidedArtDirectory + "/onion_single.png"),
                 LoadSprite(ProvidedArtDirectory + "/onion_slices.png"),
                 LoadSprite(ProvidedArtDirectory + "/onion_pile.png"),
+                LoadSprite(ProvidedArtDirectory + "/pickle_single.png"),
                 LoadSprite(ProvidedArtDirectory + "/pickle_slices.png"),
                 LoadSprite(ProvidedArtDirectory + "/pickle_pile.png"),
+                LoadSprite(ProvidedArtDirectory + "/jalapeno_single.png"),
                 LoadSprite(ProvidedArtDirectory + "/jalapeno_slices.png"),
                 LoadSprite(ProvidedArtDirectory + "/jalapeno_pile.png"),
                 LoadSprite(ProvidedArtDirectory + "/ketchup_placed.png"),

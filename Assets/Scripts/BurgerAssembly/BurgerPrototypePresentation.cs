@@ -98,7 +98,8 @@ namespace SheepSheepBurger.BurgerAssembly
             new BurgerTrayItemDefinition("OnionTray", "양파", CookingDragKind.Ingredient, IngredientType.ToppingOnion, new Vector2(240f, 90f), new Vector2(100f, 100f)),
             new BurgerTrayItemDefinition("PickleTray", "피클", CookingDragKind.Ingredient, IngredientType.ToppingPickle, new Vector2(360f, 90f), new Vector2(100f, 100f)),
             new BurgerTrayItemDefinition("KetchupTray", "케첩", CookingDragKind.Sauce, IngredientType.SauceKetchup, new Vector2(-360f, -90f), new Vector2(100f, 100f)),
-            new BurgerTrayItemDefinition("MustardTray", "머스터드", CookingDragKind.Sauce, IngredientType.SauceMustard, new Vector2(-240f, -90f), new Vector2(100f, 100f))
+            new BurgerTrayItemDefinition("MustardTray", "머스터드", CookingDragKind.Sauce, IngredientType.SauceMustard, new Vector2(-240f, -90f), new Vector2(100f, 100f)),
+            new BurgerTrayItemDefinition("CheeseTray", "치즈", CookingDragKind.Ingredient, IngredientType.ToppingCheese, new Vector2(-120f, -90f), new Vector2(100f, 100f))
         };
 
         public static IReadOnlyList<BurgerTrayItemDefinition> GetBoardTrayItems()
@@ -147,7 +148,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 case IngredientType.ToppingTomato:
                     return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#E84B3C"), new Vector2(112f, 112f), sprites.Tomato);
                 case IngredientType.ToppingCheese:
-                    return new BurgerIngredientVisual(SimpleShape.Triangle, BurgerPrototypeTheme.Hex("#FFD84C"), new Vector2(155f, 155f), null);
+                    return new BurgerIngredientVisual(SimpleShape.Rectangle, BurgerPrototypeTheme.Hex("#FFD84C"), new Vector2(155f, 155f), sprites.Cheese);
                 case IngredientType.ToppingOnion:
                     return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#B981C7"), new Vector2(135f, 100f), sprites.Onion);
                 case IngredientType.ToppingPickle:

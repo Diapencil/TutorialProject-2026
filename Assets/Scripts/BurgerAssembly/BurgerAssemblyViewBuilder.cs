@@ -120,7 +120,7 @@ namespace SheepSheepBurger.BurgerAssembly
             swipeSurface.color = BurgerPrototypeTheme.Background;
             swipeSurface.raycastTarget = true;
 
-            var pageStripObject = new GameObject("CookingPageStrip", typeof(RectTransform));
+            var pageStripObject = new GameObject("CookingPanorama", typeof(RectTransform));
             pageStrip = pageStripObject.GetComponent<RectTransform>();
             pageStrip.SetParent(canvasRoot, false);
             BurgerUiFactory.SetRect(
@@ -132,9 +132,9 @@ namespace SheepSheepBurger.BurgerAssembly
             view.CameraSlider = canvasObject.GetComponent<CookingCameraSlider>();
             view.CameraSlider.Configure(pageStrip, GrillViewX, BoardViewX, PackagingViewX);
 
-            RectTransform grillPage = CreatePage("GrillPage", new Vector2(GrillViewX, 0f));
-            RectTransform boardPage = CreatePage("BoardPage", new Vector2(BoardViewX, 0f));
-            RectTransform packagingPage = CreatePage("PackagingPage", new Vector2(PackagingViewX, 0f));
+            RectTransform grillPage = CreatePage("GrillRegion", new Vector2(GrillViewX, 0f));
+            RectTransform boardPage = CreatePage("BoardRegion", new Vector2(BoardViewX, 0f));
+            RectTransform packagingPage = CreatePage("PackagingRegion", new Vector2(PackagingViewX, 0f));
             BuildGrillPage(grillPage);
             BuildBoardPage(boardPage);
             view.PackagingController = packagingPage.gameObject.AddComponent<BurgerPackagingController>();
@@ -449,45 +449,41 @@ namespace SheepSheepBurger.BurgerAssembly
             Vector2 position,
             Vector2 size)
         {
-            BurgerIngredientVisual visual = BurgerIngredientCatalog.GetTrayVisual(type);
+            BurgerIngredientVisual trayVisual = BurgerIngredientCatalog.GetTrayVisual(type);
+            BurgerIngredientVisual dragVisual = kind == CookingDragKind.Ingredient
+                ? BurgerIngredientCatalog.GetVisual(type)
+                : trayVisual;
             RectTransform card = CreateRoundedPanel(name, parent, Color.clear, position, size, true, 0f);
-            CanvasGroup cardGroup = card.gameObject.AddComponent<CanvasGroup>();
+            card.gameObject.AddComponent<CanvasGroup>();
             float iconLimit = Mathf.Min(78f, size.y * 0.72f);
             float iconScale = Mathf.Min(
-                iconLimit / Mathf.Max(1f, visual.Size.x),
-                iconLimit / Mathf.Max(1f, visual.Size.y));
-            Vector2 iconSize = visual.Size * iconScale;
+                iconLimit / Mathf.Max(1f, trayVisual.Size.x),
+                iconLimit / Mathf.Max(1f, trayVisual.Size.y));
+            Vector2 iconSize = trayVisual.Size * iconScale;
             SimpleShapeGraphic trayIcon = BurgerUiFactory.CreateShape(
                 name + "Icon",
                 card,
-                visual.Shape,
-                visual.Color,
+                trayVisual.Shape,
+                trayVisual.Color,
                 Vector2.zero,
                 iconSize,
                 false,
-                visual.SourceSprite);
+                trayVisual.SourceSprite);
             CookingTrayDragSource source = card.gameObject.AddComponent<CookingTrayDragSource>();
             source.Configure(
                 controller,
                 kind,
                 type,
-                visual.Shape,
-                visual.Color,
-                visual.Size,
-                visual.SourceSprite,
+                dragVisual.Shape,
+                dragVisual.Color,
+                dragVisual.Size,
+                dragVisual.SourceSprite,
                 trayIcon);
             view.TraySources.Add(source);
 
-            // 상점에서 아직 해금하지 않은 재료는 트레이 칸을 비워 둔다.
-            // 상점 토핑 탭에서 구매하면 다음 진입 때 이 칸이 채워진다.
-            // Core.IngredientType과 이름이 겹치므로 using 대신 전체 이름으로 부른다.
-            if (!SheepSheepBurger.Core.ShopProgressBridge.IsCookingIngredientUnlocked(type))
-            {
-                cardGroup.alpha = 0f;
-                cardGroup.interactable = false;
-                cardGroup.blocksRaycasts = false;
-                source.enabled = false;
-            }
+            // 조리 화면에 표시된 재료는 바로 사용할 수 있어야 한다.
+            // 상점 해금 상태를 여기서 입력 차단에 사용하면, RefreshAppearance가
+            // 이미지를 다시 표시한 뒤에도 클릭과 드래그만 막히는 상태가 된다.
 
             return source;
         }

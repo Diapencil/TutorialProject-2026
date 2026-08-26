@@ -27,6 +27,8 @@ namespace SheepSheepBurger.BurgerAssembly
 
         public IngredientType IngredientType { get; private set; }
 
+        public Sprite DragSprite => ghostSprite;
+
         public void Configure(
             BurgerAssemblyController targetController,
             CookingDragKind kind,
@@ -121,11 +123,18 @@ namespace SheepSheepBurger.BurgerAssembly
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (Kind == CookingDragKind.Sauce &&
-                eventData.button == PointerEventData.InputButton.Left)
+            if (eventData.button != PointerEventData.InputButton.Left)
+            {
+                return;
+            }
+
+            if (Kind == CookingDragKind.Sauce)
             {
                 controller?.ToggleSauceTool(IngredientType);
+                return;
             }
+
+            controller?.TryUseTrayItemOnClick(Kind, IngredientType);
         }
     }
 
@@ -607,7 +616,6 @@ namespace SheepSheepBurger.BurgerAssembly
         private float packagingX;
         private Vector2 dragStartScreen;
         private float dragStartContentX;
-        private CookingCameraZone dragStartZone;
         private Coroutine tweenRoutine;
 
         public CookingCameraZone CurrentZone { get; private set; } = CookingCameraZone.Grill;
@@ -652,7 +660,6 @@ namespace SheepSheepBurger.BurgerAssembly
             CancelTween();
             dragStartScreen = eventData.position;
             dragStartContentX = targetContent.anchoredPosition.x;
-            dragStartZone = NearestZone(-dragStartContentX);
         }
 
         public void OnDrag(PointerEventData eventData)
@@ -664,13 +671,14 @@ namespace SheepSheepBurger.BurgerAssembly
 
             float screenWidth = Mathf.Max(1f, Screen.width);
             float screenDelta = eventData.position.x - dragStartScreen.x;
-            float contentDelta = (screenDelta / screenWidth) * Mathf.Abs(boardX - grillX);
+            float contentDelta = (screenDelta / screenWidth) * Mathf.Abs(packagingX - grillX);
             float minimumContentX = CanAccess(CookingCameraZone.Packaging) ? -packagingX : -boardX;
             float maximumContentX = -grillX;
             SetContentX(Mathf.Clamp(
                 dragStartContentX + contentDelta,
                 minimumContentX,
                 maximumContentX));
+            UpdateZoneFromPosition();
         }
 
         public void OnEndDrag(PointerEventData eventData)
@@ -680,36 +688,10 @@ namespace SheepSheepBurger.BurgerAssembly
                 return;
             }
 
-            float screenDelta = eventData.position.x - dragStartScreen.x;
-            float threshold = Mathf.Max(1f, Screen.width) * CookingPrototypeRules.SwipeThresholdScreenRatio;
-            CookingCameraZone target = dragStartZone;
-            if (Mathf.Abs(screenDelta) >= threshold)
-            {
-                if (screenDelta < 0f)
-                {
-                    if (dragStartZone == CookingCameraZone.Grill)
-                    {
-                        target = CookingCameraZone.Board;
-                    }
-                    else if (dragStartZone == CookingCameraZone.Board)
-                    {
-                        target = CookingCameraZone.Packaging;
-                    }
-                }
-                else if (screenDelta > 0f)
-                {
-                    if (dragStartZone == CookingCameraZone.Packaging)
-                    {
-                        target = CookingCameraZone.Board;
-                    }
-                    else if (dragStartZone == CookingCameraZone.Board)
-                    {
-                        target = CookingCameraZone.Grill;
-                    }
-                }
-            }
-
-            MoveTo(target);
+            // Keep the panorama exactly where the pointer released it. Logical
+            // zones are still inferred for interaction routing, but no visual
+            // page snapping occurs after a manual drag.
+            UpdateZoneFromPosition();
         }
 
         public void MoveToBoard()
@@ -810,6 +792,19 @@ namespace SheepSheepBurger.BurgerAssembly
             Vector2 position = targetContent.anchoredPosition;
             position.x = x;
             targetContent.anchoredPosition = position;
+        }
+
+        private void UpdateZoneFromPosition()
+        {
+            CookingCameraZone zone = NearestAccessibleZone(-targetContent.anchoredPosition.x);
+            DestinationZone = zone;
+            if (zone == CurrentZone)
+            {
+                return;
+            }
+
+            CurrentZone = zone;
+            ZoneChanged?.Invoke(zone);
         }
 
         private CookingCameraZone NearestZone(float x)
