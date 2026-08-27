@@ -22,6 +22,7 @@ namespace SheepSheepBurger.BurgerAssembly
 
         private Camera mainCamera;
         private RectTransform dragLayer;
+        private PattyGreaseTrail pattyGreaseTrail;
         private RectTransform grillDropArea;
         private RectTransform boardLayerRoot;
         private CookingCameraSlider cameraSlider;
@@ -44,6 +45,7 @@ namespace SheepSheepBurger.BurgerAssembly
         private CookingDragKind activeDragKind;
         private IngredientType activeDragType;
         private RectTransform dragGhost;
+        private bool emitsPattyGrease;
         private Vector2 lastPointerScreen;
         private CookableGrillItemView draggedGrillItem;
         private PlacedIngredientView draggedBoardIngredient;
@@ -402,6 +404,7 @@ namespace SheepSheepBurger.BurgerAssembly
             lastPointerScreen = screenPosition;
             CreateDragGhost(visual.Shape, visual.Color, visual.Size, visual.SourceSprite);
             PositionDragGhost(screenPosition);
+            BeginPattyGreaseTrail(grillItem.State);
             SetGrillStatus(itemName + "을(를) 이동합니다. 오른쪽 끝으로 옮기면 도마로 전환됩니다.", false);
             return true;
         }
@@ -492,6 +495,7 @@ namespace SheepSheepBurger.BurgerAssembly
             lastPointerScreen = screenPosition;
             CreateDragGhost(visual.Shape, visual.Color, visual.Size, visual.SourceSprite);
             PositionDragGhost(screenPosition);
+            BeginPattyGreaseTrail(ingredient.CookingState);
             return true;
         }
 
@@ -701,6 +705,7 @@ namespace SheepSheepBurger.BurgerAssembly
             mainCamera = view.MainCamera;
             uiFont = view.UiFont;
             dragLayer = view.DragLayer;
+            pattyGreaseTrail = view.PattyGreaseTrail;
             grillDropArea = view.GrillDropArea;
             boardLayerRoot = view.BoardLayerRoot;
             cameraSlider = view.CameraSlider;
@@ -1250,6 +1255,7 @@ namespace SheepSheepBurger.BurgerAssembly
         private void ResetPrototype()
         {
             CleanupPointerDrag();
+            pattyGreaseTrail?.ClearTrail();
             CloseCustomerDialoguePopup();
             isDraggingCompletedBurger = false;
             if (toastRoutine != null)
@@ -1497,11 +1503,29 @@ namespace SheepSheepBurger.BurgerAssembly
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(dragLayer, screenPosition, mainCamera, out Vector2 local))
             {
                 dragGhost.anchoredPosition = local;
+                if (emitsPattyGrease)
+                {
+                    pattyGreaseTrail?.MoveToWorldPosition(dragGhost.position);
+                }
+            }
+        }
+
+        private void BeginPattyGreaseTrail(PattyGrillState state)
+        {
+            emitsPattyGrease = activeDragType == IngredientType.Patty &&
+                state != null &&
+                state.Phase != PattyGrillPhase.RawDough &&
+                state.Phase != PattyGrillPhase.Flattened;
+            if (emitsPattyGrease && dragGhost != null)
+            {
+                pattyGreaseTrail?.BeginTrailAtWorldPosition(dragGhost.position);
             }
         }
 
         private void CleanupPointerDrag()
         {
+            pattyGreaseTrail?.EndTrail();
+            emitsPattyGrease = false;
             hasActivePointerDrag = false;
             draggedGrillItem = null;
             draggedBoardIngredient = null;

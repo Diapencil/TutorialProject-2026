@@ -23,6 +23,8 @@ namespace SheepSheepBurger.BurgerAssembly
 
         public RectTransform DragLayer { get; set; }
 
+        public PattyGreaseTrail PattyGreaseTrail { get; set; }
+
         public RectTransform GrillDropArea { get; set; }
 
         public RectTransform BoardLayerRoot { get; set; }
@@ -151,6 +153,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 Vector2.zero,
                 new Vector2(ReferenceWidth, ReferenceHeight));
             view.DragLayer.SetAsLastSibling();
+            view.PattyGreaseTrail = PattyGreaseTrail.Create(pageStrip);
 
             EnsureEventSystem();
             return view;
