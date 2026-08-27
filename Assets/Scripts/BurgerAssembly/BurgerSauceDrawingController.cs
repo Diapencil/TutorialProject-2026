@@ -159,7 +159,8 @@ namespace SheepSheepBurger.BurgerAssembly
 
             if (TryGetBoardPoint(eventData, out Vector2 local))
             {
-                if (selectedSauce == IngredientType.SauceKetchup)
+                if (selectedSauce == IngredientType.SauceKetchup ||
+                    selectedSauce == IngredientType.SauceMustard)
                 {
                     AudioManager.GetOrCreate().PlaySfx(AudioCueIds.SqueezeKetchup);
                 }

@@ -117,6 +117,8 @@ namespace SheepSheepBurger.BurgerAssembly
                 return;
             }
 
+            particles.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
+
             ParticleSystem.MainModule main = particles.main;
             main.playOnAwake = false;
             main.loop = true;
@@ -229,10 +231,10 @@ namespace SheepSheepBurger.BurgerAssembly
     }
 
     /// <summary>
-    /// Owns a native Particle System that follows one patty while it cooks on the grill.
+    /// Owns a native Particle System that follows one grill item while it cooks.
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class PattyCookingSmoke : MonoBehaviour
+    public sealed class GrillCookingSmoke : MonoBehaviour
     {
         private RectTransform source;
         private RectTransform effectRect;
@@ -302,11 +304,11 @@ namespace SheepSheepBurger.BurgerAssembly
             ParticleSystem.MainModule main = particles.main;
             main.startColor = isBurnt
                 ? new ParticleSystem.MinMaxGradient(
-                    new Color(0.08f, 0.075f, 0.065f, 0.94f),
-                    new Color(0.24f, 0.22f, 0.19f, 0.84f))
+                    new Color(0.08f, 0.075f, 0.065f, 0.78f),
+                    new Color(0.24f, 0.22f, 0.19f, 0.68f))
                 : new ParticleSystem.MinMaxGradient(
-                    new Color(0.48f, 0.46f, 0.42f, 0.86f),
-                    new Color(0.82f, 0.80f, 0.74f, 0.72f));
+                    new Color(0.48f, 0.46f, 0.42f, 0.60f),
+                    new Color(0.82f, 0.80f, 0.74f, 0.50f));
 
             if (!particles.isPlaying)
             {
@@ -339,6 +341,8 @@ namespace SheepSheepBurger.BurgerAssembly
 
         private void ConfigureParticleSystem()
         {
+            particles.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
+
             ParticleSystem.MainModule main = particles.main;
             main.playOnAwake = false;
             main.loop = true;
@@ -349,8 +353,8 @@ namespace SheepSheepBurger.BurgerAssembly
             main.startLifetime = new ParticleSystem.MinMaxCurve(1.7f, 2.65f);
             main.startSize = new ParticleSystem.MinMaxCurve(46f, 72f);
             main.startColor = new ParticleSystem.MinMaxGradient(
-                new Color(0.48f, 0.46f, 0.42f, 0.86f),
-                new Color(0.82f, 0.80f, 0.74f, 0.72f));
+                new Color(0.48f, 0.46f, 0.42f, 0.60f),
+                new Color(0.82f, 0.80f, 0.74f, 0.50f));
             main.maxParticles = 150;
 
             ParticleSystem.EmissionModule emission = particles.emission;
@@ -454,8 +458,8 @@ namespace SheepSheepBurger.BurgerAssembly
                 new[]
                 {
                     new GradientAlphaKey(0.15f, 0f),
-                    new GradientAlphaKey(1f, 0.06f),
-                    new GradientAlphaKey(0.88f, 0.58f),
+                    new GradientAlphaKey(0.82f, 0.06f),
+                    new GradientAlphaKey(0.68f, 0.58f),
                     new GradientAlphaKey(0f, 1f)
                 });
             return gradient;

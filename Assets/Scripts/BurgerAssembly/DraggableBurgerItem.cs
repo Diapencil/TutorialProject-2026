@@ -336,7 +336,7 @@ namespace SheepSheepBurger.BurgerAssembly
         private BurgerAssemblyController controller;
         private SimpleShapeGraphic graphic;
         private SimpleShapeGraphic pattyCookingEffect;
-        private PattyCookingSmoke pattyCookingSmoke;
+        private GrillCookingSmoke cookingSmoke;
         private Text phaseText;
         private bool isHeld;
         private bool ownsActiveDrag;
@@ -350,7 +350,10 @@ namespace SheepSheepBurger.BurgerAssembly
         public SimpleShapeGraphic PattyCookingEffect => pattyCookingEffect;
 
         public ParticleSystem PattySmokeParticleSystem =>
-            pattyCookingSmoke != null ? pattyCookingSmoke.ParticleSystem : null;
+            cookingSmoke != null ? cookingSmoke.ParticleSystem : null;
+
+        public ParticleSystem CookingSmokeParticleSystem =>
+            cookingSmoke != null ? cookingSmoke.ParticleSystem : null;
 
         public void Configure(
             BurgerAssemblyController targetController,
@@ -368,7 +371,7 @@ namespace SheepSheepBurger.BurgerAssembly
             graphic = targetGraphic;
             phaseText = targetPhaseText;
             EnsurePattyCookingEffect();
-            EnsurePattyCookingSmoke();
+            EnsureCookingSmoke();
             State = existingState ?? new PattyGrillState(ingredientType);
             State.PhaseChanged += HandlePhaseChanged;
             RefreshAppearance();
@@ -480,7 +483,7 @@ namespace SheepSheepBurger.BurgerAssembly
             }
 
             RefreshPattyCookingEffect(sprites, phase);
-            RefreshPattyCookingSmoke(phase);
+            RefreshCookingSmoke(phase);
 
             if (phaseText != null)
             {
@@ -544,30 +547,32 @@ namespace SheepSheepBurger.BurgerAssembly
             pattyCookingEffect.gameObject.SetActive(showEffect);
         }
 
-        private void EnsurePattyCookingSmoke()
+        private void EnsureCookingSmoke()
         {
-            if (GrillIngredientType != IngredientType.Patty || graphic == null || pattyCookingSmoke != null)
+            bool supportsSmoke = GrillIngredientType == IngredientType.Patty ||
+                GrillIngredientType == IngredientType.Bacon;
+            if (!supportsSmoke || graphic == null || cookingSmoke != null)
             {
                 return;
             }
 
-            pattyCookingSmoke = graphic.gameObject.GetComponent<PattyCookingSmoke>();
-            if (pattyCookingSmoke == null)
+            cookingSmoke = graphic.gameObject.GetComponent<GrillCookingSmoke>();
+            if (cookingSmoke == null)
             {
-                pattyCookingSmoke = graphic.gameObject.AddComponent<PattyCookingSmoke>();
+                cookingSmoke = graphic.gameObject.AddComponent<GrillCookingSmoke>();
             }
-            pattyCookingSmoke.Configure(graphic.rectTransform);
+            cookingSmoke.Configure(graphic.rectTransform);
         }
 
-        private void RefreshPattyCookingSmoke(PattyGrillPhase phase)
+        private void RefreshCookingSmoke(PattyGrillPhase phase)
         {
-            if (GrillIngredientType != IngredientType.Patty)
+            if (GrillIngredientType != IngredientType.Patty && GrillIngredientType != IngredientType.Bacon)
             {
                 return;
             }
 
-            EnsurePattyCookingSmoke();
-            pattyCookingSmoke?.SetState(phase, isHeld);
+            EnsureCookingSmoke();
+            cookingSmoke?.SetState(phase, isHeld);
         }
 
         private static bool IsPattyCookingPhase(PattyGrillPhase phase)
