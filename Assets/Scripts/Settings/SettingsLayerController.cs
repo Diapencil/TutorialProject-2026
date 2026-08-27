@@ -1,4 +1,5 @@
 using System;
+using SheepSheepBurger.Audio;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -172,6 +173,7 @@ namespace SheepSheepBurger.Settings
                                   bgmPrefsKey,
                                   onBgmVolumeChanged,
                                   onBgmNormalizedVolumeChanged);
+            AudioManager.GetOrCreate().SetBgmVolume10(bgmVolume);
         }
 
         public void SetSfxVolume(float value)
@@ -188,6 +190,7 @@ namespace SheepSheepBurger.Settings
                                   sfxPrefsKey,
                                   onSfxVolumeChanged,
                                   onSfxNormalizedVolumeChanged);
+            AudioManager.GetOrCreate().SetSfxVolume10(sfxVolume);
         }
 
         private void EnsureBindings()
