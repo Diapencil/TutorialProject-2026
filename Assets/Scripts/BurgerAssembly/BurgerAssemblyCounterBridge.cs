@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using SheepSheepBurger.Audio;
 using SheepSheepBurger.BurgerAssembly;
 using SheepSheepBurger.Core;
 using UnityEngine;
@@ -112,7 +113,18 @@ namespace SheepSheepBurger.Counter
 
         private IEnumerator ReturnToCounter()
         {
-            yield return new WaitForSeconds(returnDelaySeconds);
+            float soundDelay = Mathf.Min(0.35f, returnDelaySeconds);
+            if (soundDelay > 0f)
+            {
+                yield return new WaitForSeconds(soundDelay);
+            }
+            AudioManager.GetOrCreate().PlaySfx(AudioCueIds.SendPackage);
+
+            float remainingDelay = Mathf.Max(0f, returnDelaySeconds - soundDelay);
+            if (remainingDelay > 0f)
+            {
+                yield return new WaitForSeconds(remainingDelay);
+            }
             SceneManager.LoadScene(counterSceneName);
         }
 

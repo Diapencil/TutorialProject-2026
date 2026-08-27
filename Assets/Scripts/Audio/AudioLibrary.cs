@@ -3,6 +3,19 @@ using UnityEngine;
 
 namespace SheepSheepBurger.Audio
 {
+    public static class AudioCueIds
+    {
+        public const string GrillSizzle = "grill_sizzle";
+        public const string PlaceBacon = "place_bacon";
+        public const string SendPackage = "send_package";
+        public const string PlaceInBox = "place_in_box";
+        public const string PlaceVegetable = "place_vegetable";
+        public const string PlaceCheese = "place_cheese";
+        public const string SqueezeKetchup = "squeeze_ketchup";
+        public const string PressPatty = "press_patty";
+        public const string WrapPackage = "wrap_package";
+    }
+
     [CreateAssetMenu(menuName = "SheepSheepBurger/Audio/Audio Library", fileName = "AudioLibrary")]
     public sealed class AudioLibrary : ScriptableObject
     {

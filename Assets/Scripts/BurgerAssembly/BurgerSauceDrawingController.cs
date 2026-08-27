@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SheepSheepBurger.Audio;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -158,6 +159,10 @@ namespace SheepSheepBurger.BurgerAssembly
 
             if (TryGetBoardPoint(eventData, out Vector2 local))
             {
+                if (selectedSauce == IngredientType.SauceKetchup)
+                {
+                    AudioManager.GetOrCreate().PlaySfx(AudioCueIds.SqueezeKetchup);
+                }
                 BeginStroke(local);
             }
         }

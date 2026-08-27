@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SheepSheepBurger.Audio;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -353,7 +354,14 @@ namespace SheepSheepBurger.BurgerAssembly
             switch (grillItem.State.Phase)
             {
                 case PattyGrillPhase.RawDough:
-                    grillItem.State.TryPressDough();
+                    if (grillItem.State.TryPressDough())
+                    {
+                        if (type == IngredientType.Patty)
+                        {
+                            AudioManager.GetOrCreate().PlaySfx(AudioCueIds.PressPatty);
+                        }
+                        AudioManager.GetOrCreate().PlaySfx(AudioCueIds.GrillSizzle);
+                    }
                     SetGrillStatus(
                         type == IngredientType.Egg
                             ? "계란 조리를 시작했습니다. 3초 동안 익힙니다."
@@ -839,6 +847,10 @@ namespace SheepSheepBurger.BurgerAssembly
                 state);
             grillItems.Add(view);
             focusedGrillItem = view;
+            if (type == IngredientType.Bacon)
+            {
+                AudioManager.GetOrCreate().PlaySfx(AudioCueIds.PlaceBacon);
+            }
             SetGrillStatus(
                 existingState == null
                     ? GetRawGrillItemName(type) + "을(를) 올렸습니다. 재료를 탭해서 조리를 시작해 주세요."
@@ -868,6 +880,7 @@ namespace SheepSheepBurger.BurgerAssembly
             if (!shouldStack)
             {
                 CreateLooseBoardIngredient(type, localPosition, cookingState);
+                PlayBoardIngredientPlacementSfx(type);
                 SetBoardStatus(
                     BurgerIngredientCatalog.GetDisplayName(type) + "을(를) 도마에 놓았습니다.",
                     false);
@@ -894,6 +907,8 @@ namespace SheepSheepBurger.BurgerAssembly
             {
                 SetBoardStatus(BurgerIngredientCatalog.GetDisplayName(type) + "을(를) 버거 위에 쌓았습니다.", false);
             }
+
+            PlayBoardIngredientPlacementSfx(type);
 
             RefreshBoardSummary();
             return true;
@@ -949,6 +964,7 @@ namespace SheepSheepBurger.BurgerAssembly
 
                 looseBoardIngredients.Remove(ingredient);
                 DestroyControllerObject(ingredient.gameObject);
+                PlayBoardIngredientPlacementSfx(type);
                 if (completedBurger != null)
                 {
                     CompleteBurger(completedBurger);
@@ -968,6 +984,28 @@ namespace SheepSheepBurger.BurgerAssembly
             ingredient.SetPlacement(stackAssembler.ReserveLooseLayerOrder(), false);
             rect.SetAsLastSibling();
             return true;
+        }
+
+        private static void PlayBoardIngredientPlacementSfx(IngredientType type)
+        {
+            string audioId;
+            switch (type)
+            {
+                case IngredientType.ToppingCheese:
+                    audioId = AudioCueIds.PlaceCheese;
+                    break;
+                case IngredientType.ToppingLettuce:
+                case IngredientType.ToppingTomato:
+                case IngredientType.ToppingOnion:
+                case IngredientType.ToppingPickle:
+                case IngredientType.ToppingJalapeno:
+                    audioId = AudioCueIds.PlaceVegetable;
+                    break;
+                default:
+                    return;
+            }
+
+            AudioManager.GetOrCreate().PlaySfx(audioId);
         }
 
         private PlacedIngredientView CreateLooseBoardIngredient(

@@ -1,4 +1,5 @@
 using System;
+using SheepSheepBurger.Audio;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -80,6 +81,7 @@ namespace SheepSheepBurger.BurgerAssembly
             currentBurgerRoot.SetAsLastSibling();
 
             packageButton.interactable = true;
+            AudioManager.GetOrCreate().PlaySfx(AudioCueIds.PlaceInBox);
             return true;
         }
 
@@ -166,6 +168,7 @@ namespace SheepSheepBurger.BurgerAssembly
             packageButton.interactable = false;
             CreatePackageWrap();
             currentBurgerRoot.gameObject.SetActive(false);
+            AudioManager.GetOrCreate().PlaySfx(AudioCueIds.WrapPackage);
             Packaged?.Invoke();
         }
 

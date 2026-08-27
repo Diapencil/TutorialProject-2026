@@ -16,4 +16,40 @@ MonoBehaviour:
   playBgmOnBoot: 0
   bootBgmId:
   bgmTracks: []
-  sfxClips: []
+  sfxClips:
+  - id: grill_sizzle
+    clip: {fileID: 8300000, guid: 1f6b8c9d0a2e4f3198b7c6d5e4a30211, type: 3}
+    volume: 0.65
+    pitch: 1
+  - id: place_bacon
+    clip: {fileID: 8300000, guid: 2a7c9d0e1b3f4520a9c8d7e6f5b41322, type: 3}
+    volume: 0.8
+    pitch: 1
+  - id: send_package
+    clip: {fileID: 8300000, guid: 3b8d0e1f2c4a5631bad9e8f7a6c52433, type: 3}
+    volume: 0.9
+    pitch: 1
+  - id: place_in_box
+    clip: {fileID: 8300000, guid: 4c9e1f2a3d5b6742cbea0f8a7d635544, type: 3}
+    volume: 0.85
+    pitch: 1
+  - id: place_vegetable
+    clip: {fileID: 8300000, guid: 5d0f2a3b4e6c7853dcfb1a9b8e746655, type: 3}
+    volume: 0.75
+    pitch: 1
+  - id: place_cheese
+    clip: {fileID: 8300000, guid: 6e1a3b4c5f7d8964ed0c2b1a9f857766, type: 3}
+    volume: 0.8
+    pitch: 1
+  - id: squeeze_ketchup
+    clip: {fileID: 8300000, guid: 7f2b4c5d6a8e9075fe1d3c2b0a968877, type: 3}
+    volume: 0.75
+    pitch: 1
+  - id: press_patty
+    clip: {fileID: 8300000, guid: 8a3c5d6e7b9f01860f2e4d3c1b079988, type: 3}
+    volume: 0.9
+    pitch: 1
+  - id: wrap_package
+    clip: {fileID: 8300000, guid: 9b4d6e7f8c0a1297103f5e4d2c18aa99, type: 3}
+    volume: 0.85
+    pitch: 1
