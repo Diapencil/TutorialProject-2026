@@ -52,7 +52,7 @@ namespace SheepSheepBurger.EditorTools
             SetStretch(rootRect, Vector2.zero, Vector2.zero);
 
             Canvas canvas = root.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.renderMode = RenderMode.ScreenSpaceCamera;
             canvas.overrideSorting = true;
             canvas.sortingOrder = designPreset.canvasSortingOrder;
 
@@ -97,6 +97,7 @@ namespace SheepSheepBurger.EditorTools
             Image settingsButtonBackground = settingsButton.GetComponent<Image>();
             Outline settingsButtonOutline = settingsButton.gameObject.GetComponent<Outline>();
             TMP_Text settingsButtonText = settingsButton.GetComponentInChildren<TMP_Text>();
+            settingsButton.gameObject.SetActive(false);
 
             SettingsLayerController controller = root.AddComponent<SettingsLayerController>();
             controller.Bind(panelCanvasGroup,

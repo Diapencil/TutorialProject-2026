@@ -25,7 +25,9 @@ namespace SheepSheepBurger.Counter
         [SerializeField] private SettingsLayerController settingsLayer;
         [SerializeField] private GameObject settingsLayerPrefab;
         [SerializeField] private bool closeSettingsLayerOnStart = true;
-        [SerializeField] private bool showBuiltInSettingsButtonOnlyWhenLayerOpen = true;
+        [SerializeField] private bool showBuiltInSettingsButtonOnlyWhenLayerOpen = false;
+        [SerializeField] private int shortcutButtonSortingOrder = 30;
+        [SerializeField] private int settingsButtonOpenSortingOrder = 700;
 
         private SpriteRenderer pressedRenderer;
         private GameObject builtInSettingsButton;
@@ -53,7 +55,12 @@ namespace SheepSheepBurger.Counter
 
             if (TryGetPointerDown(out Vector2 downPosition))
             {
-                pressedRenderer = ShouldIgnoreShortcutInput() ? null : HitTest(downPosition);
+                pressedRenderer = HitTest(downPosition);
+
+                if (pressedRenderer != settingsButtonRenderer && ShouldIgnoreShortcutInput())
+                {
+                    pressedRenderer = null;
+                }
             }
 
             if (!TryGetPointerUp(out Vector2 upPosition))
@@ -61,13 +68,13 @@ namespace SheepSheepBurger.Counter
                 return;
             }
 
-            if (ShouldIgnoreShortcutInput())
+            SpriteRenderer releasedRenderer = HitTest(upPosition);
+
+            if (releasedRenderer != settingsButtonRenderer && ShouldIgnoreShortcutInput())
             {
                 pressedRenderer = null;
                 return;
             }
-
-            SpriteRenderer releasedRenderer = HitTest(upPosition);
 
             if (pressedRenderer != null && pressedRenderer == releasedRenderer)
             {
@@ -112,6 +119,11 @@ namespace SheepSheepBurger.Counter
             if (shopButtonRenderer == null)
             {
                 shopButtonRenderer = FindSpriteRendererByName("shop button");
+            }
+
+            if (shopButtonRenderer != null)
+            {
+                shopButtonRenderer.sortingOrder = shortcutButtonSortingOrder;
             }
 
             if (settingsButtonRenderer == null)
@@ -197,12 +209,8 @@ namespace SheepSheepBurger.Counter
 
         private void SyncBuiltInSettingsButtonVisibility()
         {
-            if (!showBuiltInSettingsButtonOnlyWhenLayerOpen)
-            {
-                return;
-            }
-
             SettingsLayerController layer = EnsureSettingsLayer();
+            SyncSettingsButtonSorting(layer);
 
             if (layer == null)
             {
@@ -215,10 +223,23 @@ namespace SheepSheepBurger.Counter
                 builtInSettingsButton = buttonTransform != null ? buttonTransform.gameObject : null;
             }
 
-            if (builtInSettingsButton != null && builtInSettingsButton.activeSelf != layer.IsOpen)
+            bool shouldShowBuiltInButton = showBuiltInSettingsButtonOnlyWhenLayerOpen && layer.IsOpen;
+
+            if (builtInSettingsButton != null && builtInSettingsButton.activeSelf != shouldShowBuiltInButton)
             {
-                builtInSettingsButton.SetActive(layer.IsOpen);
+                builtInSettingsButton.SetActive(shouldShowBuiltInButton);
             }
+        }
+
+        private void SyncSettingsButtonSorting(SettingsLayerController layer)
+        {
+            if (settingsButtonRenderer == null)
+            {
+                return;
+            }
+
+            settingsButtonRenderer.sortingOrder =
+                layer != null && layer.IsOpen ? settingsButtonOpenSortingOrder : shortcutButtonSortingOrder;
         }
 
         private static SpriteRenderer FindSpriteRendererByName(string objectName)

@@ -230,7 +230,10 @@ namespace SheepSheepBurger.Settings
         {
             if (canvas != null)
             {
-                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                Camera mainCamera = Camera.main;
+                canvas.renderMode = mainCamera != null ? RenderMode.ScreenSpaceCamera : RenderMode.ScreenSpaceOverlay;
+                canvas.worldCamera = mainCamera;
+                canvas.planeDistance = 100f;
                 canvas.overrideSorting = true;
                 canvas.sortingOrder = preset.canvasSortingOrder;
             }

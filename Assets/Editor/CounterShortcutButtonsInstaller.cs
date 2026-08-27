@@ -18,6 +18,8 @@ namespace SheepSheepBurger.EditorTools
         private const string ShortcutObjectName = "CounterShortcutButtons";
         private const string ShopButtonName = "shop button";
         private const string SettingsButtonName = "setting button";
+        private const int ShortcutButtonSortingOrder = 30;
+        private const int SettingsButtonOpenSortingOrder = 700;
 
         private static readonly Vector3 ShopButtonPosition = new Vector3(6.42f, 4.21f, 0f);
         private static readonly Vector3 SettingsButtonPosition = new Vector3(7.81f, 4.21f, 0f);
@@ -42,7 +44,9 @@ namespace SheepSheepBurger.EditorTools
             serialized.FindProperty("settingsLayerPrefab").objectReferenceValue =
                 AssetDatabase.LoadAssetAtPath<GameObject>(SettingsLayerPrefabPath);
             serialized.FindProperty("closeSettingsLayerOnStart").boolValue = true;
-            serialized.FindProperty("showBuiltInSettingsButtonOnlyWhenLayerOpen").boolValue = true;
+            serialized.FindProperty("showBuiltInSettingsButtonOnlyWhenLayerOpen").boolValue = false;
+            serialized.FindProperty("shortcutButtonSortingOrder").intValue = ShortcutButtonSortingOrder;
+            serialized.FindProperty("settingsButtonOpenSortingOrder").intValue = SettingsButtonOpenSortingOrder;
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
             EnsureSceneInBuildSettings(CounterScenePath);
@@ -96,7 +100,7 @@ namespace SheepSheepBurger.EditorTools
             buttonObject.transform.position = position;
             buttonObject.transform.localScale = Vector3.one;
             renderer.color = Color.white;
-            renderer.sortingOrder = 30;
+            renderer.sortingOrder = ShortcutButtonSortingOrder;
             EditorUtility.SetDirty(buttonObject);
             return renderer;
         }

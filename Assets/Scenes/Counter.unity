@@ -156,7 +156,9 @@ MonoBehaviour:
   settingsLayer: {fileID: 1982708077}
   settingsLayerPrefab: {fileID: 2388496046449877067, guid: 0a62067698aad4314a19c06110031ead, type: 3}
   closeSettingsLayerOnStart: 1
-  showBuiltInSettingsButtonOnlyWhenLayerOpen: 1
+  showBuiltInSettingsButtonOnlyWhenLayerOpen: 0
+  shortcutButtonSortingOrder: 30
+  settingsButtonOpenSortingOrder: 700
 --- !u!4 &26886287
 Transform:
   m_ObjectHideFlags: 0
