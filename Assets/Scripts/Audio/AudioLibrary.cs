@@ -14,6 +14,7 @@ namespace SheepSheepBurger.Audio
         public const string SqueezeKetchup = "squeeze_ketchup";
         public const string PressPatty = "press_patty";
         public const string WrapPackage = "wrap_package";
+        public const string UiClick = "ui_click";
     }
 
     [CreateAssetMenu(menuName = "SheepSheepBurger/Audio/Audio Library", fileName = "AudioLibrary")]

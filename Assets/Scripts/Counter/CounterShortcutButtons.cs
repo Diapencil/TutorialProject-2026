@@ -1,3 +1,4 @@
+using SheepSheepBurger.Audio;
 using SheepSheepBurger.Settings;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -28,6 +29,11 @@ namespace SheepSheepBurger.Counter
         [SerializeField] private bool showBuiltInSettingsButtonOnlyWhenLayerOpen = false;
         [SerializeField] private int shortcutButtonSortingOrder = 30;
         [SerializeField] private int settingsButtonOpenSortingOrder = 700;
+
+        [Header("클릭음")]
+        [SerializeField] private bool playShortcutClickSound = true;
+        [SerializeField] private string clickSfxId = AudioCueIds.UiClick;
+        [SerializeField] private string[] clickSoundExcludedSceneNames = { "Cooking", "BurgerAssembly" };
 
         private SpriteRenderer pressedRenderer;
         private GameObject builtInSettingsButton;
@@ -161,6 +167,7 @@ namespace SheepSheepBurger.Counter
         {
             if (renderer == settingsButtonRenderer)
             {
+                PlayShortcutClickSound();
                 ToggleSettingsLayer();
                 return;
             }
@@ -172,8 +179,20 @@ namespace SheepSheepBurger.Counter
 
             if (renderer == shopButtonRenderer)
             {
+                PlayShortcutClickSound();
                 OpenShopScene();
             }
+        }
+
+        private void PlayShortcutClickSound()
+        {
+            if (!playShortcutClickSound ||
+                AudioSceneFilter.IsActiveSceneExcluded(clickSoundExcludedSceneNames))
+            {
+                return;
+            }
+
+            AudioManager.GetOrCreate().PlaySfx(clickSfxId);
         }
 
         private SpriteRenderer HitTest(Vector2 screenPosition)

@@ -25,6 +25,10 @@ namespace SheepSheepBurger.Audio
         [Header("소스")]
         [SerializeField, Min(1)] private int sfxSourcePoolSize = 8;
 
+        [Header("UI 클릭음")]
+        [SerializeField] private bool installUiButtonClickSoundBinder = true;
+        [SerializeField] private UIButtonClickSoundBinder uiButtonClickSoundBinder;
+
         private AudioSource bgmSource;
         private readonly List<AudioSource> sfxSources = new List<AudioSource>();
         private int nextSfxSourceIndex;
@@ -104,6 +108,7 @@ namespace SheepSheepBurger.Audio
 
             LoadLibraryIfNeeded();
             CreateSourcesIfNeeded();
+            CreateUiButtonClickSoundBinderIfNeeded();
             LoadVolumesFromSettings();
             ApplyVolumes();
             PlayBootBgmIfNeeded();
@@ -271,6 +276,24 @@ namespace SheepSheepBurger.Audio
             source.playOnAwake = false;
             source.spatialBlend = 0f;
             return source;
+        }
+
+        private void CreateUiButtonClickSoundBinderIfNeeded()
+        {
+            if (!installUiButtonClickSoundBinder || !Application.isPlaying)
+            {
+                return;
+            }
+
+            if (uiButtonClickSoundBinder == null)
+            {
+                uiButtonClickSoundBinder = GetComponent<UIButtonClickSoundBinder>();
+            }
+
+            if (uiButtonClickSoundBinder == null)
+            {
+                uiButtonClickSoundBinder = gameObject.AddComponent<UIButtonClickSoundBinder>();
+            }
         }
 
         private void LoadVolumesFromSettings()
