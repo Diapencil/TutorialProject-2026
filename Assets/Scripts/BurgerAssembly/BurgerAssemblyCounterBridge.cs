@@ -38,6 +38,16 @@ namespace SheepSheepBurger.Counter
         private BurgerPackagingController packagingController;
         private bool submitted;
 
+        /// <summary>
+        /// 씬에 브릿지가 없어서 런타임에 자동 설치될 때 컨트롤러를 넣어준다.
+        /// Start의 대기 코루틴이 controller를 계속 확인하므로 Awake 이후에 넣어도 된다.
+        /// </summary>
+        public void AttachController(BurgerAssemblyController value)
+        {
+            controller = value;
+            ApplyActiveCustomerDialogue();
+        }
+
         private void Awake()
         {
             ingredientLookup.Clear();
@@ -169,6 +179,17 @@ namespace SheepSheepBurger.Counter
         private CoreIngredientData ResolveIngredient(BurgerAssemblyIngredientType type)
         {
             if (ingredientLookup.TryGetValue(type, out var ingredient)) return ingredient;
+
+            // 씬에 배선된 매핑이 없으면(런타임 자동 설치) 코드 테이블로 만들어 쓴다.
+            // OrderJudge와 DayState가 읽는 값은 id / ingredientName / costPerUse / grillable 네 개뿐이라
+            // 애셋 참조 없이도 채점과 집계가 정상 동작한다.
+            CoreIngredientData fallback = CounterReturnBridgeFallback.Create(type);
+            if (fallback != null)
+            {
+                ingredientLookup[type] = fallback;
+                return fallback;
+            }
+
             Debug.LogWarning($"BurgerAssemblyCounterBridge: no Core.IngredientData mapped for {type}.");
             return null;
         }

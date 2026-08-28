@@ -18,7 +18,8 @@ namespace SheepSheepBurger.Counter.Editor
     /// </summary>
     public static class BurgerAssemblyCounterBridgeInstaller
     {
-        private const string ScenePath = "Assets/@Developers/ChoiHJ/BurgerAssembly/Scenes/BurgerAssembly.unity";
+        // 실제 씬 경로. 예전 @Developers/ChoiHJ 경로는 존재하지 않아 설치가 조용히 실패했다.
+        private const string ScenePath = "Assets/Scenes/BurgerAssembly.unity";
         private const string BridgeObjectName = "CounterReturnBridge";
 
         private static readonly (BurgerAssemblyIngredientType type, string assetPath)[] Mappings =
