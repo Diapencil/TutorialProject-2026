@@ -336,14 +336,6 @@ namespace SheepSheepBurger.BurgerAssembly
 
         private void BuildBoardPage(RectTransform page)
         {
-            // Ingredient sources sit directly inside the bins painted in the art.
-            RectTransform tray = CreateStationTray(
-                "IngredientTray",
-                page,
-                new Vector2(240f, 160f),
-                new Vector2(900f, 400f));
-            CreateBoardTrayCards(tray);
-
             RectTransform boardDropArea = CreateRoundedPanel(
                 "BoardDropArea",
                 page,
@@ -358,6 +350,16 @@ namespace SheepSheepBurger.BurgerAssembly
             view.BoardLayerRoot.SetParent(boardDropArea, false);
             BurgerUiFactory.SetRect(view.BoardLayerRoot, Vector2.zero, boardDropArea.sizeDelta);
             view.SauceDrawingController = boardDropArea.gameObject.AddComponent<BurgerSauceDrawingController>();
+
+            // Ingredient sources sit directly inside the bins painted in the art.
+            // Keep the broad board hit area behind them so Scene View clicks select
+            // the tray cards first while editing the layout.
+            RectTransform tray = CreateStationTray(
+                "IngredientTray",
+                page,
+                new Vector2(240f, 160f),
+                new Vector2(900f, 400f));
+            CreateBoardTrayCards(tray);
 
             // Keep only transient feedback. It has no panel or explanatory copy.
             view.ToastText = CreateText(

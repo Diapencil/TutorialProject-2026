@@ -75,6 +75,14 @@ namespace SheepSheepBurger.BurgerAssembly
             Outline outline = GetComponent<Outline>();
             if (outline != null)
             {
+                SimpleShapeGraphic background = GetComponent<SimpleShapeGraphic>();
+                if (background != null && background.color.a <= 0.01f)
+                {
+                    outline.effectColor = Color.clear;
+                    outline.effectDistance = new Vector2(1.5f, -1.5f);
+                    return;
+                }
+
                 outline.effectColor = selected
                     ? BurgerPrototypeTheme.Success
                     : BurgerPrototypeTheme.Border;
