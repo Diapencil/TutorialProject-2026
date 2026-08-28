@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using UnityEngine.TextCore.LowLevel;
 using UnityEngine.UI;
 
 #if UNITY_EDITOR
@@ -20,6 +21,12 @@ namespace SheepSheepBurger.Results
     {
         private const string PrefabResourcePath = "UI/DayResultLayer";
         private const string KoreanFontResourcePath = "Fonts & Materials/Shop Korean SDF";
+        public const string RequiredFontCharacters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,!?:;+-*/()[]{}<>%#&'\"₩C" +
+            "결과요약응대손님명총매출재료비순이익평균보상힌트사용회등급재료소비개없음외더보기주문로그아직기록된주문이없습니다" +
+            "고객메뉴획득원가요구제출오차익힘전체완성미완성다음날닫기패티하단번상단양상추토마토치즈양파피클할라피뇨케첩머스터드" +
+            "계란베이컨늑대기린사자코끼리캐시햄버거비건채식핫도그후라이미아두쫀쿠와일드숲숲";
+        private const int BuiltLayoutVersion = 2;
+        private const int IngredientPreviewLimit = 5;
 
         public static DayResultLayerController Instance { get; private set; }
 
@@ -38,10 +45,10 @@ namespace SheepSheepBurger.Results
 
         [Header("폰트")]
         [SerializeField] private TMP_FontAsset fontAsset;
-        [SerializeField, Min(1f)] private float titleFontSize = 58f;
-        [SerializeField, Min(1f)] private float sectionFontSize = 28f;
-        [SerializeField, Min(1f)] private float logFontSize = 23f;
-        [SerializeField, Min(1f)] private float buttonFontSize = 30f;
+        [SerializeField, Min(1f)] private float titleFontSize = 46f;
+        [SerializeField, Min(1f)] private float sectionFontSize = 24f;
+        [SerializeField, Min(1f)] private float logFontSize = 20f;
+        [SerializeField, Min(1f)] private float buttonFontSize = 26f;
 
         [Header("색")]
         [SerializeField] private Color backdropColor = new Color(0.04f, 0.08f, 0.06f, 0.55f);
@@ -79,6 +86,7 @@ namespace SheepSheepBurger.Results
         [SerializeField] private TMP_Text logText;
         [SerializeField] private Button closeButton;
         [SerializeField] private Button nextDayButton;
+        [SerializeField, HideInInspector] private int builtLayoutVersion;
 
         private DayProgressRuntime dayProgress;
 
@@ -332,11 +340,19 @@ namespace SheepSheepBurger.Results
             }
 
             dayState.EnsureInitialized(dayState.dayNumber);
-            titleText.text = string.Format(titleFormat, dayState.dayNumber);
-            summaryText.text = BuildSummaryText(dayState);
-            gradeText.text = BuildGradeText(dayState);
-            ingredientText.text = BuildIngredientText(dayState);
-            logText.text = BuildOrderLogText(dayState);
+            string title = string.Format(titleFormat, dayState.dayNumber);
+            string summary = BuildSummaryText(dayState);
+            string grades = BuildGradeText(dayState);
+            string ingredients = BuildIngredientText(dayState);
+            string logs = BuildOrderLogText(dayState);
+
+            EnsureFontContainsCharacters(title + summary + grades + ingredients + logs + closeButtonLabel + nextDayButtonLabel);
+
+            titleText.text = title;
+            summaryText.text = summary;
+            gradeText.text = grades;
+            ingredientText.text = ingredients;
+            logText.text = logs;
             UpdateLogContentHeight();
         }
 
@@ -344,12 +360,11 @@ namespace SheepSheepBurger.Results
         {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine(summaryTitle);
-            builder.AppendLine($"응대 손님: {dayState.customersServed}");
+            builder.AppendLine($"손님 {dayState.customersServed}명 / 힌트 {dayState.ordersWithHint}회");
             builder.AppendLine($"총 매출: {CurrencyUtil.ToDisplay(dayState.dailyRevenue)}");
             builder.AppendLine($"재료비: {CurrencyUtil.ToDisplay(dayState.dailyIngredientCost)}");
             builder.AppendLine($"순이익: {CurrencyUtil.ToDisplay(dayState.dailyProfit)}");
             builder.AppendLine($"평균 보상: {CurrencyUtil.ToDisplay(dayState.averageReward)}");
-            builder.AppendLine($"힌트 사용: {dayState.ordersWithHint}");
             return builder.ToString();
         }
 
@@ -375,7 +390,10 @@ namespace SheepSheepBurger.Results
                 return builder.ToString();
             }
 
-            for (int i = 0; i < dayState.ingredientUsages.Count; i++)
+            builder.AppendLine($"총 {dayState.totalIngredientUses}개");
+
+            int shown = Mathf.Min(IngredientPreviewLimit, dayState.ingredientUsages.Count);
+            for (int i = 0; i < shown; i++)
             {
                 IngredientUsageRecord usage = dayState.ingredientUsages[i];
 
@@ -384,10 +402,13 @@ namespace SheepSheepBurger.Results
                     continue;
                 }
 
-                string name = string.IsNullOrWhiteSpace(usage.ingredientName)
-                    ? $"Ingredient {usage.ingredientId}"
-                    : usage.ingredientName;
+                string name = GetIngredientDisplayName(usage);
                 builder.AppendLine($"{name} x{usage.count} / {CurrencyUtil.ToDisplay(usage.totalCost)}");
+            }
+
+            if (dayState.ingredientUsages.Count > shown)
+            {
+                builder.AppendLine($"외 {dayState.ingredientUsages.Count - shown}개");
             }
 
             return builder.ToString();
@@ -420,12 +441,8 @@ namespace SheepSheepBurger.Results
                     ? $"Recipe {result.recipeId}"
                     : result.recipeName;
 
-                builder.AppendLine(
-                    $"#{result.sequence} {customerName} / {recipeName} / {result.grade} / +{CurrencyUtil.ToDisplay(result.reward)}");
-                builder.AppendLine(
-                    $"  재료비 {CurrencyUtil.ToDisplay(result.ingredientCost)}, 요구 {result.requestedIngredientCount}, 제출 {result.submittedIngredientCount}, 힌트 {(result.hintUsed ? "O" : "X")}");
-                builder.AppendLine(
-                    $"  오차: 재료 {result.ingredientErrors}, 익힘 {result.cookStateErrors}, 총 {result.totalErrors}");
+                builder.AppendLine($"#{result.sequence} {customerName} / {recipeName} / {result.grade} / +{CurrencyUtil.ToDisplay(result.reward)}");
+                builder.AppendLine($"   원가 {CurrencyUtil.ToDisplay(result.ingredientCost)} | 요구 {result.requestedIngredientCount} / 제출 {result.submittedIngredientCount} | 오차 {result.totalErrors} | 힌트 {(result.hintUsed ? "O" : "X")}");
 
                 AppendConsumedIngredients(builder, result);
                 builder.AppendLine();
@@ -458,13 +475,23 @@ namespace SheepSheepBurger.Results
                     builder.Append(", ");
                 }
 
-                string name = string.IsNullOrWhiteSpace(usage.ingredientName)
-                    ? $"Ingredient {usage.ingredientId}"
-                    : usage.ingredientName;
+                string name = GetIngredientDisplayName(usage);
                 builder.Append($"{name} x{usage.count}");
             }
 
             builder.AppendLine();
+        }
+
+        private static string GetIngredientDisplayName(IngredientUsageRecord usage)
+        {
+            if (usage == null)
+            {
+                return "재료";
+            }
+
+            return string.IsNullOrWhiteSpace(usage.ingredientName)
+                ? $"Ingredient {usage.ingredientId}"
+                : usage.ingredientName;
         }
 
         private void UpdateLogContentHeight()
@@ -485,32 +512,37 @@ namespace SheepSheepBurger.Results
         {
             EnsureCanvasComponents();
 
-            if (panel != null)
+            if (panel != null && builtLayoutVersion == BuiltLayoutVersion)
             {
                 return;
             }
+
+            ClearChildren();
+            ClearReferences();
 
             backdrop = CreateImage("Backdrop", transform, backdropColor);
             SetStretch(backdrop.rectTransform);
 
             panel = CreateImage("Panel", transform, panelColor).rectTransform;
-            SetCenter(panel, new Vector2(1380f, 860f), Vector2.zero);
+            SetCenter(panel, new Vector2(1420f, 840f), Vector2.zero);
             AddOutline(panel.gameObject, outlineColor, new Vector2(5f, -5f));
 
             titleText = CreateText("Title", panel, "", titleFontSize, titleColor, TextAlignmentOptions.Center);
-            SetTopLeft(titleText.rectTransform, 60f, 32f, 1260f, 78f);
+            SetTopLeft(titleText.rectTransform, 70f, 28f, 1280f, 68f);
 
-            summaryText = CreateSectionText("Summary", 80f, 130f, 370f, 170f);
-            gradeText = CreateSectionText("Grades", 505f, 130f, 300f, 170f);
-            ingredientText = CreateSectionText("Ingredients", 860f, 130f, 440f, 170f);
+            summaryText = CreateSectionText("Summary", 70f, 112f, 430f, 230f);
+            gradeText = CreateSectionText("Grades", 530f, 112f, 300f, 230f);
+            ingredientText = CreateSectionText("Ingredients", 860f, 112f, 490f, 230f);
 
             BuildLogScroll();
 
             closeButton = CreateButton("CloseButton", closeButtonLabel);
-            SetTopLeft(closeButton.transform as RectTransform, 1140f, 780f, 160f, 58f);
+            SetTopLeft(closeButton.transform as RectTransform, 1185f, 754f, 165f, 58f);
 
             nextDayButton = CreateButton("NextDayButton", nextDayButtonLabel);
-            SetTopLeft(nextDayButton.transform as RectTransform, 960f, 780f, 160f, 58f);
+            SetTopLeft(nextDayButton.transform as RectTransform, 1000f, 754f, 165f, 58f);
+
+            builtLayoutVersion = BuiltLayoutVersion;
         }
 
         private void EnsureCanvasComponents()
@@ -555,7 +587,11 @@ namespace SheepSheepBurger.Results
                                        sectionFontSize,
                                        bodyTextColor,
                                        TextAlignmentOptions.TopLeft);
-            SetStretch(text.rectTransform, 18f, 14f, 18f, 14f);
+            text.overflowMode = TextOverflowModes.Ellipsis;
+            text.enableAutoSizing = true;
+            text.fontSizeMin = 16f;
+            text.fontSizeMax = sectionFontSize;
+            SetStretch(text.rectTransform, 22f, 18f, 22f, 18f);
             return text;
         }
 
@@ -563,7 +599,7 @@ namespace SheepSheepBurger.Results
         {
             Image scrollBackground = CreateImage("OrderLogScroll", panel, scrollColor);
             RectTransform scrollRoot = scrollBackground.rectTransform;
-            SetTopLeft(scrollRoot, 80f, 330f, 1220f, 430f);
+            SetTopLeft(scrollRoot, 70f, 370f, 1280f, 350f);
             AddOutline(scrollBackground.gameObject, outlineColor, new Vector2(2f, -2f));
 
             logScrollRect = scrollBackground.gameObject.AddComponent<ScrollRect>();
@@ -594,7 +630,9 @@ namespace SheepSheepBurger.Results
                                  logFontSize,
                                  bodyTextColor,
                                  TextAlignmentOptions.TopLeft);
-            SetStretch(logText.rectTransform, 20f, 18f, 20f, 18f);
+            logText.enableWordWrapping = true;
+            logText.overflowMode = TextOverflowModes.Overflow;
+            SetStretch(logText.rectTransform, 24f, 20f, 24f, 20f);
 
             logScrollRect.viewport = viewport;
             logScrollRect.content = logContent;
@@ -646,10 +684,13 @@ namespace SheepSheepBurger.Results
             TextMeshProUGUI tmp = gameObject.AddComponent<TextMeshProUGUI>();
             tmp.text = text;
             tmp.fontSize = fontSize;
+            tmp.fontSizeMin = Mathf.Max(12f, fontSize * 0.65f);
+            tmp.fontSizeMax = fontSize;
             tmp.color = color;
             tmp.alignment = alignment;
             tmp.enableWordWrapping = true;
             tmp.overflowMode = TextOverflowModes.Overflow;
+            tmp.raycastTarget = false;
 
             TMP_FontAsset resolvedFont = ResolveFontAsset();
             if (resolvedFont != null)
@@ -670,6 +711,46 @@ namespace SheepSheepBurger.Results
             return fontAsset;
         }
 
+        private void EnsureFontContainsCharacters(string text)
+        {
+            TMP_FontAsset resolvedFont = ResolveFontAsset();
+            if (resolvedFont == null)
+            {
+                return;
+            }
+
+            string requiredCharacters = RequiredFontCharacters + text;
+            if (resolvedFont.HasCharacters(requiredCharacters, out _))
+            {
+                return;
+            }
+
+            AtlasPopulationMode originalMode = resolvedFont.atlasPopulationMode;
+            resolvedFont.atlasPopulationMode = AtlasPopulationMode.Dynamic;
+
+            try
+            {
+                if (!resolvedFont.TryAddCharacters(requiredCharacters, out string missingCharacters) &&
+                    !string.IsNullOrEmpty(missingCharacters))
+                {
+                    Debug.LogWarning($"[DayResultLayerController] 결과창 폰트에 넣지 못한 문자가 있습니다: {missingCharacters}");
+                }
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogWarning($"[DayResultLayerController] 결과창 폰트 보정 중 오류: {exception.Message}");
+            }
+
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                resolvedFont.atlasPopulationMode = originalMode;
+                EditorUtility.SetDirty(resolvedFont);
+                AssetDatabase.SaveAssets();
+            }
+#endif
+        }
+
         private void ApplyVisuals()
         {
             EnsureCanvasComponents();
@@ -686,8 +767,11 @@ namespace SheepSheepBurger.Results
         private void ApplyTextStyle(TMP_Text text, float fontSize, Color color, TextAlignmentOptions alignment)
         {
             text.fontSize = fontSize;
+            text.fontSizeMin = Mathf.Max(12f, fontSize * 0.65f);
+            text.fontSizeMax = fontSize;
             text.color = color;
             text.alignment = alignment;
+            text.raycastTarget = false;
 
             TMP_FontAsset resolvedFont = ResolveFontAsset();
             if (resolvedFont != null)

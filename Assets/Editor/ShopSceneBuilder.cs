@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using SheepSheepBurger.Core;
+using SheepSheepBurger.Results;
 using SheepSheepBurger.Shop;
 using TMPro;
 using UnityEditor;
@@ -131,7 +132,8 @@ namespace SheepSheepBurger.EditorTools
             " .,!?:;+-*/()[]{}<>%#&'\"₩C",
             "토핑업수리장식상환하기갚을금액입력구매불가공사중캐이나인이부족합니다올바른보유빚모두갚았습니다를찾을수없습니다",
             "베이컨계란후라이피클할라피뇨튀김기그릴판꽃화분배너피규어마네키네코",
-            "잔여부채레벨"
+            "잔여부채레벨",
+            DayResultLayerController.RequiredFontCharacters
         );
 
         private static TMP_FontAsset activeFontAsset;

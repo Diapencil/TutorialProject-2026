@@ -136,11 +136,11 @@ MonoBehaviour:
   canvasSortingOrder: 900
   referenceResolution: {x: 1920, y: 1080}
   matchWidthOrHeight: 0.5
-  fontAsset: {fileID: 11400000, guid: 2c9c1b2d3a5864e3db7e2bc26ca8975a, type: 2}
-  titleFontSize: 58
-  sectionFontSize: 28
-  logFontSize: 23
-  buttonFontSize: 30
+  fontAsset: {fileID: 11400000, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
+  titleFontSize: 46
+  sectionFontSize: 24
+  logFontSize: 20
+  buttonFontSize: 26
   backdropColor: {r: 0.04, g: 0.08, b: 0.06, a: 0.55}
   panelColor: {r: 0.66, g: 0.79, b: 0.64, a: 1}
   sectionColor: {r: 0.78, g: 0.88, b: 0.74, a: 1}
@@ -172,3 +172,4 @@ MonoBehaviour:
   logText: {fileID: 0}
   closeButton: {fileID: 0}
   nextDayButton: {fileID: 0}
+  builtLayoutVersion: 0
