@@ -5,15 +5,31 @@ using System.Linq;
 using System.Text;
 using SheepSheepBurger.Audio;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace SheepSheepBurger.BurgerAssembly
 {
+    [ExecuteAlways]
     [DisallowMultipleComponent]
     public sealed class BurgerAssemblyController : MonoBehaviour
     {
         [SerializeField] private BurgerSpriteCatalog spriteCatalog;
         [SerializeField] private CookingSceneSchema cookingSchema;
+
+        [Header("Editable Cooking Scene")]
+        [SerializeField] private bool generateEditableViewInEditor = true;
+        [SerializeField] private Camera editableMainCamera;
+        [SerializeField] private RectTransform editableCanvasRoot;
+        [SerializeField] private RectTransform editablePanoramaRoot;
+        [SerializeField] private RectTransform editableGrillRegion;
+        [SerializeField] private RectTransform editableBoardRegion;
+        [SerializeField] private RectTransform editablePackagingRegion;
+        [SerializeField] private RectTransform editableGrillDropArea;
+        [SerializeField] private RectTransform editableBoardDropArea;
+        [SerializeField] private RectTransform editableIngredientTray;
+        [SerializeField] private RectTransform editableDragLayer;
 
         private readonly BurgerCompletionPublisher completionPublisher = new BurgerCompletionPublisher();
         private readonly BurgerStackAssembler stackAssembler = new BurgerStackAssembler();
@@ -188,8 +204,92 @@ namespace SheepSheepBurger.BurgerAssembly
             RefreshControls();
         }
 
+#if UNITY_EDITOR
+        private void OnEnable()
+        {
+            QueueEditableViewBuild();
+        }
+
+        private void OnValidate()
+        {
+            QueueEditableViewBuild();
+        }
+
+        [ContextMenu("Ensure Editable Cooking View")]
+        private void EnsureEditableCookingView()
+        {
+            if (Application.isPlaying)
+            {
+                return;
+            }
+
+            BuildEditableViewNow();
+        }
+
+        [ContextMenu("Rebuild Editable Cooking View")]
+        private void RebuildEditableCookingView()
+        {
+            if (Application.isPlaying)
+            {
+                return;
+            }
+
+            GameObject existingCanvas = FindSceneObject("CookingCanvas");
+            if (existingCanvas != null)
+            {
+                DestroyControllerObject(existingCanvas);
+            }
+
+            ResetInterfaceReferences();
+            BuildEditableViewNow();
+        }
+
+        private void QueueEditableViewBuild()
+        {
+            if (Application.isPlaying || !generateEditableViewInEditor)
+            {
+                return;
+            }
+
+            UnityEditor.EditorApplication.delayCall -= BuildEditableViewNow;
+            UnityEditor.EditorApplication.delayCall += BuildEditableViewNow;
+        }
+
+        private void BuildEditableViewNow()
+        {
+            if (this == null ||
+                Application.isPlaying ||
+                !generateEditableViewInEditor ||
+                !isActiveAndEnabled ||
+                !gameObject.scene.IsValid() ||
+                string.IsNullOrEmpty(gameObject.scene.path))
+            {
+                return;
+            }
+
+            try
+            {
+                BuildInterface();
+                RefreshControls();
+                if (gameObject.scene.IsValid())
+                {
+                    UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("[BurgerAssembly] Editable cooking view was not built: " + exception.Message, this);
+            }
+        }
+#endif
+
         private void Update()
         {
+            if (!Application.isPlaying)
+            {
+                return;
+            }
+
             TickCookingTimer(Time.deltaTime);
 
             if (hasActivePointerDrag && dragGhost != null)
@@ -692,11 +792,6 @@ namespace SheepSheepBurger.BurgerAssembly
 
         private void BuildInterface()
         {
-            if (cameraSlider != null)
-            {
-                return;
-            }
-
             if (spriteCatalog == null)
             {
                 throw new InvalidOperationException(
@@ -705,11 +800,34 @@ namespace SheepSheepBurger.BurgerAssembly
 
             EnsureCookingSchema();
             spriteCatalog.Activate();
-            BurgerAssemblyViewReferences view = new BurgerAssemblyViewBuilder(
-                this,
-                ResetPrototype,
-                OpenCustomerDialoguePopup,
-                CloseCustomerDialoguePopup).Build();
+            if (IsInterfaceReady)
+            {
+                CacheEditableReferences();
+                RefreshSceneShapeSprites(editableCanvasRoot);
+            }
+            else if (!TryBindExistingInterface())
+            {
+                BurgerAssemblyViewReferences view = new BurgerAssemblyViewBuilder(
+                    this,
+                    ResetPrototype,
+                    OpenCustomerDialoguePopup,
+                    CloseCustomerDialoguePopup).Build();
+                ApplyViewReferences(view);
+            }
+
+            CompleteInterfaceBinding();
+        }
+
+        private bool IsInterfaceReady =>
+            cameraSlider != null &&
+            dragLayer != null &&
+            grillDropArea != null &&
+            boardLayerRoot != null &&
+            sauceDrawingController != null &&
+            packagingController != null;
+
+        private void ApplyViewReferences(BurgerAssemblyViewReferences view)
+        {
             mainCamera = view.MainCamera;
             uiFont = view.UiFont;
             dragLayer = view.DragLayer;
@@ -728,6 +846,121 @@ namespace SheepSheepBurger.BurgerAssembly
             customerDialogueBodyText = view.CustomerDialogueBodyText;
             toastText = view.ToastText;
             toastObject = view.ToastObject;
+            CacheEditableReferences();
+        }
+
+        private bool TryBindExistingInterface()
+        {
+            RectTransform canvasRoot = editableCanvasRoot != null
+                ? editableCanvasRoot
+                : FindSceneComponent<RectTransform>("CookingCanvas");
+            if (canvasRoot == null)
+            {
+                return false;
+            }
+
+            RectTransform panoramaRoot = editablePanoramaRoot != null
+                ? editablePanoramaRoot
+                : FindChildByName<RectTransform>(canvasRoot, "CookingPanorama");
+            if (panoramaRoot == null)
+            {
+                return false;
+            }
+
+            mainCamera = editableMainCamera != null
+                ? editableMainCamera
+                : Camera.main != null
+                    ? Camera.main
+                    : FindSceneComponent<Camera>("Main Camera");
+            uiFont = ResolveUiFont();
+
+            Canvas canvas = canvasRoot.GetComponent<Canvas>();
+            if (canvas != null)
+            {
+                canvas.renderMode = RenderMode.ScreenSpaceCamera;
+                canvas.worldCamera = mainCamera;
+                if (mainCamera != null)
+                {
+                    canvas.planeDistance = Mathf.Max(1f, mainCamera.nearClipPlane + 0.1f);
+                }
+            }
+
+            cameraSlider = canvasRoot.GetComponent<CookingCameraSlider>();
+            if (cameraSlider == null)
+            {
+                cameraSlider = canvasRoot.gameObject.AddComponent<CookingCameraSlider>();
+            }
+            cameraSlider.Configure(
+                panoramaRoot,
+                BurgerAssemblyViewBuilder.GrillViewX,
+                BurgerAssemblyViewBuilder.BoardViewX,
+                BurgerAssemblyViewBuilder.PackagingViewX);
+
+            dragLayer = editableDragLayer != null
+                ? editableDragLayer
+                : FindChildByName<RectTransform>(canvasRoot, "DragLayer");
+            grillDropArea = editableGrillDropArea != null
+                ? editableGrillDropArea
+                : FindChildByName<RectTransform>(canvasRoot, "GrillDropArea");
+            RectTransform boardDropArea = editableBoardDropArea != null
+                ? editableBoardDropArea
+                : FindChildByName<RectTransform>(canvasRoot, "BoardDropArea");
+            boardLayerRoot = FindChildByName<RectTransform>(boardDropArea, "BoardIngredientLayer");
+            if (boardLayerRoot == null || dragLayer == null || grillDropArea == null)
+            {
+                return false;
+            }
+
+            pattyGreaseTrail = FindChildByName<PattyGreaseTrail>(panoramaRoot, "PattyGreaseTrail");
+            if (pattyGreaseTrail == null)
+            {
+                pattyGreaseTrail = PattyGreaseTrail.Create(panoramaRoot);
+            }
+
+            sauceDrawingController = boardDropArea.GetComponent<BurgerSauceDrawingController>();
+            if (sauceDrawingController == null)
+            {
+                sauceDrawingController = boardDropArea.gameObject.AddComponent<BurgerSauceDrawingController>();
+            }
+
+            RectTransform packagingRegion = editablePackagingRegion != null
+                ? editablePackagingRegion
+                : FindChildByName<RectTransform>(canvasRoot, "PackagingRegion");
+            if (packagingRegion == null)
+            {
+                return false;
+            }
+
+            packagingController = packagingRegion.GetComponent<BurgerPackagingController>();
+            if (packagingController == null)
+            {
+                packagingController = packagingRegion.gameObject.AddComponent<BurgerPackagingController>();
+            }
+
+            cookingTimerText = FindChildByName<Text>(canvasRoot, "CookingTimerText");
+            customerDialoguePopup = FindChildGameObjectByName(canvasRoot, "CustomerDialoguePopup");
+            customerDialogueSpeakerText = FindChildByName<Text>(canvasRoot, "CustomerDialogueSpeakerText");
+            customerDialogueBodyText = FindChildByName<Text>(canvasRoot, "CustomerDialogueBodyText");
+            grillStatusText = FindChildByName<Text>(canvasRoot, "GrillStatusText");
+            boardStatusText = FindChildByName<Text>(canvasRoot, "BoardStatusText");
+            boardSummaryText = FindChildByName<Text>(canvasRoot, "BoardSummaryText");
+            toastText = FindChildByName<Text>(canvasRoot, "ToastText");
+            toastObject = toastText != null ? toastText.gameObject : null;
+
+            CacheEditableReferences();
+            RefreshSceneShapeSprites(canvasRoot);
+            return true;
+        }
+
+        private void CompleteInterfaceBinding()
+        {
+            traySources.Clear();
+            ConfigureTraySources();
+            BindSceneButton("LeftTrashReset", ResetPrototype);
+            BindSceneButton("RightTrashReset", ResetPrototype);
+            BindSceneButton("CustomerDialogueButton", OpenCustomerDialoguePopup);
+            BindSceneButton("CustomerDialogueCloseButton", CloseCustomerDialoguePopup);
+            BurgerAssemblyViewBuilder.EnsureEventSystem();
             stackAssembler.Configure(boardLayerRoot);
             sauceDrawingController.Configure(
                 boardLayerRoot,
@@ -735,10 +968,244 @@ namespace SheepSheepBurger.BurgerAssembly
                 cameraSlider,
                 HandleSauceDrawingChanged,
                 SetBoardStatus);
-            traySources.AddRange(view.TraySources);
+            packagingController.Configure(editablePackagingRegion, uiFont);
+            cameraSlider.ZoneChanged -= HandleCameraZoneChanged;
             cameraSlider.ZoneChanged += HandleCameraZoneChanged;
             ResetCookingTimer();
             RefreshCustomerDialoguePopup();
+        }
+
+        private void ConfigureTraySources()
+        {
+            ConfigureTraySource("RawPattySource", CookingDragKind.RawGrillItem, IngredientType.Patty);
+            ConfigureTraySource("RawBaconSource", CookingDragKind.RawGrillItem, IngredientType.Bacon);
+            ConfigureTraySource("RawEggSource", CookingDragKind.RawGrillItem, IngredientType.Egg);
+
+            foreach (BurgerTrayItemDefinition item in BurgerIngredientCatalog.GetBoardTrayItems())
+            {
+                ConfigureTraySource(item.ObjectName, item.Kind, item.Type);
+            }
+        }
+
+        private void ConfigureTraySource(
+            string sourceName,
+            CookingDragKind kind,
+            IngredientType type)
+        {
+            CookingTrayDragSource source = FindChildByName<CookingTrayDragSource>(
+                editableCanvasRoot,
+                sourceName);
+            if (source == null)
+            {
+                return;
+            }
+
+            if (source.GetComponent<CanvasGroup>() == null)
+            {
+                source.gameObject.AddComponent<CanvasGroup>();
+            }
+
+            SimpleShapeGraphic trayIcon = FindChildByName<SimpleShapeGraphic>(
+                source.transform,
+                sourceName + "Icon");
+            BurgerIngredientVisual trayVisual = BurgerIngredientCatalog.GetTrayVisual(type);
+            BurgerIngredientVisual dragVisual = kind == CookingDragKind.Ingredient
+                ? BurgerIngredientCatalog.GetVisual(type)
+                : trayVisual;
+            if (trayIcon != null)
+            {
+                trayIcon.Shape = trayVisual.Shape;
+                trayIcon.SourceSprite = trayVisual.SourceSprite;
+                trayIcon.color = trayVisual.SourceSprite == null ? trayVisual.Color : Color.white;
+            }
+
+            source.Configure(
+                this,
+                kind,
+                type,
+                dragVisual.Shape,
+                dragVisual.Color,
+                dragVisual.Size,
+                dragVisual.SourceSprite,
+                trayIcon);
+            if (!traySources.Contains(source))
+            {
+                traySources.Add(source);
+            }
+        }
+
+        private void BindSceneButton(string objectName, UnityAction action)
+        {
+            if (editableCanvasRoot == null || action == null)
+            {
+                return;
+            }
+
+            Button button = FindChildByName<Button>(editableCanvasRoot, objectName);
+            if (button == null)
+            {
+                return;
+            }
+
+            Graphic graphic = button.GetComponent<Graphic>();
+            if (graphic != null)
+            {
+                graphic.raycastTarget = true;
+                button.targetGraphic = graphic;
+            }
+            button.onClick.RemoveListener(action);
+            button.onClick.AddListener(action);
+        }
+
+        private void CacheEditableReferences()
+        {
+            editableMainCamera = mainCamera;
+            editableCanvasRoot = cameraSlider != null
+                ? cameraSlider.transform as RectTransform
+                : editableCanvasRoot;
+            editablePanoramaRoot = editableCanvasRoot != null
+                ? FindChildByName<RectTransform>(editableCanvasRoot, "CookingPanorama")
+                : editablePanoramaRoot;
+            editableGrillRegion = editableCanvasRoot != null
+                ? FindChildByName<RectTransform>(editableCanvasRoot, "GrillRegion")
+                : editableGrillRegion;
+            editableBoardRegion = editableCanvasRoot != null
+                ? FindChildByName<RectTransform>(editableCanvasRoot, "BoardRegion")
+                : editableBoardRegion;
+            editablePackagingRegion = editableCanvasRoot != null
+                ? FindChildByName<RectTransform>(editableCanvasRoot, "PackagingRegion")
+                : editablePackagingRegion;
+            editableGrillDropArea = editableCanvasRoot != null
+                ? FindChildByName<RectTransform>(editableCanvasRoot, "GrillDropArea")
+                : editableGrillDropArea;
+            editableBoardDropArea = editableCanvasRoot != null
+                ? FindChildByName<RectTransform>(editableCanvasRoot, "BoardDropArea")
+                : editableBoardDropArea;
+            editableIngredientTray = editableCanvasRoot != null
+                ? FindChildByName<RectTransform>(editableCanvasRoot, "IngredientTray")
+                : editableIngredientTray;
+            editableDragLayer = dragLayer;
+        }
+
+        private void ResetInterfaceReferences()
+        {
+            mainCamera = null;
+            dragLayer = null;
+            pattyGreaseTrail = null;
+            grillDropArea = null;
+            boardLayerRoot = null;
+            cameraSlider = null;
+            sauceDrawingController = null;
+            packagingController = null;
+            grillStatusText = null;
+            boardStatusText = null;
+            boardSummaryText = null;
+            cookingTimerText = null;
+            customerDialoguePopup = null;
+            customerDialogueSpeakerText = null;
+            customerDialogueBodyText = null;
+            toastText = null;
+            toastObject = null;
+            editableMainCamera = null;
+            editableCanvasRoot = null;
+            editablePanoramaRoot = null;
+            editableGrillRegion = null;
+            editableBoardRegion = null;
+            editablePackagingRegion = null;
+            editableGrillDropArea = null;
+            editableBoardDropArea = null;
+            editableIngredientTray = null;
+            editableDragLayer = null;
+            traySources.Clear();
+        }
+
+        private static Font ResolveUiFont()
+        {
+            Font font = Font.CreateDynamicFontFromOSFont(new[] { "Malgun Gothic", "Arial" }, 28);
+            return font != null
+                ? font
+                : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        }
+
+        private void RefreshSceneShapeSprites(RectTransform root)
+        {
+            if (root == null)
+            {
+                return;
+            }
+
+            foreach (SimpleShapeGraphic graphic in root.GetComponentsInChildren<SimpleShapeGraphic>(true))
+            {
+                if (graphic == null)
+                {
+                    continue;
+                }
+
+                SimpleShape shape = graphic.Shape;
+                graphic.Shape = shape;
+            }
+        }
+
+        private GameObject FindSceneObject(string objectName)
+        {
+            Scene scene = gameObject.scene;
+            if (!scene.IsValid() || !scene.isLoaded)
+            {
+                return GameObject.Find(objectName);
+            }
+
+            foreach (GameObject root in scene.GetRootGameObjects())
+            {
+                Transform found = FindChildTransformByName(root.transform, objectName);
+                if (found != null)
+                {
+                    return found.gameObject;
+                }
+            }
+
+            return null;
+        }
+
+        private T FindSceneComponent<T>(string objectName) where T : Component
+        {
+            GameObject found = FindSceneObject(objectName);
+            return found != null ? found.GetComponent<T>() : null;
+        }
+
+        private static GameObject FindChildGameObjectByName(Transform parent, string childName)
+        {
+            Transform found = FindChildTransformByName(parent, childName);
+            return found != null ? found.gameObject : null;
+        }
+
+        private static T FindChildByName<T>(Transform parent, string childName) where T : Component
+        {
+            Transform found = FindChildTransformByName(parent, childName);
+            return found != null ? found.GetComponent<T>() : null;
+        }
+
+        private static Transform FindChildTransformByName(Transform parent, string childName)
+        {
+            if (parent == null)
+            {
+                return null;
+            }
+
+            if (parent.gameObject.name == childName)
+            {
+                return parent;
+            }
+
+            for (int index = 0; index < parent.childCount; index++)
+            {
+                Transform found = FindChildTransformByName(parent.GetChild(index), childName);
+                if (found != null)
+                {
+                    return found;
+                }
+            }
+
+            return null;
         }
 
         private void HandleSauceDrawingChanged()

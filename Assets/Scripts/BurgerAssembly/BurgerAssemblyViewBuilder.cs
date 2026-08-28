@@ -50,15 +50,15 @@ namespace SheepSheepBurger.BurgerAssembly
 
     internal sealed class BurgerAssemblyViewBuilder
     {
-        private const float ReferenceWidth = 1920f;
-        private const float ReferenceHeight = 1080f;
+        internal const float ReferenceWidth = 1920f;
+        internal const float ReferenceHeight = 1080f;
         private const float CanvasWorldScale = 0.01f;
         // The source station art is 3397 x 1440. Fitting it to the reference
         // height keeps the top and bottom of the kitchen visible on wide screens.
-        private const float PanoramaWidth = ReferenceHeight * (3397f / 1440f);
-        private const float GrillViewX = -315f;
-        private const float BoardViewX = 0f;
-        private const float PackagingViewX = 315f;
+        internal const float PanoramaWidth = ReferenceHeight * (3397f / 1440f);
+        internal const float GrillViewX = -315f;
+        internal const float BoardViewX = 0f;
+        internal const float PackagingViewX = 315f;
 
         private readonly BurgerAssemblyController controller;
         private readonly Action resetPrototype;
@@ -531,7 +531,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 : Color.clear;
         }
 
-        private static void EnsureEventSystem()
+        internal static void EnsureEventSystem()
         {
             EventSystem eventSystem = UnityEngine.Object.FindFirstObjectByType<EventSystem>();
             bool createdEventSystem = false;
