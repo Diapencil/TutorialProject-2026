@@ -69,6 +69,10 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
 
             InvokePrivate(controller, "BuildInterface");
             InvokePrivate(controller, "RefreshControls");
+
+            // 브릿지가 빠져 있으면 여기서 복구한다.
+            global::SheepSheepBurger.Counter.Editor.BurgerAssemblyCounterBridgeInstaller.EnsureBridge(controller);
+
             EditorSceneManager.MarkSceneDirty(scene);
             if (!EditorSceneManager.SaveScene(scene, AssemblyScenePath))
             {
@@ -631,6 +635,10 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             controller.SetSpriteCatalog(CreateSpriteCatalog());
             InvokePrivate(controller, "BuildInterface");
             InvokePrivate(controller, "RefreshControls");
+
+            // 씬을 새로 구우면 카운터 복귀 브릿지가 사라져서 포장 후 카운터로 못 돌아간다.
+            // 저장 전에 반드시 다시 붙인다.
+            global::SheepSheepBurger.Counter.Editor.BurgerAssemblyCounterBridgeInstaller.EnsureBridge(controller);
 
             EditorSceneManager.MarkSceneDirty(scene);
             if (!EditorSceneManager.SaveScene(scene, AssemblyScenePath))
