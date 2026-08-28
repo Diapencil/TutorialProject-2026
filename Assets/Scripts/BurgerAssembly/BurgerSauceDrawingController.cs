@@ -336,64 +336,22 @@ namespace SheepSheepBurger.BurgerAssembly
 
         private void CreateSauceCursor()
         {
-            if (sauceCursorGraphic != null && sauceCursorGraphic.rectTransform.parent == cursorLayer)
-            {
-                ConfigureSauceCursor(sauceCursorGraphic);
-                return;
-            }
-
             if (sauceCursorGraphic != null)
             {
                 DestroyObject(sauceCursorGraphic.gameObject);
             }
 
-            sauceCursorGraphic = FindChildByName<SimpleShapeGraphic>(cursorLayer, "SauceCursor");
-            if (sauceCursorGraphic == null)
-            {
-                sauceCursorGraphic = BurgerUiFactory.CreateShape(
-                    "SauceCursor",
-                    cursorLayer,
-                    SimpleShape.Rectangle,
-                    Color.white,
-                    Vector2.zero,
-                    SauceCursorSize,
-                    false);
-            }
-
-            ConfigureSauceCursor(sauceCursorGraphic);
-        }
-
-        private static void ConfigureSauceCursor(SimpleShapeGraphic cursor)
-        {
-            if (cursor == null)
-            {
-                return;
-            }
-
-            cursor.Shape = SimpleShape.Rectangle;
-            cursor.color = Color.white;
-            cursor.raycastTarget = false;
-            cursor.rectTransform.pivot = SauceCursorNozzlePivot;
-            cursor.rectTransform.SetAsLastSibling();
-            cursor.gameObject.SetActive(false);
-        }
-
-        private static T FindChildByName<T>(Transform parent, string childName) where T : Component
-        {
-            if (parent == null)
-            {
-                return null;
-            }
-
-            foreach (T component in parent.GetComponentsInChildren<T>(true))
-            {
-                if (component != null && component.gameObject.name == childName)
-                {
-                    return component;
-                }
-            }
-
-            return null;
+            sauceCursorGraphic = BurgerUiFactory.CreateShape(
+                "SauceCursor",
+                cursorLayer,
+                SimpleShape.Rectangle,
+                Color.white,
+                Vector2.zero,
+                SauceCursorSize,
+                false);
+            sauceCursorGraphic.rectTransform.pivot = SauceCursorNozzlePivot;
+            sauceCursorGraphic.rectTransform.SetAsLastSibling();
+            sauceCursorGraphic.gameObject.SetActive(false);
         }
 
         private void RefreshSauceCursorSprite()

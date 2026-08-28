@@ -104,9 +104,3 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
-
-# 프로젝트 안에 프로젝트 사본이 중첩되는 사고 방지.
-# 예전에 /TutorialProject-2026/TutorialProject-2026/ 이 생겨서 Unity가 그쪽을 열고,
-# 바깥 저장소에 한 수정이 전혀 반영되지 않는 문제가 있었다.
-# 이 저장소의 Unity 프로젝트 루트는 이 폴더 하나뿐이다.
-/TutorialProject-2026/

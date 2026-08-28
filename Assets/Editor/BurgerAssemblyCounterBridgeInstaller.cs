@@ -18,8 +18,7 @@ namespace SheepSheepBurger.Counter.Editor
     /// </summary>
     public static class BurgerAssemblyCounterBridgeInstaller
     {
-        // 실제 씬 경로. 예전 @Developers/ChoiHJ 경로는 비어 있어서 브릿지가 설치되지 않았다.
-        public const string ScenePath = "Assets/Scenes/BurgerAssembly.unity";
+        private const string ScenePath = "Assets/@Developers/ChoiHJ/BurgerAssembly/Scenes/BurgerAssembly.unity";
         private const string BridgeObjectName = "CounterReturnBridge";
 
         private static readonly (BurgerAssemblyIngredientType type, string assetPath)[] Mappings =
@@ -53,25 +52,6 @@ namespace SheepSheepBurger.Counter.Editor
             if (controller == null)
             {
                 Debug.LogError("[BurgerAssemblyCounterBridge] BurgerAssemblyController was not found in " + ScenePath);
-                return;
-            }
-
-            EnsureBridge(controller);
-
-            EditorSceneManager.MarkSceneDirty(scene);
-            EditorSceneManager.SaveScene(scene);
-        }
-
-        /// <summary>
-        /// 지금 열려 있는 씬에 카운터 복귀 브릿지를 붙이고 배선한다.
-        /// 씬을 새로 굽는 경로(BurgerAssemblySceneBuilder)에서도 반드시 호출해야 한다.
-        /// 호출한 쪽이 씬 저장을 책임진다.
-        /// </summary>
-        public static void EnsureBridge(BurgerAssemblyController controller)
-        {
-            if (controller == null)
-            {
-                Debug.LogError("[BurgerAssemblyCounterBridge] controller가 null이라 브릿지를 붙이지 못했습니다.");
                 return;
             }
 
@@ -123,10 +103,12 @@ namespace SheepSheepBurger.Counter.Editor
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(bridge);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
 
             Debug.Log(missingAssets == 0
-                ? "[BurgerAssemblyCounterBridge] 카운터 복귀 브릿지와 재료 매핑 13종을 연결했습니다."
-                : $"[BurgerAssemblyCounterBridge] 브릿지는 붙였지만 재료 매핑 {missingAssets}건을 찾지 못했습니다. 위 로그를 확인하세요.");
+                ? "[BurgerAssemblyCounterBridge] Wired the controller reference and all 13 ingredient mappings, and saved the scene."
+                : $"[BurgerAssemblyCounterBridge] Saved the scene, but {missingAssets} ingredient mapping(s) could not be resolved. Check the log above.");
         }
     }
 }

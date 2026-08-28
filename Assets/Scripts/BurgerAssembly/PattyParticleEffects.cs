@@ -31,13 +31,6 @@ namespace SheepSheepBurger.BurgerAssembly
                 return null;
             }
 
-            PattyGreaseTrail existing = FindChildByName<PattyGreaseTrail>(parent, "PattyGreaseTrail");
-            if (existing != null)
-            {
-                existing.Configure();
-                return existing;
-            }
-
             var effectObject = new GameObject(
                 "PattyGreaseTrail",
                 typeof(RectTransform),
@@ -51,24 +44,6 @@ namespace SheepSheepBurger.BurgerAssembly
             PattyGreaseTrail trail = effectObject.GetComponent<PattyGreaseTrail>();
             trail.Configure();
             return trail;
-        }
-
-        private static T FindChildByName<T>(Transform parent, string childName) where T : Component
-        {
-            if (parent == null)
-            {
-                return null;
-            }
-
-            foreach (T component in parent.GetComponentsInChildren<T>(true))
-            {
-                if (component != null && component.gameObject.name == childName)
-                {
-                    return component;
-                }
-            }
-
-            return null;
         }
 
         public void BeginTrail(Vector2 localPosition)

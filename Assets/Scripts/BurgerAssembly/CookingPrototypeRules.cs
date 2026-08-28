@@ -4,7 +4,7 @@ namespace SheepSheepBurger.BurgerAssembly
     {
         // Temporary visual guide for tuning the three interaction regions.
         // Set this to false when the regions no longer need to be displayed.
-        public const bool ShowTemporaryInteractionAreas = false;
+        public const bool ShowTemporaryInteractionAreas = true;
 
         public const float FirstSideCookSeconds = 3f;
         public const float CookingTimeLimitSeconds = 60f;

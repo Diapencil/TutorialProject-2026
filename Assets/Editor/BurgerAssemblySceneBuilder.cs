@@ -47,43 +47,6 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             }
         }
 
-        [MenuItem("Sheep Sheep Burger/Refresh Editable Cooking Scene")]
-        public static void RefreshEditableCookingScene()
-        {
-            if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
-            {
-                return;
-            }
-
-            Scene scene = EditorSceneManager.OpenScene(AssemblyScenePath, OpenSceneMode.Single);
-            BurgerAssemblyController controller = UnityEngine.Object.FindFirstObjectByType<BurgerAssemblyController>();
-            if (controller == null)
-            {
-                throw new InvalidOperationException("BurgerAssemblyController was not found in " + AssemblyScenePath);
-            }
-
-            if (controller.SpriteCatalog == null || !controller.SpriteCatalog.IsConfigured)
-            {
-                controller.SetSpriteCatalog(CreateSpriteCatalog());
-            }
-
-            InvokePrivate(controller, "BuildInterface");
-            InvokePrivate(controller, "RefreshControls");
-
-            // 브릿지가 빠져 있으면 여기서 복구한다.
-            global::SheepSheepBurger.Counter.Editor.BurgerAssemblyCounterBridgeInstaller.EnsureBridge(controller);
-
-            EditorSceneManager.MarkSceneDirty(scene);
-            if (!EditorSceneManager.SaveScene(scene, AssemblyScenePath))
-            {
-                throw new InvalidOperationException("Failed to save " + AssemblyScenePath);
-            }
-
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            Debug.Log("[BurgerAssembly] Editable cooking scene refreshed without rebuilding layout.");
-        }
-
         [MenuItem("Sheep Sheep Burger/Play Background-Aligned Scene")]
         public static void OpenAssemblySceneAndPlay()
         {
@@ -631,14 +594,7 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
 
             var controllerObject = new GameObject("BurgerAssemblyGame", typeof(BurgerAssemblyController));
             controllerObject.transform.position = Vector3.zero;
-            BurgerAssemblyController controller = controllerObject.GetComponent<BurgerAssemblyController>();
-            controller.SetSpriteCatalog(CreateSpriteCatalog());
-            InvokePrivate(controller, "BuildInterface");
-            InvokePrivate(controller, "RefreshControls");
-
-            // 씬을 새로 구우면 카운터 복귀 브릿지가 사라져서 포장 후 카운터로 못 돌아간다.
-            // 저장 전에 반드시 다시 붙인다.
-            global::SheepSheepBurger.Counter.Editor.BurgerAssemblyCounterBridgeInstaller.EnsureBridge(controller);
+            controllerObject.GetComponent<BurgerAssemblyController>().SetSpriteCatalog(CreateSpriteCatalog());
 
             EditorSceneManager.MarkSceneDirty(scene);
             if (!EditorSceneManager.SaveScene(scene, AssemblyScenePath))

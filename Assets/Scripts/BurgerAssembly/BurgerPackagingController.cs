@@ -37,7 +37,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 throw new ArgumentNullException(nameof(page));
             }
 
-            if (pageRoot == page && burgerTray != null && packageButton != null)
+            if (pageRoot != null)
             {
                 return;
             }
@@ -49,11 +49,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 uiFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             }
 
-            if (!TryBindExistingInterface())
-            {
-                BuildInterface();
-            }
-            BindPackageButton();
+            BuildInterface();
             ResetPackaging();
         }
 
@@ -157,43 +153,8 @@ namespace SheepSheepBurger.BurgerAssembly
                 22f);
             packageButton = buttonRect.gameObject.AddComponent<Button>();
             packageButton.targetGraphic = buttonRect.GetComponent<Graphic>();
-            CreateText("PackageButtonLabel", buttonRect, "포장", 24, FontStyle.Bold, Color.white, Vector2.zero, buttonRect.sizeDelta);
-        }
-
-        private bool TryBindExistingInterface()
-        {
-            burgerTray = FindChildByName<RectTransform>(pageRoot, "PackagingTray");
-            RectTransform buttonRect = FindChildByName<RectTransform>(pageRoot, "PackageButton");
-            if (burgerTray == null || buttonRect == null)
-            {
-                burgerTray = null;
-                packageButton = null;
-                return false;
-            }
-
-            packageButton = buttonRect.GetComponent<Button>();
-            if (packageButton == null)
-            {
-                packageButton = buttonRect.gameObject.AddComponent<Button>();
-            }
-            return true;
-        }
-
-        private void BindPackageButton()
-        {
-            if (packageButton == null)
-            {
-                return;
-            }
-
-            Graphic targetGraphic = packageButton.GetComponent<Graphic>();
-            if (targetGraphic != null)
-            {
-                targetGraphic.raycastTarget = true;
-                packageButton.targetGraphic = targetGraphic;
-            }
-            packageButton.onClick.RemoveListener(PackageBurger);
             packageButton.onClick.AddListener(PackageBurger);
+            CreateText("PackageButtonLabel", buttonRect, "포장", 24, FontStyle.Bold, Color.white, Vector2.zero, buttonRect.sizeDelta);
         }
 
         private void PackageBurger()
@@ -346,24 +307,6 @@ namespace SheepSheepBurger.BurgerAssembly
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition = position;
             rect.sizeDelta = size;
-        }
-
-        private static T FindChildByName<T>(Transform parent, string childName) where T : Component
-        {
-            if (parent == null)
-            {
-                return null;
-            }
-
-            foreach (T component in parent.GetComponentsInChildren<T>(true))
-            {
-                if (component != null && component.gameObject.name == childName)
-                {
-                    return component;
-                }
-            }
-
-            return null;
         }
 
     }
