@@ -594,7 +594,10 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
 
             var controllerObject = new GameObject("BurgerAssemblyGame", typeof(BurgerAssemblyController));
             controllerObject.transform.position = Vector3.zero;
-            controllerObject.GetComponent<BurgerAssemblyController>().SetSpriteCatalog(CreateSpriteCatalog());
+            BurgerAssemblyController controller = controllerObject.GetComponent<BurgerAssemblyController>();
+            controller.SetSpriteCatalog(CreateSpriteCatalog());
+            InvokePrivate(controller, "BuildInterface");
+            InvokePrivate(controller, "RefreshControls");
 
             EditorSceneManager.MarkSceneDirty(scene);
             if (!EditorSceneManager.SaveScene(scene, AssemblyScenePath))
