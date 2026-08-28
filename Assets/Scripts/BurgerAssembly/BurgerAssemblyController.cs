@@ -804,6 +804,7 @@ namespace SheepSheepBurger.BurgerAssembly
             {
                 CacheEditableReferences();
                 RefreshSceneShapeSprites(editableCanvasRoot);
+                PrepareEditableInteractionObjects();
             }
             else if (!TryBindExistingInterface())
             {
@@ -949,6 +950,7 @@ namespace SheepSheepBurger.BurgerAssembly
 
             CacheEditableReferences();
             RefreshSceneShapeSprites(canvasRoot);
+            PrepareEditableInteractionObjects();
             return true;
         }
 
@@ -960,6 +962,7 @@ namespace SheepSheepBurger.BurgerAssembly
             BindSceneButton("RightTrashReset", ResetPrototype);
             BindSceneButton("CustomerDialogueButton", OpenCustomerDialoguePopup);
             BindSceneButton("CustomerDialogueCloseButton", CloseCustomerDialoguePopup);
+            PrepareEditableInteractionObjects();
             BurgerAssemblyViewBuilder.EnsureEventSystem();
             stackAssembler.Configure(boardLayerRoot);
             sauceDrawingController.Configure(
@@ -1143,6 +1146,97 @@ namespace SheepSheepBurger.BurgerAssembly
 
                 SimpleShape shape = graphic.Shape;
                 graphic.Shape = shape;
+                HideOutlineWhenTransparent(graphic);
+            }
+        }
+
+        private static void HideOutlineWhenTransparent(SimpleShapeGraphic graphic)
+        {
+            if (graphic.color.a > 0.01f)
+            {
+                return;
+            }
+
+            foreach (Outline outline in graphic.GetComponents<Outline>())
+            {
+                Color outlineColor = outline.effectColor;
+                outlineColor.a = 0f;
+                outline.effectColor = outlineColor;
+            }
+        }
+
+        private void PrepareEditableInteractionObjects()
+        {
+            if (editableCanvasRoot == null)
+            {
+                return;
+            }
+
+            ApplyTemporaryGuideVisibility("GrillDropArea", BurgerPrototypeTheme.Hex("#E74C3C4D"));
+            ApplyTemporaryGuideVisibility("BoardDropArea", BurgerPrototypeTheme.Hex("#18A9994D"));
+            ApplyTemporaryGuideVisibility("PackagingTray", BurgerPrototypeTheme.Hex("#F4B9424D"));
+
+            SetRaycastTarget("GrillDropArea", Application.isPlaying);
+            SetRaycastTarget("BoardDropArea", Application.isPlaying);
+            SetRaycastTarget("LeftTrashReset", Application.isPlaying);
+            SetRaycastTarget("RightTrashReset", Application.isPlaying);
+
+            SendChildBehindSiblings("GrillDropArea");
+            SendChildBehindSiblings("BoardDropArea");
+            BringChildAboveSiblings("RawGrillTray");
+            BringChildAboveSiblings("IngredientTray");
+            BringChildAboveSiblings("KetchupTray");
+            BringChildAboveSiblings("MustardTray");
+            BringChildAboveSiblings("ToastText");
+            BringChildAboveSiblings("PackageButton");
+
+            if (editableDragLayer != null)
+            {
+                editableDragLayer.SetAsLastSibling();
+            }
+        }
+
+        private void ApplyTemporaryGuideVisibility(string objectName, Color visibleColor)
+        {
+            SimpleShapeGraphic graphic = FindChildByName<SimpleShapeGraphic>(editableCanvasRoot, objectName);
+            if (graphic == null)
+            {
+                return;
+            }
+
+            graphic.color = CookingPrototypeRules.ShowTemporaryInteractionAreas ? visibleColor : Color.clear;
+            foreach (Outline outline in graphic.GetComponents<Outline>())
+            {
+                outline.effectColor = graphic.color.a <= 0.01f
+                    ? Color.clear
+                    : BurgerPrototypeTheme.Border;
+            }
+        }
+
+        private void SetRaycastTarget(string objectName, bool raycastTarget)
+        {
+            Graphic graphic = FindChildByName<Graphic>(editableCanvasRoot, objectName);
+            if (graphic != null)
+            {
+                graphic.raycastTarget = raycastTarget;
+            }
+        }
+
+        private void SendChildBehindSiblings(string objectName)
+        {
+            RectTransform rect = FindChildByName<RectTransform>(editableCanvasRoot, objectName);
+            if (rect != null)
+            {
+                rect.SetAsFirstSibling();
+            }
+        }
+
+        private void BringChildAboveSiblings(string objectName)
+        {
+            RectTransform rect = FindChildByName<RectTransform>(editableCanvasRoot, objectName);
+            if (rect != null)
+            {
+                rect.SetAsLastSibling();
             }
         }
 

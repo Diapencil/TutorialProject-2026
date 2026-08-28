@@ -47,6 +47,39 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             }
         }
 
+        [MenuItem("Sheep Sheep Burger/Refresh Editable Cooking Scene")]
+        public static void RefreshEditableCookingScene()
+        {
+            if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            {
+                return;
+            }
+
+            Scene scene = EditorSceneManager.OpenScene(AssemblyScenePath, OpenSceneMode.Single);
+            BurgerAssemblyController controller = UnityEngine.Object.FindFirstObjectByType<BurgerAssemblyController>();
+            if (controller == null)
+            {
+                throw new InvalidOperationException("BurgerAssemblyController was not found in " + AssemblyScenePath);
+            }
+
+            if (controller.SpriteCatalog == null || !controller.SpriteCatalog.IsConfigured)
+            {
+                controller.SetSpriteCatalog(CreateSpriteCatalog());
+            }
+
+            InvokePrivate(controller, "BuildInterface");
+            InvokePrivate(controller, "RefreshControls");
+            EditorSceneManager.MarkSceneDirty(scene);
+            if (!EditorSceneManager.SaveScene(scene, AssemblyScenePath))
+            {
+                throw new InvalidOperationException("Failed to save " + AssemblyScenePath);
+            }
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("[BurgerAssembly] Editable cooking scene refreshed without rebuilding layout.");
+        }
+
         [MenuItem("Sheep Sheep Burger/Play Background-Aligned Scene")]
         public static void OpenAssemblySceneAndPlay()
         {
