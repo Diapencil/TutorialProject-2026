@@ -155,10 +155,6 @@ namespace SheepSheepBurger.Counter
             var reward = OrderJudge.GetReward(order.order, grade, settings.GradeConfig);
             dayProgress.RegisterCustomer(order, submittedBurger, judgement, reward);
             bool isDayComplete = dayProgress.ServedCustomerCount >= settings.CustomersPerDay;
-            if (isDayComplete)
-            {
-                dayProgress.CompleteCurrentDay();
-            }
             ui.SetTop(dayProgress, settings.CustomersPerDay);
             ui.SetCookedBurgerAvailable(false);
             yield return ui.ShowResultRoutine(grade, reward, settings.GetReaction(grade, order.order.dialogue));
@@ -168,6 +164,10 @@ namespace SheepSheepBurger.Counter
             yield return new WaitForSeconds(settings.ReactionSeconds);
             CounterSceneSession.ClearOrder();
             order = null;
+            if (isDayComplete)
+            {
+                dayProgress.CompleteCurrentDay();
+            }
             resolving = false;
             if (!isDayComplete) CreateNextCustomer();
         }
