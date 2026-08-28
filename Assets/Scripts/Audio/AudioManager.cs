@@ -29,10 +29,6 @@ namespace SheepSheepBurger.Audio
         [SerializeField] private bool installUiButtonClickSoundBinder = true;
         [SerializeField] private UIButtonClickSoundBinder uiButtonClickSoundBinder;
 
-        [Header("카운터 BGM")]
-        [SerializeField] private bool installCounterAreaBgmDirector = true;
-        [SerializeField] private CounterAreaBgmDirector counterAreaBgmDirector;
-
         private AudioSource bgmSource;
         private readonly List<AudioSource> sfxSources = new List<AudioSource>();
         private int nextSfxSourceIndex;
@@ -49,8 +45,6 @@ namespace SheepSheepBurger.Audio
 
         public float BgmVolume => bgmVolume;
         public float SfxVolume => sfxVolume;
-        public string CurrentBgmId => currentBgmId;
-        public bool IsBgmPlaying => bgmSource != null && bgmSource.isPlaying;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
@@ -115,7 +109,6 @@ namespace SheepSheepBurger.Audio
             LoadLibraryIfNeeded();
             CreateSourcesIfNeeded();
             CreateUiButtonClickSoundBinderIfNeeded();
-            CreateCounterAreaBgmDirectorIfNeeded();
             LoadVolumesFromSettings();
             ApplyVolumes();
             PlayBootBgmIfNeeded();
@@ -300,24 +293,6 @@ namespace SheepSheepBurger.Audio
             if (uiButtonClickSoundBinder == null)
             {
                 uiButtonClickSoundBinder = gameObject.AddComponent<UIButtonClickSoundBinder>();
-            }
-        }
-
-        private void CreateCounterAreaBgmDirectorIfNeeded()
-        {
-            if (!installCounterAreaBgmDirector || !Application.isPlaying)
-            {
-                return;
-            }
-
-            if (counterAreaBgmDirector == null)
-            {
-                counterAreaBgmDirector = GetComponent<CounterAreaBgmDirector>();
-            }
-
-            if (counterAreaBgmDirector == null)
-            {
-                counterAreaBgmDirector = gameObject.AddComponent<CounterAreaBgmDirector>();
             }
         }
 

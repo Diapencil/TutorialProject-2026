@@ -15,27 +15,7 @@ MonoBehaviour:
   defaultBgmFadeSeconds: 0.35
   playBgmOnBoot: 0
   bootBgmId:
-  bgmTracks:
-  - id: counter_day_01
-    clip: {fileID: 8300000, guid: 3c3449604fee48d89b9370c54498337b, type: 3}
-    volume: 0.65
-    loop: 1
-    fadeSeconds: -1
-  - id: counter_day_02
-    clip: {fileID: 8300000, guid: a25a4a9b24e641d7892ff89214da6533, type: 3}
-    volume: 0.65
-    loop: 1
-    fadeSeconds: -1
-  - id: counter_day_03
-    clip: {fileID: 8300000, guid: fbd1f6faa0124cdf879d4f5b3de4a4e5, type: 3}
-    volume: 0.65
-    loop: 1
-    fadeSeconds: -1
-  - id: counter_day_04
-    clip: {fileID: 8300000, guid: a810bdd16ec844bfa68c2814e98f0ff0, type: 3}
-    volume: 0.65
-    loop: 1
-    fadeSeconds: -1
+  bgmTracks: []
   sfxClips:
   - id: grill_sizzle
     clip: {fileID: 8300000, guid: 1f6b8c9d0a2e4f3198b7c6d5e4a30211, type: 3}

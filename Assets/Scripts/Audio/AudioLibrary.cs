@@ -15,10 +15,6 @@ namespace SheepSheepBurger.Audio
         public const string PressPatty = "press_patty";
         public const string WrapPackage = "wrap_package";
         public const string UiClick = "ui_click";
-        public const string CounterDay01 = "counter_day_01";
-        public const string CounterDay02 = "counter_day_02";
-        public const string CounterDay03 = "counter_day_03";
-        public const string CounterDay04 = "counter_day_04";
     }
 
     [CreateAssetMenu(menuName = "SheepSheepBurger/Audio/Audio Library", fileName = "AudioLibrary")]
