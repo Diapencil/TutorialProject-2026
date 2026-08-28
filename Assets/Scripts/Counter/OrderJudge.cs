@@ -3,6 +3,27 @@ using SheepSheepBurger.Core;
 
 namespace SheepSheepBurger.Counter
 {
+    public struct OrderJudgement
+    {
+        public Grade grade;
+        public int ingredientErrors;
+        public int cookStateErrors;
+        public int totalErrors;
+        public bool hintUsed;
+
+        public OrderJudgement(Grade grade,
+                              int ingredientErrors,
+                              int cookStateErrors,
+                              bool hintUsed)
+        {
+            this.grade = grade;
+            this.ingredientErrors = ingredientErrors;
+            this.cookStateErrors = cookStateErrors;
+            totalErrors = ingredientErrors + cookStateErrors;
+            this.hintUsed = hintUsed;
+        }
+    }
+
     public static class OrderJudge
     {
         /// <summary>
@@ -11,22 +32,20 @@ namespace SheepSheepBurger.Counter
         /// </summary>
         public static Grade Judge(OrderData order, BurgerData burger, GradeConfig gradeConfig, bool hintUsed)
         {
-            if (order == null || order.recipe == null || burger == null) return Grade.Bad;
+            return JudgeDetailed(order, burger, gradeConfig, hintUsed).grade;
+        }
 
-            var counts = new Dictionary<int, int>();
-            if (order.recipe.layers != null)
-                foreach (var layer in order.recipe.layers)
-                    if (layer?.ingredient != null) Add(counts, layer.ingredient.id, layer.quantity);
-            if (burger.placedIngredients != null)
-                foreach (var placed in burger.placedIngredients)
-                    if (placed?.ingredient != null) Add(counts, placed.ingredient.id, -1);
+        public static OrderJudgement JudgeDetailed(OrderData order, BurgerData burger, GradeConfig gradeConfig, bool hintUsed)
+        {
+            if (order == null || order.recipe == null || burger == null)
+            {
+                return new OrderJudgement(Grade.Bad, 0, 0, hintUsed);
+            }
 
-            var errors = 0;
-            foreach (var count in counts.Values) errors += System.Math.Abs(count);
-
-            errors += CountCookStateErrors(order, burger);
-
-            return ResolveGrade(errors, hintUsed, gradeConfig);
+            int ingredientErrors = CountIngredientErrors(order, burger);
+            int cookStateErrors = CountCookStateErrors(order, burger);
+            Grade grade = ResolveGrade(ingredientErrors + cookStateErrors, hintUsed, gradeConfig);
+            return new OrderJudgement(grade, ingredientErrors, cookStateErrors, hintUsed);
         }
 
         public static int GetReward(OrderData order, Grade grade, GradeConfig gradeConfig)
@@ -51,6 +70,21 @@ namespace SheepSheepBurger.Counter
         /// 어긋난 개수만큼 오차를 더한다. (수량 오차는 위에서 이미 counts로 계산했으므로 여기서는 겹치는
         /// 개수 안에서의 익힘 상태 불일치만 센다.)
         /// </summary>
+        private static int CountIngredientErrors(OrderData order, BurgerData burger)
+        {
+            var counts = new Dictionary<int, int>();
+            if (order.recipe.layers != null)
+                foreach (var layer in order.recipe.layers)
+                    if (layer?.ingredient != null) Add(counts, layer.ingredient.id, layer.quantity);
+            if (burger.placedIngredients != null)
+                foreach (var placed in burger.placedIngredients)
+                    if (placed?.ingredient != null) Add(counts, placed.ingredient.id, -1);
+
+            var errors = 0;
+            foreach (var count in counts.Values) errors += System.Math.Abs(count);
+            return errors;
+        }
+
         private static int CountCookStateErrors(OrderData order, BurgerData burger)
         {
             if (order.recipe.layers == null || burger.placedIngredients == null) return 0;

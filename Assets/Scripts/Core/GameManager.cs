@@ -65,6 +65,8 @@ namespace SheepSheepBurger.Core
                 state = new GameState();
             }
 
+            state.EnsureRuntimeCollections();
+
             if (Application.isPlaying)
             {
                 DontDestroyOnLoad(gameObject);

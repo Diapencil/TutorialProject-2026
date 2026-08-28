@@ -23,14 +23,65 @@ namespace SheepSheepBurger.Core
         public List<UpgradeState> upgrades = new List<UpgradeState>();
         public List<int> encounteredSpecialCustomerIds = new List<int>();
         public int totalCustomersServed = 0;
+        public DayState currentDayState = DayState.CreateForDay(1);
+        public List<DayState> completedDayStates = new List<DayState>();
+
+        public void EnsureRuntimeCollections()
+        {
+            unlockedIngredientIds ??= new List<int>();
+            unlockedRecipeIds ??= new List<int>();
+            purchasedDecorationIds ??= new List<int>();
+            upgrades ??= new List<UpgradeState>();
+            encounteredSpecialCustomerIds ??= new List<int>();
+            completedDayStates ??= new List<DayState>();
+
+            GetOrCreateCurrentDayState();
+        }
+
+        public DayState GetOrCreateCurrentDayState()
+        {
+            if (completedDayStates == null)
+            {
+                completedDayStates = new List<DayState>();
+            }
+
+            if (currentDayState == null || currentDayState.dayNumber != currentDay)
+            {
+                currentDayState = DayState.CreateForDay(currentDay);
+            }
+
+            currentDayState.EnsureInitialized(currentDay);
+            return currentDayState;
+        }
+
+        public void CompleteCurrentDay()
+        {
+            DayState dayState = GetOrCreateCurrentDayState();
+            dayState.MarkComplete();
+
+            if (!HasCompletedDay(dayState.dayNumber))
+            {
+                completedDayStates.Add(dayState);
+            }
+        }
+
+        public void BeginNextDay()
+        {
+            CompleteCurrentDay();
+            currentDay++;
+            currentDayState = DayState.CreateForDay(currentDay);
+        }
 
         public bool IsIngredientUnlocked(int id)
         {
+            EnsureRuntimeCollections();
             return unlockedIngredientIds != null && unlockedIngredientIds.Contains(id);
         }
 
         public void UnlockIngredient(int id)
         {
+            EnsureRuntimeCollections();
+
             if (unlockedIngredientIds == null)
             {
                 unlockedIngredientIds = new List<int>();
@@ -44,11 +95,14 @@ namespace SheepSheepBurger.Core
 
         public bool IsDecorationPurchased(int id)
         {
+            EnsureRuntimeCollections();
             return purchasedDecorationIds != null && purchasedDecorationIds.Contains(id);
         }
 
         public void PurchaseDecoration(int id)
         {
+            EnsureRuntimeCollections();
+
             if (purchasedDecorationIds == null)
             {
                 purchasedDecorationIds = new List<int>();
@@ -63,6 +117,8 @@ namespace SheepSheepBurger.Core
         /// <summary>해당 업그레이드의 현재 레벨. 기록이 없으면 0.</summary>
         public int GetUpgradeLevel(int upgradeId)
         {
+            EnsureRuntimeCollections();
+
             if (upgrades == null)
             {
                 return 0;
@@ -81,6 +137,8 @@ namespace SheepSheepBurger.Core
 
         public void SetUpgradeLevel(int upgradeId, int level)
         {
+            EnsureRuntimeCollections();
+
             if (upgrades == null)
             {
                 upgrades = new List<UpgradeState>();
@@ -96,6 +154,26 @@ namespace SheepSheepBurger.Core
             }
 
             upgrades.Add(new UpgradeState { id = upgradeId, currentLevel = level });
+        }
+
+        private bool HasCompletedDay(int dayNumber)
+        {
+            if (completedDayStates == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < completedDayStates.Count; i++)
+            {
+                DayState dayState = completedDayStates[i];
+
+                if (dayState != null && dayState.dayNumber == dayNumber)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

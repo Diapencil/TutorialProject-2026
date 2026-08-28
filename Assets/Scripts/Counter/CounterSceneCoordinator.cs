@@ -139,16 +139,26 @@ namespace SheepSheepBurger.Counter
         private void ServeBurger()
         {
             if (resolving || order == null || CounterSceneSession.CookedBurger == null) return;
-            var grade = OrderJudge.Judge(order.order, CounterSceneSession.CookedBurger, settings.GradeConfig, CounterSceneSession.HintUsed);
-            StartCoroutine(Resolve(grade));
+            BurgerData submittedBurger = CounterSceneSession.CookedBurger;
+            OrderJudgement judgement = OrderJudge.JudgeDetailed(order.order,
+                                                                submittedBurger,
+                                                                settings.GradeConfig,
+                                                                CounterSceneSession.HintUsed);
+            StartCoroutine(Resolve(judgement, submittedBurger));
         }
 
-        private IEnumerator Resolve(Grade grade)
+        private IEnumerator Resolve(OrderJudgement judgement, BurgerData submittedBurger)
         {
             if (resolving) yield break;
             resolving = true;
+            Grade grade = judgement.grade;
             var reward = OrderJudge.GetReward(order.order, grade, settings.GradeConfig);
-            dayProgress.RegisterCustomer(reward);
+            dayProgress.RegisterCustomer(order, submittedBurger, judgement, reward);
+            bool isDayComplete = dayProgress.ServedCustomerCount >= settings.CustomersPerDay;
+            if (isDayComplete)
+            {
+                dayProgress.CompleteCurrentDay();
+            }
             ui.SetTop(dayProgress, settings.CustomersPerDay);
             ui.SetCookedBurgerAvailable(false);
             yield return ui.ShowResultRoutine(grade, reward, settings.GetReaction(grade, order.order.dialogue));
@@ -159,7 +169,7 @@ namespace SheepSheepBurger.Counter
             CounterSceneSession.ClearOrder();
             order = null;
             resolving = false;
-            if (dayProgress.ServedCustomerCount < settings.CustomersPerDay) CreateNextCustomer();
+            if (!isDayComplete) CreateNextCustomer();
         }
     }
 }
