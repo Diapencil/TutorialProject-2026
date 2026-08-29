@@ -47,24 +47,24 @@ MonoBehaviour:
     settingsButtonFontSize: 44
     valueFontSize: 46
   colors:
-    backdrop: {r: 0.06, g: 0.1, b: 0.08, a: 0.48}
-    panelBackground: {r: 0.59, g: 0.73, b: 0.6, a: 1}
-    panelOutline: {r: 0.12, g: 0.3, b: 0.21, a: 1}
-    innerOutline: {r: 0.24, g: 0.45, b: 0.32, a: 1}
-    titleBackground: {r: 0.48, g: 0.64, b: 0.49, a: 1}
-    titleOutline: {r: 0.1, g: 0.26, b: 0.2, a: 1}
-    titleText: {r: 0.07, g: 0.14, b: 0.1, a: 1}
-    settingsButtonBackground: {r: 0.46, g: 0.62, b: 0.46, a: 1}
-    settingsButtonHighlighted: {r: 0.55, g: 0.7, b: 0.55, a: 1}
-    settingsButtonPressed: {r: 0.34, g: 0.51, b: 0.36, a: 1}
-    settingsButtonOutline: {r: 0.08, g: 0.22, b: 0.15, a: 1}
-    settingsButtonText: {r: 0.07, g: 0.14, b: 0.1, a: 1}
-    iconBackground: {r: 0.72, g: 0.83, b: 0.71, a: 1}
-    iconOutline: {r: 0.13, g: 0.3, b: 0.2, a: 1}
-    sliderTrack: {r: 0.31, g: 0.45, b: 0.31, a: 1}
-    sliderFill: {r: 0.16, g: 0.36, b: 0.23, a: 1}
-    sliderHandle: {r: 0.2, g: 0.44, b: 0.27, a: 1}
-    sliderHandleOutline: {r: 0.05, g: 0.16, b: 0.1, a: 1}
-    valueBoxBackground: {r: 0.76, g: 0.86, b: 0.75, a: 1}
-    valueBoxOutline: {r: 0.12, g: 0.3, b: 0.21, a: 1}
-    valueText: {r: 0.08, g: 0.15, b: 0.11, a: 1}
+    backdrop: {r: 0.18, g: 0.14, b: 0.1, a: 0.48}
+    panelBackground: {r: 0.92, g: 0.82, b: 0.63, a: 1}
+    panelOutline: {r: 0.27, g: 0.2, b: 0.15, a: 1}
+    innerOutline: {r: 0.27, g: 0.2, b: 0.15, a: 1}
+    titleBackground: {r: 0.35, g: 0.45, b: 0.33, a: 1}
+    titleOutline: {r: 0.27, g: 0.2, b: 0.15, a: 1}
+    titleText: {r: 0.13, g: 0.1, b: 0.08, a: 1}
+    settingsButtonBackground: {r: 0.35, g: 0.45, b: 0.33, a: 1}
+    settingsButtonHighlighted: {r: 0.45, g: 0.56, b: 0.42, a: 1}
+    settingsButtonPressed: {r: 0.25, g: 0.34, b: 0.25, a: 1}
+    settingsButtonOutline: {r: 0.27, g: 0.2, b: 0.15, a: 1}
+    settingsButtonText: {r: 0.13, g: 0.1, b: 0.08, a: 1}
+    iconBackground: {r: 0.96, g: 0.88, b: 0.72, a: 1}
+    iconOutline: {r: 0.27, g: 0.2, b: 0.15, a: 1}
+    sliderTrack: {r: 0.79, g: 0.62, b: 0.43, a: 1}
+    sliderFill: {r: 0.35, g: 0.45, b: 0.33, a: 1}
+    sliderHandle: {r: 0.35, g: 0.45, b: 0.33, a: 1}
+    sliderHandleOutline: {r: 0.27, g: 0.2, b: 0.15, a: 1}
+    valueBoxBackground: {r: 0.96, g: 0.88, b: 0.72, a: 1}
+    valueBoxOutline: {r: 0.27, g: 0.2, b: 0.15, a: 1}
+    valueText: {r: 0.18, g: 0.13, b: 0.09, a: 1}

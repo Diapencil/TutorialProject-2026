@@ -322,21 +322,21 @@ namespace SheepSheepBurger.Settings
 
             SetImage(backdrop, colors.backdrop, true);
             SetImage(settingsButtonBackground, colors.settingsButtonBackground, true);
-            SetOutline(settingsButtonOutline, colors.settingsButtonOutline, new Vector2(4f, -4f));
+            SetOutline(settingsButtonOutline, colors.settingsButtonOutline, new Vector2(2f, -2f));
             ApplyButtonColors(settingsButton,
                               colors.settingsButtonBackground,
                               colors.settingsButtonHighlighted,
                               colors.settingsButtonPressed);
             SetImage(panelBackground, colors.panelBackground, true);
-            SetOutline(panelOutline, colors.panelOutline, new Vector2(6f, -6f));
+            SetOutline(panelOutline, colors.panelOutline, new Vector2(2f, -2f));
             SetImage(innerBorderImage, new Color(colors.panelBackground.r,
                                                  colors.panelBackground.g,
                                                  colors.panelBackground.b,
                                                  0.01f),
                      false);
-            SetOutline(innerBorderOutline, colors.innerOutline, new Vector2(4f, -4f));
+            SetOutline(innerBorderOutline, colors.innerOutline, new Vector2(1f, -1f));
             SetImage(titleBackground, colors.titleBackground, true);
-            SetOutline(titleOutline, colors.titleOutline, new Vector2(5f, -5f));
+            SetOutline(titleOutline, colors.titleOutline, new Vector2(2f, -2f));
 
             ApplyRowColors(bgmIconImage,
                            bgmIconOutline,
@@ -370,13 +370,13 @@ namespace SheepSheepBurger.Settings
                                            SettingsLayerDesignPreset.ColorSettings colors)
         {
             SetImage(iconImage, colors.iconBackground, true);
-            SetOutline(iconOutline, colors.iconOutline, new Vector2(4f, -4f));
+            SetOutline(iconOutline, colors.iconOutline, new Vector2(1f, -1f));
             SetImage(sliderTrack, colors.sliderTrack, true);
             SetImage(sliderFill, colors.sliderFill, true);
             SetImage(sliderHandle, colors.sliderHandle, true);
-            SetOutline(sliderHandleOutline, colors.sliderHandleOutline, new Vector2(4f, -4f));
+            SetOutline(sliderHandleOutline, colors.sliderHandleOutline, new Vector2(1f, -1f));
             SetImage(valueBoxBackground, colors.valueBoxBackground, true);
-            SetOutline(valueBoxOutline, colors.valueBoxOutline, new Vector2(4f, -4f));
+            SetOutline(valueBoxOutline, colors.valueBoxOutline, new Vector2(1f, -1f));
         }
 
         private static void ApplyText(TMP_Text text,

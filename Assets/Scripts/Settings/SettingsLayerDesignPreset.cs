@@ -141,27 +141,27 @@ namespace SheepSheepBurger.Settings
 
             public static ColorSettings Default => new ColorSettings
             {
-                backdrop = new Color(0.06f, 0.10f, 0.08f, 0.48f),
-                panelBackground = new Color(0.59f, 0.73f, 0.60f, 1f),
-                panelOutline = new Color(0.12f, 0.30f, 0.21f, 1f),
-                innerOutline = new Color(0.24f, 0.45f, 0.32f, 1f),
-                titleBackground = new Color(0.48f, 0.64f, 0.49f, 1f),
-                titleOutline = new Color(0.10f, 0.26f, 0.20f, 1f),
-                titleText = new Color(0.07f, 0.14f, 0.10f, 1f),
-                settingsButtonBackground = new Color(0.46f, 0.62f, 0.46f, 1f),
-                settingsButtonHighlighted = new Color(0.55f, 0.70f, 0.55f, 1f),
-                settingsButtonPressed = new Color(0.34f, 0.51f, 0.36f, 1f),
-                settingsButtonOutline = new Color(0.08f, 0.22f, 0.15f, 1f),
-                settingsButtonText = new Color(0.07f, 0.14f, 0.10f, 1f),
-                iconBackground = new Color(0.72f, 0.83f, 0.71f, 1f),
-                iconOutline = new Color(0.13f, 0.30f, 0.20f, 1f),
-                sliderTrack = new Color(0.31f, 0.45f, 0.31f, 1f),
-                sliderFill = new Color(0.16f, 0.36f, 0.23f, 1f),
-                sliderHandle = new Color(0.20f, 0.44f, 0.27f, 1f),
-                sliderHandleOutline = new Color(0.05f, 0.16f, 0.10f, 1f),
-                valueBoxBackground = new Color(0.76f, 0.86f, 0.75f, 1f),
-                valueBoxOutline = new Color(0.12f, 0.30f, 0.21f, 1f),
-                valueText = new Color(0.08f, 0.15f, 0.11f, 1f)
+                backdrop = new Color(0.18f, 0.14f, 0.10f, 0.48f),
+                panelBackground = new Color(0.92f, 0.82f, 0.63f, 1f),
+                panelOutline = new Color(0.27f, 0.20f, 0.15f, 1f),
+                innerOutline = new Color(0.27f, 0.20f, 0.15f, 1f),
+                titleBackground = new Color(0.35f, 0.45f, 0.33f, 1f),
+                titleOutline = new Color(0.27f, 0.20f, 0.15f, 1f),
+                titleText = new Color(0.13f, 0.10f, 0.08f, 1f),
+                settingsButtonBackground = new Color(0.35f, 0.45f, 0.33f, 1f),
+                settingsButtonHighlighted = new Color(0.45f, 0.56f, 0.42f, 1f),
+                settingsButtonPressed = new Color(0.25f, 0.34f, 0.25f, 1f),
+                settingsButtonOutline = new Color(0.27f, 0.20f, 0.15f, 1f),
+                settingsButtonText = new Color(0.13f, 0.10f, 0.08f, 1f),
+                iconBackground = new Color(0.96f, 0.88f, 0.72f, 1f),
+                iconOutline = new Color(0.27f, 0.20f, 0.15f, 1f),
+                sliderTrack = new Color(0.79f, 0.62f, 0.43f, 1f),
+                sliderFill = new Color(0.35f, 0.45f, 0.33f, 1f),
+                sliderHandle = new Color(0.35f, 0.45f, 0.33f, 1f),
+                sliderHandleOutline = new Color(0.27f, 0.20f, 0.15f, 1f),
+                valueBoxBackground = new Color(0.96f, 0.88f, 0.72f, 1f),
+                valueBoxOutline = new Color(0.27f, 0.20f, 0.15f, 1f),
+                valueText = new Color(0.18f, 0.13f, 0.09f, 1f)
             };
         }
 

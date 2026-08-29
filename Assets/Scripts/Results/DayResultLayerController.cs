@@ -50,16 +50,16 @@ namespace SheepSheepBurger.Results
         [SerializeField, Min(1f)] private float buttonFontSize = 26f;
 
         [Header("색")]
-        [SerializeField] private Color backdropColor = new Color(0.03f, 0.06f, 0.04f, 0.62f);
-        [SerializeField] private Color panelColor = new Color(0.73f, 0.84f, 0.68f, 1f);
-        [SerializeField] private Color sectionColor = new Color(0.88f, 0.94f, 0.82f, 0.98f);
-        [SerializeField] private Color scrollColor = new Color(0.81f, 0.90f, 0.76f, 1f);
-        [SerializeField] private Color outlineColor = new Color(0.17f, 0.36f, 0.24f, 1f);
-        [SerializeField] private Color titleColor = new Color(0.06f, 0.16f, 0.09f, 1f);
-        [SerializeField] private Color bodyTextColor = new Color(0.08f, 0.20f, 0.12f, 1f);
-        [SerializeField] private Color buttonColor = new Color(0.25f, 0.50f, 0.31f, 1f);
-        [SerializeField] private Color buttonHighlightedColor = new Color(0.35f, 0.62f, 0.40f, 1f);
-        [SerializeField] private Color buttonPressedColor = new Color(0.16f, 0.34f, 0.21f, 1f);
+        [SerializeField] private Color backdropColor = new Color(0.18f, 0.14f, 0.10f, 0.48f);
+        [SerializeField] private Color panelColor = new Color(0.92f, 0.82f, 0.63f, 1f);
+        [SerializeField] private Color sectionColor = new Color(0.96f, 0.88f, 0.72f, 0.98f);
+        [SerializeField] private Color scrollColor = new Color(0.95f, 0.86f, 0.69f, 1f);
+        [SerializeField] private Color outlineColor = new Color(0.27f, 0.20f, 0.15f, 1f);
+        [SerializeField] private Color titleColor = new Color(0.13f, 0.10f, 0.08f, 1f);
+        [SerializeField] private Color bodyTextColor = new Color(0.18f, 0.13f, 0.09f, 1f);
+        [SerializeField] private Color buttonColor = new Color(0.35f, 0.45f, 0.33f, 1f);
+        [SerializeField] private Color buttonHighlightedColor = new Color(0.45f, 0.56f, 0.42f, 1f);
+        [SerializeField] private Color buttonPressedColor = new Color(0.25f, 0.34f, 0.25f, 1f);
 
         [Header("문구")]
         [SerializeField] private string titleFormat = "D + {0} 정산";
@@ -286,16 +286,16 @@ namespace SheepSheepBurger.Results
             logFontSize = 20f;
             buttonFontSize = 26f;
 
-            backdropColor = new Color(0.03f, 0.06f, 0.04f, 0.62f);
-            panelColor = new Color(0.73f, 0.84f, 0.68f, 1f);
-            sectionColor = new Color(0.88f, 0.94f, 0.82f, 0.98f);
-            scrollColor = new Color(0.81f, 0.90f, 0.76f, 1f);
-            outlineColor = new Color(0.17f, 0.36f, 0.24f, 1f);
-            titleColor = new Color(0.06f, 0.16f, 0.09f, 1f);
-            bodyTextColor = new Color(0.08f, 0.20f, 0.12f, 1f);
-            buttonColor = new Color(0.25f, 0.50f, 0.31f, 1f);
-            buttonHighlightedColor = new Color(0.35f, 0.62f, 0.40f, 1f);
-            buttonPressedColor = new Color(0.16f, 0.34f, 0.21f, 1f);
+            backdropColor = new Color(0.18f, 0.14f, 0.10f, 0.48f);
+            panelColor = new Color(0.92f, 0.82f, 0.63f, 1f);
+            sectionColor = new Color(0.96f, 0.88f, 0.72f, 0.98f);
+            scrollColor = new Color(0.95f, 0.86f, 0.69f, 1f);
+            outlineColor = new Color(0.27f, 0.20f, 0.15f, 1f);
+            titleColor = new Color(0.13f, 0.10f, 0.08f, 1f);
+            bodyTextColor = new Color(0.18f, 0.13f, 0.09f, 1f);
+            buttonColor = new Color(0.35f, 0.45f, 0.33f, 1f);
+            buttonHighlightedColor = new Color(0.45f, 0.56f, 0.42f, 1f);
+            buttonPressedColor = new Color(0.25f, 0.34f, 0.25f, 1f);
 
             titleFormat = "D + {0} 정산";
             summaryTitle = "오늘의 정산";
@@ -586,7 +586,7 @@ namespace SheepSheepBurger.Results
             panel = CreateImage("Panel", transform, panelColor).rectTransform;
             SetCenter(panel, new Vector2(1360f, 820f), Vector2.zero);
             AddShadow(panel.gameObject, new Color(0f, 0f, 0f, 0.24f), new Vector2(0f, -12f));
-            AddOutline(panel.gameObject, outlineColor, new Vector2(5f, -5f));
+            AddOutline(panel.gameObject, outlineColor, new Vector2(2f, -2f));
 
             Image headerBand = CreateImage("HeaderBand", panel, buttonColor);
             SetTopLeft(headerBand.rectTransform, 0f, 0f, 1360f, 118f);
@@ -647,7 +647,7 @@ namespace SheepSheepBurger.Results
             Image background = CreateImage(objectName, panel, sectionColor);
             SetTopLeft(background.rectTransform, x, y, width, height);
             AddShadow(background.gameObject, new Color(0f, 0f, 0f, 0.13f), new Vector2(0f, -5f));
-            AddOutline(background.gameObject, outlineColor, new Vector2(2f, -2f));
+            AddOutline(background.gameObject, outlineColor, new Vector2(1f, -1f));
 
             Image accent = CreateImage(objectName + "Accent", background.rectTransform, buttonHighlightedColor);
             SetTopLeft(accent.rectTransform, 0f, 0f, width, 8f);
@@ -673,7 +673,7 @@ namespace SheepSheepBurger.Results
             RectTransform scrollRoot = scrollBackground.rectTransform;
             SetTopLeft(scrollRoot, 70f, 412f, 1220f, 300f);
             AddShadow(scrollBackground.gameObject, new Color(0f, 0f, 0f, 0.13f), new Vector2(0f, -5f));
-            AddOutline(scrollBackground.gameObject, outlineColor, new Vector2(2f, -2f));
+            AddOutline(scrollBackground.gameObject, outlineColor, new Vector2(1f, -1f));
 
             logScrollRect = scrollBackground.gameObject.AddComponent<ScrollRect>();
             logScrollRect.horizontal = false;
@@ -715,7 +715,7 @@ namespace SheepSheepBurger.Results
         {
             Image buttonImage = CreateImage(objectName, panel, buttonColor);
             AddShadow(buttonImage.gameObject, new Color(0f, 0f, 0f, 0.22f), new Vector2(0f, -5f));
-            AddOutline(buttonImage.gameObject, outlineColor, new Vector2(2f, -2f));
+            AddOutline(buttonImage.gameObject, outlineColor, new Vector2(1f, -1f));
 
             Button button = buttonImage.gameObject.AddComponent<Button>();
             ColorBlock colors = button.colors;
