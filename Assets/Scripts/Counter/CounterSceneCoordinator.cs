@@ -56,7 +56,7 @@ namespace SheepSheepBurger.Counter
                 if (candidate != null) customers.Add(candidate);
             var orders = new List<OrderData>();
             foreach (var candidate in settings.AvailableOrders)
-                if (candidate != null && candidate.recipe != null) orders.Add(candidate);
+                if (candidate != null && CanMakeRecipe(candidate.recipe)) orders.Add(candidate);
 
             if (customers.Count == 0 || orders.Count == 0)
             {
@@ -76,6 +76,31 @@ namespace SheepSheepBurger.Counter
                 patienceRemaining = Mathf.CeilToInt(settings.PatienceSeconds),
                 phase = OrderPhase.Ordering
             };
+            return true;
+        }
+
+        /// <summary>
+        /// 기본 해금 재료 또는 현재 GameState에서 구매한 재료만으로 레시피를 만들 수 있는지 확인한다.
+        /// 레시피 레이어/재료 데이터가 비어 있는 잘못된 주문은 후보에서 제외한다.
+        /// </summary>
+        private static bool CanMakeRecipe(RecipeData recipe)
+        {
+            if (recipe == null || recipe.layers == null || recipe.layers.Count == 0)
+            {
+                return false;
+            }
+
+            GameState state = GameManager.GetOrCreate().State;
+            foreach (RecipeLayer layer in recipe.layers)
+            {
+                IngredientData ingredient = layer?.ingredient;
+                if (ingredient == null ||
+                    (!ingredient.isDefaultUnlocked && !state.IsIngredientUnlocked(ingredient.id)))
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
 
