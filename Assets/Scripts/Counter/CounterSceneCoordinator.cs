@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using SheepSheepBurger.Core;
+using SheepSheepBurger.Results;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -29,10 +30,23 @@ namespace SheepSheepBurger.Counter
             ui.ClarificationRequested += CounterSceneSession.MarkHintUsed;
             dayProgress = DayProgressRuntime.GetOrCreate();
             ui.SetTop(dayProgress, settings.CustomersPerDay);
-            customer.Hide();
+            ui.HideOrder();
+            if (customer != null) customer.Hide();
 
-            if (dayProgress.ServedCustomerCount >= settings.CustomersPerDay) return; // TODO settings 수정
+            if (dayProgress.IsCurrentDayComplete ||
+                dayProgress.ServedCustomerCount >= settings.CustomersPerDay)
+            {
+                OpenCurrentDayResult();
+                return;
+            }
+
             order = CounterSceneSession.ActiveOrder;
+            if (!IsValidActiveOrder(order))
+            {
+                CounterSceneSession.ClearOrder();
+                order = null;
+            }
+
             if (order == null) CreateNextCustomer(); else RestoreReturningCustomer();
         }
 
@@ -79,6 +93,23 @@ namespace SheepSheepBurger.Counter
                 phase = OrderPhase.Ordering
             };
             return true;
+        }
+
+        private void OpenCurrentDayResult()
+        {
+            DayResultLayerController resultLayer = DayResultLayerController.GetOrCreate();
+            if (resultLayer != null)
+            {
+                resultLayer.Open(dayProgress.DayState);
+            }
+        }
+
+        private static bool IsValidActiveOrder(OrderInstance activeOrder)
+        {
+            return activeOrder != null &&
+                activeOrder.customer != null &&
+                activeOrder.order != null &&
+                activeOrder.order.recipe != null;
         }
 
         private static bool CanPrepareOrder(OrderData candidate)

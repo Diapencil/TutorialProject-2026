@@ -112,6 +112,37 @@ namespace SheepSheepBurger.Results
             owner.AddComponent<DayResultLayerController>();
         }
 
+        public static DayResultLayerController GetOrCreate()
+        {
+            if (Instance != null)
+            {
+                return Instance;
+            }
+
+            DayResultLayerController found =
+                FindFirstObjectByType<DayResultLayerController>(FindObjectsInactive.Include);
+            if (found != null)
+            {
+                if (Application.isPlaying && found.gameObject.activeInHierarchy)
+                {
+                    Instance = found;
+                }
+
+                return found;
+            }
+
+            GameObject prefab = Resources.Load<GameObject>(PrefabResourcePath);
+            if (prefab != null)
+            {
+                GameObject instance = Instantiate(prefab);
+                instance.name = prefab.name;
+                return instance.GetComponent<DayResultLayerController>();
+            }
+
+            GameObject owner = new GameObject(nameof(DayResultLayerController), typeof(RectTransform));
+            return owner.AddComponent<DayResultLayerController>();
+        }
+
         private void Awake()
         {
             if (Application.isPlaying)
