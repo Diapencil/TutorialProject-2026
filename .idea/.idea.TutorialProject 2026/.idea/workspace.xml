@@ -12,11 +12,10 @@
   <component name="ChangeListManager">
     <list default="true" id="c7d90a9e-043d-4fac-85b6-48a84da04955" name="변경" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.TutorialProject 2026/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.TutorialProject 2026/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/BurgerAssembly/BurgerAssemblyController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/BurgerAssembly/BurgerAssemblyController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/BurgerAssembly/BurgerSauceDrawingController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/BurgerAssembly/BurgerSauceDrawingController.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Counter/CounterSceneCoordinator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Counter/CounterSceneCoordinator.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CustomerData.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CustomerData.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/RecipeData.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/RecipeData.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Counter/CounterSettings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Counter/CounterSettings.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,6 +32,7 @@
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/5a41d6b7189842eca409fd0b1c3e3dcf17bf78/5e/cf8ae6f0/Action.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/5a41d6b7189842eca409fd0b1c3e3dcf17bf78/6d/dbd4b0e7/Action`1.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/987aa4221989419a947e2c4ff5d6829c212c00/47/b0abbd74/Object.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/987aa4221989419a947e2c4ff5d6829c212c00/c2/335fb84c/PlayerPrefs.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/987aa4221989419a947e2c4ff5d6829c212c00/d5/e5b359c2/SceneManager.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.ugui@b95364aab964/Runtime/TMP/TextMeshProUGUI.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
