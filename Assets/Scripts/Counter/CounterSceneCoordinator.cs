@@ -213,6 +213,17 @@ namespace SheepSheepBurger.Counter
             if (resolving) yield break;
             resolving = true;
             Grade grade = judgement.grade;
+
+            // 퍼펙트로 응대하면 그 레시피가 도감에 해금된다.
+            if (grade == Grade.Perfect && order.order != null && order.order.recipe != null)
+            {
+                bool newlyUnlocked = GameManager.GetOrCreate().State.UnlockRecipe(order.order.recipe.id);
+                if (newlyUnlocked)
+                {
+                    Debug.Log($"[도감] 새 레시피 해금: {order.order.recipe.recipeName} (id {order.order.recipe.id})");
+                }
+            }
+
             var reward = OrderJudge.GetReward(order.order, grade, settings.GradeConfig);
             dayProgress.RegisterCustomer(order, submittedBurger, judgement, reward);
             bool isDayComplete = dayProgress.ServedCustomerCount >= settings.CustomersPerDay;

@@ -93,6 +93,31 @@ namespace SheepSheepBurger.Core
             }
         }
 
+        public bool IsRecipeUnlocked(int id)
+        {
+            EnsureRuntimeCollections();
+            return unlockedRecipeIds != null && unlockedRecipeIds.Contains(id);
+        }
+
+        /// <summary>레시피를 도감에 해금한다. 이번에 새로 해금됐으면 true, 이미 있었으면 false.</summary>
+        public bool UnlockRecipe(int id)
+        {
+            EnsureRuntimeCollections();
+
+            if (unlockedRecipeIds == null)
+            {
+                unlockedRecipeIds = new List<int>();
+            }
+
+            if (unlockedRecipeIds.Contains(id))
+            {
+                return false;
+            }
+
+            unlockedRecipeIds.Add(id);
+            return true;
+        }
+
         public bool IsDecorationPurchased(int id)
         {
             EnsureRuntimeCollections();
