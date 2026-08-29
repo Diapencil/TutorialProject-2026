@@ -1,5 +1,6 @@
 using System;
 using SheepSheepBurger.Core;
+using UnityEngine;
 
 namespace SheepSheepBurger.Counter
 {
@@ -15,6 +16,16 @@ namespace SheepSheepBurger.Counter
         /// </summary>
         public static bool HintUsed { get; private set; }
         public static event Action<BurgerData> BurgerSubmitted;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            ActiveOrder = null;
+            CookedBurger = null;
+            HasConfirmedOrder = false;
+            HintUsed = false;
+            BurgerSubmitted = null;
+        }
 
         public static void BeginOrder(OrderInstance order)
         {

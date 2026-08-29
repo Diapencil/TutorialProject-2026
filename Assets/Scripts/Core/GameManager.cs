@@ -12,6 +12,7 @@ namespace SheepSheepBurger.Core
         [Header("저장")]
         [SerializeField] private bool loadSavedStateOnStart = true;
         [SerializeField] private bool autoSave = true;
+        [SerializeField] private GameStartupSettings startupSettings;
 
         [Header("디버그")]
         [Tooltip("[Add 10000 Gold] 컨텍스트 메뉴로 지급할 금액(10배 정수).")]
@@ -66,10 +67,9 @@ namespace SheepSheepBurger.Core
 
             Instance = this;
 
-            if (!initialized && Application.isPlaying && loadSavedStateOnStart &&
-                GameSaveStore.TryLoad(out GameState savedState))
+            if (!initialized && Application.isPlaying)
             {
-                state = savedState;
+                ApplyStartupState();
             }
 
             if (state == null)
@@ -84,6 +84,48 @@ namespace SheepSheepBurger.Core
             {
                 DontDestroyOnLoad(gameObject);
             }
+        }
+
+        private void ApplyStartupState()
+        {
+            GameStartupSettings settings = ResolveStartupSettings();
+
+            if (ShouldUseEditorStartState(settings))
+            {
+                state = settings.CreateEditorStartState();
+
+                if (settings.DisableAutoSaveInEditorDevMode)
+                {
+                    autoSave = false;
+                }
+
+                Debug.Log(
+                    $"[GameManager] 에디터 개발 시작값으로 시작합니다. Day {state.currentDay}, Gold {state.gold / 10f:0.0}C",
+                    this);
+                return;
+            }
+
+            if (loadSavedStateOnStart && GameSaveStore.TryLoad(out GameState savedState))
+            {
+                state = savedState;
+            }
+        }
+
+        private GameStartupSettings ResolveStartupSettings()
+        {
+            if (startupSettings == null)
+            {
+                startupSettings = GameStartupSettings.LoadDefault();
+            }
+
+            return startupSettings;
+        }
+
+        private static bool ShouldUseEditorStartState(GameStartupSettings settings)
+        {
+            return Application.isEditor &&
+                settings != null &&
+                !settings.UseSavedStateInEditor;
         }
 
         private void OnDestroy()
