@@ -56,11 +56,11 @@ namespace SheepSheepBurger.Counter
                 if (candidate != null) customers.Add(candidate);
             var orders = new List<OrderData>();
             foreach (var candidate in settings.AvailableOrders)
-                if (candidate != null && candidate.recipe != null) orders.Add(candidate);
+                if (CanPrepareOrder(candidate)) orders.Add(candidate);
 
             if (customers.Count == 0 || orders.Count == 0)
             {
-                Debug.LogError("CounterSettings requires at least one Core CustomerData and OrderData.");
+                Debug.LogError("CounterSettings에 현재 해금된 재료로 만들 수 있는 주문과 손님이 필요합니다.");
                 nextOrder = null;
                 return false;
             }
@@ -69,13 +69,32 @@ namespace SheepSheepBurger.Counter
             nextOrder = new OrderInstance
             {
                 customer = selectedCustomer,
-                order = orders[Random.Range(0, orders.Count)], // TODO 현재 가지고 있는 재료로 제작 가능한 버거 중에서 선택
+                order = orders[Random.Range(0, orders.Count)],
                 spriteIndex = selectedCustomer.sprites == null || selectedCustomer.sprites.Count == 0
                     ? 0
                     : Random.Range(0, selectedCustomer.sprites.Count),
                 patienceRemaining = Mathf.CeilToInt(settings.PatienceSeconds),
                 phase = OrderPhase.Ordering
             };
+            return true;
+        }
+
+        private static bool CanPrepareOrder(OrderData candidate)
+        {
+            if (candidate == null || candidate.recipe == null || candidate.recipe.layers == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < candidate.recipe.layers.Count; i++)
+            {
+                RecipeLayer layer = candidate.recipe.layers[i];
+                if (layer == null || !ShopProgressBridge.IsCoreIngredientUnlocked(layer.ingredient))
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
 

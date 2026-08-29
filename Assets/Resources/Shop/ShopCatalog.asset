@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03151b021d670459987533ccb4d035e1, type: 3}
+  m_Name: ShopCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.ShopCatalog
+  ingredients:
+  - {fileID: 11400000, guid: 81903002c2f61144e95e521d93b8527c, type: 2}
+  - {fileID: 11400000, guid: 363fe7aa11d99f74c816d9f0f1cea467, type: 2}
+  - {fileID: 11400000, guid: a9395f3a21dc52d418759082c45429ab, type: 2}
+  - {fileID: 11400000, guid: 80b6650d616051f4a8d6017c2f2abd5b, type: 2}
+  upgrades:
+  - {fileID: 11400000, guid: 2da4f7c8d45ec401bae1fcbb787ac79f, type: 2}
+  - {fileID: 11400000, guid: 2d4734560b75d40e8b43f1b5b451c4aa, type: 2}
+  decorations:
+  - {fileID: 11400000, guid: 20e8e5c1a43734edfbab97df5ca10527, type: 2}
+  - {fileID: 11400000, guid: 0e3048d1df81e4bd59b6677b1b47a61a, type: 2}
+  - {fileID: 11400000, guid: 6fe1bbc763fdb41b2a61852ae235b19b, type: 2}
+  - {fileID: 11400000, guid: 91f88aff401134610b0fd748caf04e71, type: 2}

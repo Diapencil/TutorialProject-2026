@@ -1061,19 +1061,20 @@ namespace SheepSheepBurger.EditorTools
             List<IngredientData> result = new List<IngredientData>();
 
             AddIngredient(result, "Bacon", IngredientGrillableUnlockCost,
-                          IngredientGrillableCostPerUse, true);
+                          IngredientGrillableCostPerUse, true, false);
             AddIngredient(result, "egg", IngredientGrillableUnlockCost,
-                          IngredientGrillableCostPerUse, true);
-            AddIngredient(result, "Pickle", IngredientRawUnlockCost,
-                          IngredientRawCostPerUse, false);
+                          IngredientGrillableCostPerUse, true, false);
+            AddIngredient(result, "Pickle", 0,
+                          IngredientRawCostPerUse, false, true);
             AddIngredient(result, "Jalapeno", IngredientRawUnlockCost,
-                          IngredientRawCostPerUse, false);
+                          IngredientRawCostPerUse, false, false);
 
             return result.ToArray();
         }
 
         private static void AddIngredient(List<IngredientData> result, string assetName,
-                                          int unlockCost, int costPerUse, bool grillable)
+                                          int unlockCost, int costPerUse, bool grillable,
+                                          bool isDefaultUnlocked)
         {
             string path = $"{IngredientsFolder}/{assetName}.asset";
             IngredientData data = AssetDatabase.LoadAssetAtPath<IngredientData>(path);
@@ -1090,8 +1091,7 @@ namespace SheepSheepBurger.EditorTools
             data.costPerUse = costPerUse;
             data.grillable = grillable;
 
-            // 상점에서 해금하는 재료이므로 기본 해금이 아니다.
-            data.isDefaultUnlocked = false;
+            data.isDefaultUnlocked = isDefaultUnlocked;
 
             EditorUtility.SetDirty(data);
             result.Add(data);
@@ -1174,9 +1174,6 @@ namespace SheepSheepBurger.EditorTools
             data.id = id;
             data.decorationName = decorationName;
             data.cost = cost;
-
-            // TODO(기획확인): 카운터 배치 좌표가 스토리보드에 없어 원점으로 둔다.
-            data.counterPosition = Vector2.zero;
 
             if (isNew)
             {

@@ -254,7 +254,7 @@ MonoBehaviour:
   m_text: "\uC5C5&\uC218\uB9AC"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
-  m_sharedMaterial: {fileID: -2366584325251309340, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
+  m_sharedMaterial: {fileID: 8767555812094314770, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1147,6 +1147,36 @@ MonoBehaviour:
     upgrades: []
     encounteredSpecialCustomerIds: 
     totalCustomersServed: 0
+    currentDayState:
+      dayNumber: 1
+      customersServed: 0
+      dailyRevenue: 0
+      dailyIngredientCost: 0
+      dailyProfit: 0
+      averageReward: 0
+      totalIngredientUses: 0
+      ordersWithHint: 0
+      perfectCount: 0
+      goodCount: 0
+      normalCount: 0
+      badCount: 0
+      count: 
+      gradeCounts:
+      - grade: 0
+        count: 0
+      - grade: 1
+        count: 0
+      - grade: 2
+        count: 0
+      - grade: 3
+        count: 0
+      ingredientUsages: []
+      orderResults: []
+      wasAttackedToday: 0
+      isComplete: 0
+    completedDayStates: []
+  loadSavedStateOnStart: 1
+  autoSave: 1
   debugGoldAmount: 10000
 --- !u!4 &724570569
 Transform:
@@ -1863,7 +1893,7 @@ MonoBehaviour:
   m_text: D-30
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
-  m_sharedMaterial: {fileID: -2366584325251309340, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
+  m_sharedMaterial: {fileID: 8767555812094314770, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2019,7 +2049,7 @@ MonoBehaviour:
   m_text: "\uC7A5\uC2DD"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
-  m_sharedMaterial: {fileID: -2366584325251309340, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
+  m_sharedMaterial: {fileID: 8767555812094314770, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2400,7 +2430,7 @@ MonoBehaviour:
   m_text: D-day
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
-  m_sharedMaterial: {fileID: -2366584325251309340, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
+  m_sharedMaterial: {fileID: 8767555812094314770, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2557,11 +2587,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22cf013c4c7e94991b7807708f39057f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Shop.ShopManager
+  catalog: {fileID: 11400000, guid: 3624dfb060a804997ab62683a74c418f, type: 2}
   allIngredients:
-  - {fileID: 11400000, guid: d73b7cd4484304454a37470a54f34c30, type: 2}
-  - {fileID: 11400000, guid: f0dec125af5be4c55ad5e14dac287b8e, type: 2}
-  - {fileID: 11400000, guid: 975c7a7e0d8a8477a8798300a9d10d98, type: 2}
-  - {fileID: 11400000, guid: 1bddb12e1575a43c5a6a4e3ae819daec, type: 2}
+  - {fileID: 11400000, guid: 81903002c2f61144e95e521d93b8527c, type: 2}
+  - {fileID: 11400000, guid: 363fe7aa11d99f74c816d9f0f1cea467, type: 2}
+  - {fileID: 11400000, guid: a9395f3a21dc52d418759082c45429ab, type: 2}
+  - {fileID: 11400000, guid: 80b6650d616051f4a8d6017c2f2abd5b, type: 2}
   allUpgrades:
   - {fileID: 11400000, guid: 2da4f7c8d45ec401bae1fcbb787ac79f, type: 2}
   - {fileID: 11400000, guid: 2d4734560b75d40e8b43f1b5b451c4aa, type: 2}
@@ -2742,7 +2773,7 @@ MonoBehaviour:
   m_text: "\uD1A0\uD551"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
-  m_sharedMaterial: {fileID: -2366584325251309340, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
+  m_sharedMaterial: {fileID: 8767555812094314770, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3234,7 +3265,7 @@ MonoBehaviour:
   m_text: 0.0C
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
-  m_sharedMaterial: {fileID: -2366584325251309340, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
+  m_sharedMaterial: {fileID: 8767555812094314770, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3477,7 +3508,7 @@ MonoBehaviour:
   m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
-  m_sharedMaterial: {fileID: -2366584325251309340, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
+  m_sharedMaterial: {fileID: 8767555812094314770, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3706,7 +3737,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dbb85b4414044cb79b7595862093945e, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Shop.ShopOutsideReturnArea
   counterSceneName: Counter
   safeViewportRect:

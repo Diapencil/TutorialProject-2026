@@ -15,7 +15,10 @@ MonoBehaviour:
   id: 11
   ingredientName: "\uD1A0\uB9C8\uD1A0"
   type: 2
+  icon: {fileID: 21300000, guid: f118ab2379cae476c93babbafb6afda4, type: 3}
   unlockCost: 0
+  costPerUse: 2
+  isDefaultUnlocked: 1
   grillable: 0
   cookTimeMin: -1
   cookTimeMax: -1

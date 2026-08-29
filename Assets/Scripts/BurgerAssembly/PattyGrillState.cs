@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace SheepSheepBurger.BurgerAssembly
 {
@@ -17,8 +18,13 @@ namespace SheepSheepBurger.BurgerAssembly
     public sealed class PattyGrillState
     {
         private float phaseElapsed;
+        private readonly float cookTimeMultiplier;
+        private readonly float burnChance;
 
-        public PattyGrillState(IngredientType ingredientType = IngredientType.Patty)
+        public PattyGrillState(
+            IngredientType ingredientType = IngredientType.Patty,
+            float cookTimeMultiplier = 1f,
+            float burnChance = 1f)
         {
             if (!BurgerIngredientCatalog.IsGrillIngredient(ingredientType))
             {
@@ -26,6 +32,8 @@ namespace SheepSheepBurger.BurgerAssembly
             }
 
             IngredientType = ingredientType;
+            this.cookTimeMultiplier = Mathf.Max(0.05f, cookTimeMultiplier);
+            this.burnChance = Mathf.Clamp01(burnChance);
         }
 
         public IngredientType IngredientType { get; }
@@ -35,6 +43,10 @@ namespace SheepSheepBurger.BurgerAssembly
         public PattyGrillPhase Phase { get; private set; } = PattyGrillPhase.RawDough;
 
         public float PhaseElapsed => phaseElapsed;
+
+        public float FirstSideCookDuration => CookingPrototypeRules.FirstSideCookSeconds * cookTimeMultiplier;
+
+        public float SecondSideCookDuration => CookingPrototypeRules.SecondSideCookSeconds * cookTimeMultiplier;
 
         public bool CanDragToBoard => true;
 
@@ -83,18 +95,27 @@ namespace SheepSheepBurger.BurgerAssembly
                             PattyGrillPhase firstSideResult = RequiresFlip
                                 ? PattyGrillPhase.ReadyToFlip
                                 : PattyGrillPhase.Done;
-                            if (!AdvanceTimedPhase(ref remaining, CookingPrototypeRules.FirstSideCookSeconds, firstSideResult))
+                            if (!AdvanceTimedPhase(ref remaining, FirstSideCookDuration, firstSideResult))
                             {
                                 return;
                             }
                             continue;
                         }
                     case PattyGrillPhase.ReadyToFlip:
-                        if (!AdvanceTimedPhase(ref remaining, CookingPrototypeRules.ReadyToFlipBurnSeconds, PattyGrillPhase.Overcooked))
+                        if (!ConsumeDuration(ref remaining, CookingPrototypeRules.ReadyToFlipBurnSeconds))
                         {
                             return;
                         }
-                        continue;
+
+                        if (ShouldBurn())
+                        {
+                            TransitionTo(PattyGrillPhase.Overcooked);
+                        }
+                        else
+                        {
+                            phaseElapsed = 0f;
+                        }
+                        return;
                     case PattyGrillPhase.Flipping:
                         if (!AdvanceTimedPhase(ref remaining, CookingPrototypeRules.FlipAnimationSeconds, PattyGrillPhase.CookingSide2))
                         {
@@ -102,17 +123,26 @@ namespace SheepSheepBurger.BurgerAssembly
                         }
                         continue;
                     case PattyGrillPhase.CookingSide2:
-                        if (!AdvanceTimedPhase(ref remaining, CookingPrototypeRules.SecondSideCookSeconds, PattyGrillPhase.Done))
+                        if (!AdvanceTimedPhase(ref remaining, SecondSideCookDuration, PattyGrillPhase.Done))
                         {
                             return;
                         }
                         continue;
                     case PattyGrillPhase.Done:
-                        if (!AdvanceTimedPhase(ref remaining, CookingPrototypeRules.DoneToOvercookedSeconds, PattyGrillPhase.Overcooked))
+                        if (!ConsumeDuration(ref remaining, CookingPrototypeRules.DoneToOvercookedSeconds))
                         {
                             return;
                         }
-                        continue;
+
+                        if (ShouldBurn())
+                        {
+                            TransitionTo(PattyGrillPhase.Overcooked);
+                        }
+                        else
+                        {
+                            phaseElapsed = 0f;
+                        }
+                        return;
                     default:
                         return;
                 }
@@ -127,12 +157,12 @@ namespace SheepSheepBurger.BurgerAssembly
                 case PattyGrillPhase.Flattened:
                     return 0f;
                 case PattyGrillPhase.CookingSide1:
-                    return 0.45f * Math.Min(1f, phaseElapsed / CookingPrototypeRules.FirstSideCookSeconds);
+                    return 0.45f * Math.Min(1f, phaseElapsed / FirstSideCookDuration);
                 case PattyGrillPhase.ReadyToFlip:
                 case PattyGrillPhase.Flipping:
                     return 0.5f;
                 case PattyGrillPhase.CookingSide2:
-                    return 0.5f + 0.45f * Math.Min(1f, phaseElapsed / CookingPrototypeRules.SecondSideCookSeconds);
+                    return 0.5f + 0.45f * Math.Min(1f, phaseElapsed / SecondSideCookDuration);
                 case PattyGrillPhase.Done:
                 case PattyGrillPhase.Overcooked:
                     return 1f;
@@ -162,18 +192,27 @@ namespace SheepSheepBurger.BurgerAssembly
 
         private bool AdvanceTimedPhase(ref float remaining, float duration, PattyGrillPhase nextPhase)
         {
-            float needed = Math.Max(0f, duration - phaseElapsed);
-            float consumed = Math.Min(remaining, needed);
-            phaseElapsed += consumed;
-            remaining -= consumed;
-
-            if (phaseElapsed + 0.0001f < duration)
+            if (!ConsumeDuration(ref remaining, duration))
             {
                 return false;
             }
 
             TransitionTo(nextPhase);
             return true;
+        }
+
+        private bool ConsumeDuration(ref float remaining, float duration)
+        {
+            float needed = Math.Max(0f, duration - phaseElapsed);
+            float consumed = Math.Min(remaining, needed);
+            phaseElapsed += consumed;
+            remaining -= consumed;
+            return phaseElapsed + 0.0001f >= duration;
+        }
+
+        private bool ShouldBurn()
+        {
+            return burnChance > 0f && UnityEngine.Random.value <= burnChance;
         }
 
         private void TransitionTo(PattyGrillPhase nextPhase)

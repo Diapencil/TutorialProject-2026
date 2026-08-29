@@ -28,9 +28,8 @@ namespace SheepSheepBurger.Counter
             }
         }
 
-        // TODO(기획확인): 애셋의 costPerUse가 전부 0이라 원가가 0으로 집계된다.
-        // 스펙상 굽는 재료 3(0.3C) / 비조리 2(0.2C)이므로 애셋 값이 확정되면 함께 맞춰야 한다.
-        private const int DefaultCostPerUse = 0;
+        private const int GrillableCostPerUse = 3;
+        private const int RawCostPerUse = 2;
 
         private static readonly Dictionary<BurgerAssemblyIngredientType, Entry> Table =
             new Dictionary<BurgerAssemblyIngredientType, Entry>
@@ -61,7 +60,8 @@ namespace SheepSheepBurger.Counter
             data.id = entry.Id;
             data.ingredientName = entry.Name;
             data.grillable = entry.Grillable;
-            data.costPerUse = DefaultCostPerUse;
+            data.costPerUse = entry.Grillable ? GrillableCostPerUse : RawCostPerUse;
+            data.isDefaultUnlocked = entry.Id != 8 && entry.Id != 12 && entry.Id != 13;
             data.name = entry.Name;
             return data;
         }

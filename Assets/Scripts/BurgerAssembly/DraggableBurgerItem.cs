@@ -59,17 +59,21 @@ namespace SheepSheepBurger.BurgerAssembly
             }
 
             bool isSauceTool = Kind == CookingDragKind.Sauce;
+            bool unlocked = controller != null && controller.IsIngredientUnlocked(IngredientType);
             bool available = controller != null &&
+                unlocked &&
                 (isSauceTool
                     ? controller.CanUseSauceTool(IngredientType)
                     : controller.CanBeginTrayDrag(Kind, IngredientType));
             bool selected = isSauceTool &&
                 controller != null &&
                 controller.IsSauceToolSelected(IngredientType);
-            canvasGroup.alpha = selected ? 1f : available ? 0.86f : 0.48f;
+            canvasGroup.alpha = !unlocked ? 0f : selected ? 1f : available ? 0.86f : 0.48f;
+            canvasGroup.blocksRaycasts = unlocked;
+            canvasGroup.interactable = unlocked;
             if (trayIcon != null)
             {
-                trayIcon.gameObject.SetActive(!selected);
+                trayIcon.gameObject.SetActive(unlocked && !selected);
             }
 
             Outline outline = GetComponent<Outline>();

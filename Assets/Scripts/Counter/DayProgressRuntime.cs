@@ -76,6 +76,7 @@ namespace SheepSheepBurger.Counter
                                        judgement.cookStateErrors);
             GameState.totalCustomersServed++;
             GameState.gold += reward;
+            GameManager.SaveCurrentGame();
         }
 
         public void CompleteCurrentDay()
@@ -84,6 +85,7 @@ namespace SheepSheepBurger.Counter
             bool wasAlreadyComplete = DayState.isComplete;
             GameState.CompleteCurrentDay();
             DayState = GameState.GetOrCreateCurrentDayState();
+            GameManager.SaveCurrentGame();
 
             if (!wasAlreadyComplete)
             {
@@ -96,6 +98,7 @@ namespace SheepSheepBurger.Counter
             RefreshStateReferences();
             GameState.BeginNextDay();
             DayState = GameState.GetOrCreateCurrentDayState();
+            GameManager.SaveCurrentGame();
         }
 
         private void RefreshStateReferences()

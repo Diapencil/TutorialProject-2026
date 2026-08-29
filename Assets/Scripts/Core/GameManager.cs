@@ -1,4 +1,4 @@
-// GameState를 들고 씬 전환에도 살아남는 임시 싱글톤. 세이브/로드는 아직 범위 밖이다.
+// GameState를 들고 씬 전환에도 살아남으며 진행 상태를 자동 저장하는 싱글톤.
 using UnityEngine;
 
 namespace SheepSheepBurger.Core
@@ -9,9 +9,15 @@ namespace SheepSheepBurger.Core
 
         [SerializeField] private GameState state = new GameState();
 
+        [Header("저장")]
+        [SerializeField] private bool loadSavedStateOnStart = true;
+        [SerializeField] private bool autoSave = true;
+
         [Header("디버그")]
         [Tooltip("[Add 10000 Gold] 컨텍스트 메뉴로 지급할 금액(10배 정수).")]
         [SerializeField] private int debugGoldAmount = 10000;
+
+        private bool initialized;
 
         public GameState State => state;
 
@@ -60,12 +66,19 @@ namespace SheepSheepBurger.Core
 
             Instance = this;
 
+            if (!initialized && Application.isPlaying && loadSavedStateOnStart &&
+                GameSaveStore.TryLoad(out GameState savedState))
+            {
+                state = savedState;
+            }
+
             if (state == null)
             {
                 state = new GameState();
             }
 
             state.EnsureRuntimeCollections();
+            initialized = true;
 
             if (Application.isPlaying)
             {
@@ -81,6 +94,40 @@ namespace SheepSheepBurger.Core
             }
         }
 
+        private void OnApplicationPause(bool pauseStatus)
+        {
+            if (pauseStatus)
+            {
+                SaveGame();
+            }
+        }
+
+        private void OnApplicationQuit()
+        {
+            SaveGame();
+        }
+
+        public void SaveGame()
+        {
+            if (Application.isPlaying && autoSave)
+            {
+                GameSaveStore.TrySave(state);
+            }
+        }
+
+        public static void SaveCurrentGame()
+        {
+            Instance?.SaveGame();
+        }
+
+        [ContextMenu("Delete Save And Reset State")]
+        private void DeleteSaveAndResetState()
+        {
+            GameSaveStore.Delete();
+            state = new GameState();
+            state.EnsureRuntimeCollections();
+        }
+
         [ContextMenu("Add 10000 Gold")]
         private void AddDebugGold()
         {
@@ -90,6 +137,7 @@ namespace SheepSheepBurger.Core
             }
 
             state.gold += debugGoldAmount;
+            SaveGame();
             Debug.Log($"[GameManager] 디버그 골드 지급. 현재 보유: {state.gold}", this);
         }
     }

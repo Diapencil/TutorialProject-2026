@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using SheepSheepBurger.Audio;
+using SheepSheepBurger.Core;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -200,6 +201,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 return;
             }
 
+            GameManager.GetOrCreate();
             BuildInterface();
             RefreshControls();
         }
@@ -318,6 +320,11 @@ namespace SheepSheepBurger.BurgerAssembly
                 return false;
             }
 
+            if (!IsIngredientUnlocked(type))
+            {
+                return false;
+            }
+
             if (kind == CookingDragKind.RawGrillItem)
             {
                 return BurgerIngredientCatalog.IsGrillIngredient(type);
@@ -329,6 +336,11 @@ namespace SheepSheepBurger.BurgerAssembly
             }
 
             return CanCreateNewBoardIngredient(type);
+        }
+
+        public bool IsIngredientUnlocked(IngredientType type)
+        {
+            return ShopProgressBridge.IsCookingIngredientUnlocked(type);
         }
 
         public bool TryBeginTrayDrag(
@@ -464,13 +476,15 @@ namespace SheepSheepBurger.BurgerAssembly
                     }
                     SetGrillStatus(
                         type == IngredientType.Egg
-                            ? "계란 조리를 시작했습니다. 3초 동안 익힙니다."
-                            : itemName + " 1면을 3초 동안 굽습니다.",
+                            ? $"계란 조리를 시작했습니다. {grillItem.State.FirstSideCookDuration:0.0}초 동안 익힙니다."
+                            : $"{itemName} 1면을 {grillItem.State.FirstSideCookDuration:0.0}초 동안 굽습니다.",
                         false);
                     break;
                 case PattyGrillPhase.ReadyToFlip:
                     grillItem.State.TryFlip();
-                    SetGrillStatus(itemName + "을(를) 뒤집었습니다. 2면을 3초 동안 굽습니다.", false);
+                    SetGrillStatus(
+                        $"{itemName}을(를) 뒤집었습니다. 2면을 {grillItem.State.SecondSideCookDuration:0.0}초 동안 굽습니다.",
+                        false);
                     break;
                 case PattyGrillPhase.CookingSide1:
                     SetGrillStatus(
@@ -767,8 +781,8 @@ namespace SheepSheepBurger.BurgerAssembly
             {
                 case PattyGrillPhase.CookingSide1:
                     grillStatusText.text = grillItem.State.RequiresFlip
-                        ? $"{itemName} 1면 조리 중: {Mathf.Max(0f, CookingPrototypeRules.FirstSideCookSeconds - grillItem.State.PhaseElapsed):0.0}초"
-                        : $"{itemName} 조리 중: {Mathf.Max(0f, CookingPrototypeRules.FirstSideCookSeconds - grillItem.State.PhaseElapsed):0.0}초";
+                        ? $"{itemName} 1면 조리 중: {Mathf.Max(0f, grillItem.State.FirstSideCookDuration - grillItem.State.PhaseElapsed):0.0}초"
+                        : $"{itemName} 조리 중: {Mathf.Max(0f, grillItem.State.FirstSideCookDuration - grillItem.State.PhaseElapsed):0.0}초";
                     grillStatusText.color = BurgerPrototypeTheme.Ink;
                     break;
                 case PattyGrillPhase.ReadyToFlip:
@@ -776,7 +790,7 @@ namespace SheepSheepBurger.BurgerAssembly
                     grillStatusText.color = BurgerPrototypeTheme.Attention;
                     break;
                 case PattyGrillPhase.CookingSide2:
-                    grillStatusText.text = $"{itemName} 2면 조리 중: {Mathf.Max(0f, CookingPrototypeRules.SecondSideCookSeconds - grillItem.State.PhaseElapsed):0.0}초";
+                    grillStatusText.text = $"{itemName} 2면 조리 중: {Mathf.Max(0f, grillItem.State.SecondSideCookDuration - grillItem.State.PhaseElapsed):0.0}초";
                     grillStatusText.color = BurgerPrototypeTheme.Ink;
                     break;
                 case PattyGrillPhase.Done:
@@ -1372,7 +1386,10 @@ namespace SheepSheepBurger.BurgerAssembly
                 return;
             }
 
-            PattyGrillState state = existingState ?? new PattyGrillState(type);
+            PattyGrillState state = existingState ?? new PattyGrillState(
+                type,
+                ShopProgressBridge.GetGrillCookTimeMultiplier(),
+                ShopProgressBridge.GetGrillBurnChance());
             Vector2 size = CookableGrillItemView.GetGrillSize(type, state.Phase);
 
             localPosition = BurgerUiFactory.ClampInside(grillDropArea.rect, localPosition, size);
@@ -1791,6 +1808,12 @@ namespace SheepSheepBurger.BurgerAssembly
 
         private void ExplainBlockedTrayDrag(CookingDragKind kind, IngredientType type)
         {
+            if (!IsIngredientUnlocked(type))
+            {
+                ShowToast(BurgerIngredientCatalog.GetDisplayName(type) + "은(는) 상점에서 해금해야 합니다");
+                return;
+            }
+
             if (stackAssembler.IsCompleted)
             {
                 ShowToast("이미 조립이 완료되었습니다");

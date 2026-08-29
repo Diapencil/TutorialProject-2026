@@ -39,14 +39,13 @@ namespace SheepSheepBurger.Core
                 { CookingIngredientType.Bacon, 13 }
             };
 
-        // TODO(기획확인): 상점에서 해금 대상인 재료 목록. 현재는 스토리보드의 토핑 탭 4종만 잠겨 있다.
+        // 상점에서 해금 대상인 재료 목록. 피클은 기본 해금 재료다.
         // 나머지는 기본 해금이라 상점 구매 여부와 무관하게 항상 사용할 수 있다.
         private static readonly HashSet<CookingIngredientType> ShopUnlockableIngredients =
             new HashSet<CookingIngredientType>
             {
                 CookingIngredientType.Bacon,
                 CookingIngredientType.Egg,
-                CookingIngredientType.ToppingPickle,
                 CookingIngredientType.ToppingJalapeno
             };
 
@@ -70,6 +69,27 @@ namespace SheepSheepBurger.Core
             return TryGetCoreIngredientId(type, out int coreId) && state.IsIngredientUnlocked(coreId);
         }
 
+        public static bool IsShopUnlockableIngredient(CookingIngredientType type)
+        {
+            return ShopUnlockableIngredients.Contains(type);
+        }
+
+        public static bool IsCoreIngredientUnlocked(IngredientData ingredient)
+        {
+            if (ingredient == null)
+            {
+                return false;
+            }
+
+            if (ingredient.isDefaultUnlocked)
+            {
+                return true;
+            }
+
+            GameState state = State;
+            return state == null || state.IsIngredientUnlocked(ingredient.id);
+        }
+
         public static bool TryGetCoreIngredientId(CookingIngredientType type, out int coreIngredientId)
         {
             return CookingToCoreIngredientId.TryGetValue(type, out coreIngredientId);
@@ -87,10 +107,19 @@ namespace SheepSheepBurger.Core
             return state != null ? state.GetUpgradeLevel(GrillUpgradeId) : 0;
         }
 
-        // TODO(기획확인): 아래 두 헬퍼는 아직 조리 씬이 호출하지 않는다.
-        // 조리 시간/탄 확률은 현재 CookingPrototypeRules의 const로 고정되어 있어
-        // 튀김기·그릴판 업그레이드가 실제 조리에 영향을 주지 않는다.
-        // 조리 씬이 UpgradeData를 참조하도록 바뀌면 여기에 연결하면 된다.
+        public static float GetGrillCookTimeMultiplier()
+        {
+            ShopCatalog catalog = ShopCatalog.LoadDefault();
+            UpgradeData grill = catalog != null ? catalog.GetUpgrade(GrillUpgradeId) : null;
+            return GetCookTimeMultiplier(grill, GetGrillLevel());
+        }
+
+        public static float GetGrillBurnChance()
+        {
+            ShopCatalog catalog = ShopCatalog.LoadDefault();
+            UpgradeData grill = catalog != null ? catalog.GetUpgrade(GrillUpgradeId) : null;
+            return GetBurnChance(grill, GetGrillLevel());
+        }
 
         /// <summary>
         /// 설비 레벨에 따른 조리 시간 배율. 해당 UpgradeData의 timeReduction 표에서 읽는다.

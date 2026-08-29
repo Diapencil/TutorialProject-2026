@@ -12,6 +12,7 @@ namespace SheepSheepBurger.Shop
     public class ShopManager : MonoBehaviour
     {
         [Header("데이터")]
+        [SerializeField] private ShopCatalog catalog;
         [SerializeField] private IngredientData[] allIngredients;
         [SerializeField] private UpgradeData[] allUpgrades;
         [SerializeField] private DecorationData[] allDecorations;
@@ -65,11 +66,38 @@ namespace SheepSheepBurger.Shop
             ? SheepSheepBurger.Core.GameManager.Instance.State
             : null;
 
+        private void Awake()
+        {
+            ResolveCatalog();
+
+            if (Application.isPlaying)
+            {
+                SheepSheepBurger.Core.GameManager.GetOrCreate();
+            }
+        }
+
         private void Start()
         {
             BuildSlotPool();
             HookButtons();
             SelectTab(ShopTabType.Topping);
+        }
+
+        private void ResolveCatalog()
+        {
+            if (catalog == null)
+            {
+                catalog = ShopCatalog.LoadDefault();
+            }
+
+            if (catalog == null)
+            {
+                return;
+            }
+
+            allIngredients = catalog.Ingredients;
+            allUpgrades = catalog.Upgrades;
+            allDecorations = catalog.Decorations;
         }
 
         private void BuildSlotPool()
@@ -367,8 +395,7 @@ namespace SheepSheepBurger.Shop
             state.UnlockIngredient(data.id);
             slot.MarkPurchased();
             ClearMessage();
-
-            // TODO(기획확인): 구매 시 조리 화면 빈 트레이를 채우는 연동은 조리 씬 구현 후 연결한다.
+            SaveProgress();
         }
 
         private void TryPurchaseUpgrade(GameState state, ShopSlotUI slot)
@@ -398,6 +425,7 @@ namespace SheepSheepBurger.Shop
 
             state.SetUpgradeLevel(upgrade.id, level + 1);
             ClearMessage();
+            SaveProgress();
 
             // 레벨 라벨과 다음 비용이 함께 바뀌므로 그리드를 다시 그린다.
             RefreshUpgradeTab();
@@ -419,8 +447,7 @@ namespace SheepSheepBurger.Shop
             state.PurchaseDecoration(data.id);
             slot.MarkPurchased();
             ClearMessage();
-
-            // TODO(기획확인): 구매 시 카운터 화면에 배치하는 연동은 카운터 씬 구현 후 연결한다.
+            SaveProgress();
         }
 
         private bool TrySpend(GameState state, int cost)
@@ -477,6 +504,7 @@ namespace SheepSheepBurger.Shop
 
             state.gold -= payment;
             state.debtRemaining -= payment;
+            SaveProgress();
 
             if (repayInputField != null)
             {
@@ -494,6 +522,11 @@ namespace SheepSheepBurger.Shop
 
             RefreshDebtPanel();
             RefreshHud();
+        }
+
+        private static void SaveProgress()
+        {
+            SheepSheepBurger.Core.GameManager.SaveCurrentGame();
         }
 
         private void RefreshDebtPanel()
