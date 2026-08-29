@@ -22,9 +22,9 @@ namespace SheepSheepBurger.Results
         private const string PrefabResourcePath = "UI/DayResultLayer";
         public const string RequiredFontCharacters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,!?:;+-*/()[]{}<>%#&'\"₩C|OX" +
             "결과정산오늘의요약응대손님명건총매출재료비순이익평균보상힌트사용회등급주문품질성공률재료소비개없음외더보기상세로그아직기록된주문이없습니다" +
-            "고객메뉴획득원가요구제출오차익힘전체완성미완성다음날닫기패티하단번상단양상추토마토치즈양파피클할라피뇨케첩머스터드" +
+            "고객메뉴획득원가요구제출오차익힘전체완성미완성다음날패티하단번상단양상추토마토치즈양파피클할라피뇨케첩머스터드" +
             "계란베이컨늑대기린사자코끼리캐시햄버거치즈버거비건채식핫도그후라이미아두쫀쿠와일드숲숲";
-        private const int BuiltLayoutVersion = 3;
+        private const int BuiltLayoutVersion = 4;
         private const int IngredientPreviewLimit = 8;
 
         public static DayResultLayerController Instance { get; private set; }
@@ -67,7 +67,6 @@ namespace SheepSheepBurger.Results
         [SerializeField] private string gradeTitle = "주문 품질";
         [SerializeField] private string ingredientTitle = "재료 사용";
         [SerializeField] private string logTitle = "상세 주문 로그";
-        [SerializeField] private string closeButtonLabel = "닫기";
         [SerializeField] private string nextDayButtonLabel = "다음 날";
 
         [Header("참조")]
@@ -83,7 +82,6 @@ namespace SheepSheepBurger.Results
         [SerializeField] private ScrollRect logScrollRect;
         [SerializeField] private RectTransform logContent;
         [SerializeField] private TMP_Text logText;
-        [SerializeField] private Button closeButton;
         [SerializeField] private Button nextDayButton;
         [SerializeField, HideInInspector] private int builtLayoutVersion;
 
@@ -140,7 +138,7 @@ namespace SheepSheepBurger.Results
 
                 if (hideOnAwake)
                 {
-                    Close();
+                    SetVisible(false);
                 }
 
                 if (showCompletedCurrentDayOnStart && dayProgress != null && dayProgress.IsCurrentDayComplete)
@@ -237,11 +235,6 @@ namespace SheepSheepBurger.Results
             SetVisible(true);
         }
 
-        public void Close()
-        {
-            SetVisible(false);
-        }
-
         [ContextMenu("Rebuild Result Layer Layout")]
         public void RebuildRoughLayout()
         {
@@ -278,7 +271,6 @@ namespace SheepSheepBurger.Results
             gradeTitle = "주문 품질";
             ingredientTitle = "재료 사용";
             logTitle = "상세 주문 로그";
-            closeButtonLabel = "닫기";
             nextDayButtonLabel = "다음 날";
 
             BuildIfNeeded();
@@ -292,7 +284,7 @@ namespace SheepSheepBurger.Results
         {
             DayProgressRuntime runtime = DayProgressRuntime.GetOrCreate();
             runtime.BeginNextDay();
-            Close();
+            SetVisible(false);
 
             if (reloadCounterSceneOnNextDay && !string.IsNullOrWhiteSpace(nextDaySceneName))
             {
@@ -379,7 +371,7 @@ namespace SheepSheepBurger.Results
             string ingredients = BuildIngredientText(dayState);
             string logs = BuildOrderLogText(dayState);
 
-            EnsureFontContainsCharacters(title + summary + grades + ingredients + logs + closeButtonLabel + nextDayButtonLabel);
+            EnsureFontContainsCharacters(title + summary + grades + ingredients + logs + nextDayButtonLabel);
 
             titleText.text = title;
             summaryText.text = summary;
@@ -583,11 +575,8 @@ namespace SheepSheepBurger.Results
 
             BuildLogScroll();
 
-            closeButton = CreateButton("CloseButton", closeButtonLabel);
-            SetTopLeft(closeButton.transform as RectTransform, 1124f, 736f, 166f, 58f);
-
             nextDayButton = CreateButton("NextDayButton", nextDayButtonLabel);
-            SetTopLeft(nextDayButton.transform as RectTransform, 936f, 736f, 166f, 58f);
+            SetTopLeft(nextDayButton.transform as RectTransform, 936f, 736f, 354f, 58f);
 
             builtLayoutVersion = BuiltLayoutVersion;
         }
@@ -841,7 +830,6 @@ namespace SheepSheepBurger.Results
             if (gradeText != null) ApplyTextStyle(gradeText, sectionFontSize, bodyTextColor, TextAlignmentOptions.TopLeft);
             if (ingredientText != null) ApplyTextStyle(ingredientText, sectionFontSize, bodyTextColor, TextAlignmentOptions.TopLeft);
             if (logText != null) ApplyTextStyle(logText, logFontSize, bodyTextColor, TextAlignmentOptions.TopLeft);
-            ApplyButtonVisuals(closeButton);
             ApplyButtonVisuals(nextDayButton);
         }
 
@@ -909,12 +897,6 @@ namespace SheepSheepBurger.Results
 
         private void HookButtons()
         {
-            if (closeButton != null)
-            {
-                closeButton.onClick.RemoveListener(Close);
-                closeButton.onClick.AddListener(Close);
-            }
-
             if (nextDayButton != null)
             {
                 nextDayButton.onClick.RemoveListener(BeginNextDay);
@@ -1054,7 +1036,6 @@ namespace SheepSheepBurger.Results
             logScrollRect = null;
             logContent = null;
             logText = null;
-            closeButton = null;
             nextDayButton = null;
         }
 

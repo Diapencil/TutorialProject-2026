@@ -57,12 +57,7 @@ namespace SheepSheepBurger.Counter
         {
             displayedOrder = order;
             var dialogue = order.order.dialogue;
-            var line = !string.IsNullOrWhiteSpace(order.selectedOrderLine)
-                ? order.selectedOrderLine
-                : dialogue != null && dialogue.orderLines != null && dialogue.orderLines.Count > 0
-                    ? dialogue.orderLines[UnityEngine.Random.Range(0, dialogue.orderLines.Count)]
-                    : order.order.recipe.recipeName;
-            order.selectedOrderLine = line ?? string.Empty;
+            string line = ResolveOrderLine(order, dialogue);
             clarificationRequest = dialogue != null ? dialogue.hintLine : string.Empty;
             clarificationShown = false;
             var hasClarification = !string.IsNullOrWhiteSpace(clarificationRequest);
@@ -76,6 +71,22 @@ namespace SheepSheepBurger.Counter
                 SetConfirmOrderButtonInteractable(true);
                 SetWhatButtonInteractable(hasClarification);
             });
+        }
+
+        public void RestoreOrder(OrderInstance order, bool hintWasUsed)
+        {
+            displayedOrder = order;
+            var dialogue = order.order.dialogue;
+            string line = ResolveOrderLine(order, dialogue);
+            clarificationRequest = dialogue != null ? dialogue.hintLine : string.Empty;
+            clarificationShown = hintWasUsed;
+
+            StopTyping();
+            resultRoot.SetActive(false);
+            if (customerAreaPanel != null) customerAreaPanel.SetActive(true);
+            speechBubbleText.text = line;
+            SetConfirmOrderButtonInteractable(true);
+            SetWhatButtonInteractable(!hintWasUsed && !string.IsNullOrWhiteSpace(clarificationRequest));
         }
 
         public void HideOrder()
@@ -108,6 +119,18 @@ namespace SheepSheepBurger.Counter
             ClarificationRequested?.Invoke();
             TypeText(clarificationRequest);
             SetWhatButtonInteractable(false);
+        }
+
+        private static string ResolveOrderLine(OrderInstance order, Dialogue dialogue)
+        {
+            string line = !string.IsNullOrWhiteSpace(order.selectedOrderLine)
+                ? order.selectedOrderLine
+                : dialogue != null && dialogue.orderLines != null && dialogue.orderLines.Count > 0
+                    ? dialogue.orderLines[UnityEngine.Random.Range(0, dialogue.orderLines.Count)]
+                    : order.order.recipe.recipeName;
+
+            order.selectedOrderLine = line ?? string.Empty;
+            return order.selectedOrderLine;
         }
 
         private void SetConfirmOrderButtonInteractable(bool interactable)

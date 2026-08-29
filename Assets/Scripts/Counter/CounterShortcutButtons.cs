@@ -1,4 +1,5 @@
 using SheepSheepBurger.Audio;
+using SheepSheepBurger.Results;
 using SheepSheepBurger.Settings;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -92,6 +93,11 @@ namespace SheepSheepBurger.Counter
 
         public void OpenShopScene()
         {
+            if (IsCounterInteractionBlocked())
+            {
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(shopSceneName))
             {
                 Debug.LogWarning("CounterShortcutButtons: shopSceneName is empty.");
@@ -197,6 +203,11 @@ namespace SheepSheepBurger.Counter
 
         private SpriteRenderer HitTest(Vector2 screenPosition)
         {
+            if (IsCounterInteractionBlocked())
+            {
+                return null;
+            }
+
             if (ContainsScreenPoint(settingsButtonRenderer, screenPosition))
             {
                 return settingsButtonRenderer;
@@ -302,6 +313,18 @@ namespace SheepSheepBurger.Counter
         private bool ShouldIgnoreShortcutInput()
         {
             return settingsLayer != null && settingsLayer.IsOpen && IsPointerOverUi();
+        }
+
+        private static bool IsCounterInteractionBlocked()
+        {
+            if (DayResultLayerController.Instance != null && DayResultLayerController.Instance.IsOpen)
+            {
+                return true;
+            }
+
+            CounterSceneCoordinator coordinator =
+                FindFirstObjectByType<CounterSceneCoordinator>(FindObjectsInactive.Exclude);
+            return coordinator != null && coordinator.IsResolvingOrder;
         }
 
         private static bool TryGetPointerDown(out Vector2 screenPosition)

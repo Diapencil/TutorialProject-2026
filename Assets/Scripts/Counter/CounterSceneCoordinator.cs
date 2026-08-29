@@ -17,6 +17,8 @@ namespace SheepSheepBurger.Counter
         private DayProgressRuntime dayProgress;
         private bool resolving;
 
+        public bool IsResolvingOrder => resolving;
+
         private void OnEnable() => CounterSceneSession.BurgerSubmitted += OnBurgerSubmitted;
         private void OnDisable() => CounterSceneSession.BurgerSubmitted -= OnBurgerSubmitted;
 
@@ -100,9 +102,18 @@ namespace SheepSheepBurger.Counter
 
         private void RestoreReturningCustomer()
         {
-            // Cooking 씬에서 돌아온 손님은 이미 카운터에 서 있는 상태다.
-            // 따라서 등장 연출과 주문 대사를 다시 표시하지 않는다.
-            SetupCustomer(playEntrance: false);
+            ApplyCustomerSprite();
+            customer.ShowImmediate();
+
+            if (!CounterSceneSession.HasConfirmedOrder && CounterSceneSession.CookedBurger == null)
+            {
+                ui.RestoreOrder(order, CounterSceneSession.HintUsed);
+            }
+            else
+            {
+                ui.HideOrder();
+            }
+
             ui.SetOrderConfirmed(CounterSceneSession.HasConfirmedOrder);
             ui.SetCookedBurgerAvailable(CounterSceneSession.CookedBurger != null);
         }
