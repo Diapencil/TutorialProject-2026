@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/StartScene.unity
+    guid: cefa6d94c18d4664a2250d5453f47877
+  - enabled: 1
     path: Assets/Scenes/BurgerAssembly.unity
     guid: c6d583da50abaff4dacbc3ccf668f154
   - enabled: 1
