@@ -20,7 +20,6 @@ namespace SheepSheepBurger.Results
     public sealed class DayResultLayerController : MonoBehaviour
     {
         private const string PrefabResourcePath = "UI/DayResultLayer";
-        private const string KoreanFontResourcePath = "Fonts & Materials/Shop Korean SDF";
         public const string RequiredFontCharacters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,!?:;+-*/()[]{}<>%#&'\"₩C|OX" +
             "결과정산오늘의요약응대손님명건총매출재료비순이익평균보상힌트사용회등급주문품질성공률재료소비개없음외더보기상세로그아직기록된주문이없습니다" +
             "고객메뉴획득원가요구제출오차익힘전체완성미완성다음날닫기패티하단번상단양상추토마토치즈양파피클할라피뇨케첩머스터드" +
@@ -759,9 +758,12 @@ namespace SheepSheepBurger.Results
 
         private TMP_FontAsset ResolveFontAsset()
         {
-            if (fontAsset == null)
+            TMP_FontAsset defaultFont = TMP_Settings.defaultFontAsset;
+
+            if (defaultFont != null &&
+                defaultFont.name.StartsWith("NanumGothic", System.StringComparison.Ordinal))
             {
-                fontAsset = Resources.Load<TMP_FontAsset>(KoreanFontResourcePath);
+                fontAsset = defaultFont;
             }
 
             return fontAsset;

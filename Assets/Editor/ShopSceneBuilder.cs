@@ -33,9 +33,8 @@ namespace SheepSheepBurger.EditorTools
         private const string DecorationsFolder = "Assets/Data/Shop/Decorations";
         private const string TmpSettingsPath = "Assets/TextMesh Pro/Resources/TMP Settings.asset";
         private const string TmpFontMaterialsFolder = "Assets/TextMesh Pro/Resources/Fonts & Materials";
-        private const string ShopFontSourcePath = "Assets/@Developers/Lee/Fonts/NanumGothic.ttf";
-        private const string ShopFontAssetPath = TmpFontMaterialsFolder + "/Shop Korean SDF.asset";
-        private const string ExistingKoreanFontAssetPath = "Assets/@Developers/Lee/Fonts/NanumGothic SDF.asset";
+        private const string ShopFontSourcePath = NanumGothicFontBaker.SourceFontPath;
+        private const string ShopFontAssetPath = NanumGothicFontBaker.FontAssetPath;
         private const string ShopDesignPresetPath = ShopDataFolder + "/ShopSceneDesignPreset.asset";
         private const string ShopBackgroundSpritePath = ShopArtFolder + "/shop_background.png";
         private const string ShopButtonNormalSpritePath = ShopArtFolder + "/shop_button_normal.png";
@@ -244,9 +243,9 @@ namespace SheepSheepBurger.EditorTools
 
                     if (fontAsset != null)
                     {
-                        fontAsset.name = "Shop Korean SDF";
-                        fontAsset.material.name = "Shop Korean SDF Material";
-                        fontAsset.atlasTextures[0].name = "Shop Korean SDF Atlas";
+                        fontAsset.name = "NanumGothic SDF";
+                        fontAsset.material.name = "NanumGothic SDF Material";
+                        fontAsset.atlasTextures[0].name = "NanumGothic SDF Atlas";
                         AssetDatabase.CreateAsset(fontAsset, ShopFontAssetPath);
                     }
                 }
@@ -254,16 +253,8 @@ namespace SheepSheepBurger.EditorTools
 
             if (fontAsset == null)
             {
-                fontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(ExistingKoreanFontAssetPath);
-
-                if (fontAsset == null)
-                {
-                    Debug.LogWarning("[ShopSceneBuilder] 한글 TMP 폰트 에셋을 찾지 못해 TMP 기본 폰트를 사용합니다.");
-                    return null;
-                }
-
-                Debug.LogWarning($"[ShopSceneBuilder] 상점 전용 폰트 생성에 실패해 기존 한글 폰트를 사용합니다: {ExistingKoreanFontAssetPath}");
-                return fontAsset;
+                Debug.LogWarning("[ShopSceneBuilder] 나눔고딕 TMP 폰트 에셋을 찾지 못해 TMP 기본 폰트를 사용합니다.");
+                return null;
             }
 
             if (!HasAllShopCharacters(fontAsset))
@@ -313,7 +304,7 @@ namespace SheepSheepBurger.EditorTools
                 Texture2D atlasTexture = atlasTextures[i];
                 if (atlasTexture != null && string.IsNullOrEmpty(atlasTexture.name))
                 {
-                    atlasTexture.name = i == 0 ? "Shop Korean SDF Atlas" : $"Shop Korean SDF Atlas {i}";
+                    atlasTexture.name = i == 0 ? "NanumGothic SDF Atlas" : $"NanumGothic SDF Atlas {i}";
                 }
 
                 AddSubAssetIfNeeded(atlasTexture, fontAsset);

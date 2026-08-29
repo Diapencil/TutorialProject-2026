@@ -16,8 +16,7 @@ namespace SheepSheepBurger.EditorTools
         private const string SettingsDesignPresetPath = SettingsDataFolder + "/SettingsLayerDesignPreset.asset";
         private const string SettingsLayerPrefabPath = PrefabsFolder + "/SettingsLayer.prefab";
         private const string CircleSpritePath = SettingsArtFolder + "/settings_circle_placeholder.png";
-        private const string ShopFontAssetPath = "Assets/TextMesh Pro/Resources/Fonts & Materials/Shop Korean SDF.asset";
-        private const string ExistingKoreanFontAssetPath = "Assets/@Developers/Lee/Fonts/NanumGothic SDF.asset";
+        private const string NanumGothicFontAssetPath = NanumGothicFontBaker.FontAssetPath;
         private const string SettingsFontCharacters = "설정0123456789";
 
         [MenuItem("SheepSheep/Build Settings Layer Prefab")]
@@ -316,12 +315,7 @@ namespace SheepSheepBurger.EditorTools
 
         private static TMP_FontAsset EnsureSettingsFontAsset()
         {
-            TMP_FontAsset fontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(ShopFontAssetPath);
-
-            if (fontAsset == null)
-            {
-                fontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(ExistingKoreanFontAssetPath);
-            }
+            TMP_FontAsset fontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(NanumGothicFontAssetPath);
 
             if (fontAsset == null)
             {

@@ -10,8 +10,7 @@ namespace SheepSheepBurger.EditorTools
     [InitializeOnLoad]
     public static class DayResultLayerFontBaker
     {
-        private const string ShopFontAssetPath = "Assets/TextMesh Pro/Resources/Fonts & Materials/Shop Korean SDF.asset";
-        private const string FullKoreanFontAssetPath = "Assets/Fonts/NanumGothic SDF.asset";
+        private const string NanumGothicFontAssetPath = NanumGothicFontBaker.FontAssetPath;
 
         static DayResultLayerFontBaker()
         {
@@ -22,18 +21,14 @@ namespace SheepSheepBurger.EditorTools
         [MenuItem("SheepSheep/Refresh Result Layer Font")]
         public static void EnsureResultLayerFont()
         {
-            TMP_FontAsset shopFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(ShopFontAssetPath);
-            TMP_FontAsset fullKoreanFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FullKoreanFontAssetPath);
+            TMP_FontAsset nanumGothic = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(NanumGothicFontAssetPath);
 
-            if (shopFont == null && fullKoreanFont == null)
+            if (nanumGothic == null)
             {
                 return;
             }
 
-            bool changed = false;
-            changed |= AddCharactersIfNeeded(shopFont, DayResultLayerController.RequiredFontCharacters);
-            changed |= AddCharactersIfNeeded(fullKoreanFont, DayResultLayerController.RequiredFontCharacters);
-            changed |= AddFallbackIfNeeded(shopFont, fullKoreanFont);
+            bool changed = AddCharactersIfNeeded(nanumGothic, DayResultLayerController.RequiredFontCharacters);
 
             if (!changed)
             {
@@ -89,23 +84,5 @@ namespace SheepSheepBurger.EditorTools
             return true;
         }
 
-        private static bool AddFallbackIfNeeded(TMP_FontAsset targetFont, TMP_FontAsset fallbackFont)
-        {
-            if (targetFont == null || fallbackFont == null || targetFont == fallbackFont)
-            {
-                return false;
-            }
-
-            targetFont.fallbackFontAssetTable ??= new System.Collections.Generic.List<TMP_FontAsset>();
-
-            if (targetFont.fallbackFontAssetTable.Contains(fallbackFont))
-            {
-                return false;
-            }
-
-            targetFont.fallbackFontAssetTable.Add(fallbackFont);
-            EditorUtility.SetDirty(targetFont);
-            return true;
-        }
     }
 }

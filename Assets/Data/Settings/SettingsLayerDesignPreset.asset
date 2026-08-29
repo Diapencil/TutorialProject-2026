@@ -19,7 +19,7 @@ MonoBehaviour:
   referenceResolution: {x: 1920, y: 1080}
   matchWidthOrHeight: 0.5
   canvasSortingOrder: 500
-  fontAsset: {fileID: 11400000, guid: 2c9c1b2d3a5864e3db7e2bc26ca8975a, type: 2}
+  fontAsset: {fileID: 11400000, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
   applyDesignOnAwake: 0
   applyDesignOnValidate: 0
   applyToOpenLayersOnValidate: 0
