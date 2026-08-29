@@ -20,13 +20,24 @@ namespace SheepSheepBurger.Audio
             AudioCueIds.CounterDay04
         };
 
+        [SerializeField] private bool randomizeWhenReturningFromCooking = true;
+        [SerializeField] private bool avoidImmediateRepeat = true;
         [SerializeField, Min(0f)] private float fadeSeconds = 0.35f;
         [SerializeField, Min(0.05f)] private float refreshInterval = 0.25f;
 
+        private static bool pendingRandomTrackOnNextCounterEntry;
+
         private int playingDay = -1;
         private string playingBgmId;
+        private int selectedBgmDay = -1;
+        private string selectedBgmId;
         private bool ownsCurrentBgm;
         private float nextRefreshTime;
+
+        public static void RequestRandomTrackOnNextCounterEntry()
+        {
+            pendingRandomTrackOnNextCounterEntry = true;
+        }
 
         private void OnEnable()
         {
@@ -91,14 +102,14 @@ namespace SheepSheepBurger.Audio
 
             DayProgressRuntime dayProgress = DayProgressRuntime.GetOrCreate();
             int currentDay = Mathf.Max(1, dayProgress.CurrentDay);
-            string bgmId = GetBgmIdForDay(currentDay);
+            AudioManager audioManager = AudioManager.GetOrCreate();
+            string bgmId = SelectBgmId(currentDay, audioManager.CurrentBgmId);
 
             if (string.IsNullOrWhiteSpace(bgmId))
             {
                 return;
             }
 
-            AudioManager audioManager = AudioManager.GetOrCreate();
             bool alreadyPlaying = ownsCurrentBgm &&
                 playingDay == currentDay &&
                 playingBgmId == bgmId &&
@@ -137,6 +148,66 @@ namespace SheepSheepBurger.Audio
         {
             int index = Mathf.Abs(day - 1) % counterBgmIds.Length;
             return counterBgmIds[index];
+        }
+
+        private string SelectBgmId(int currentDay, string currentAudioBgmId)
+        {
+            bool shouldRandomize = randomizeWhenReturningFromCooking && pendingRandomTrackOnNextCounterEntry;
+            pendingRandomTrackOnNextCounterEntry = false;
+
+            if (shouldRandomize)
+            {
+                selectedBgmDay = currentDay;
+                selectedBgmId = GetRandomBgmId(currentAudioBgmId);
+                return selectedBgmId;
+            }
+
+            if (selectedBgmDay != currentDay || string.IsNullOrWhiteSpace(selectedBgmId))
+            {
+                selectedBgmDay = currentDay;
+                selectedBgmId = GetBgmIdForDay(currentDay);
+            }
+
+            return selectedBgmId;
+        }
+
+        private string GetRandomBgmId(string currentAudioBgmId)
+        {
+            if (counterBgmIds == null || counterBgmIds.Length == 0)
+            {
+                return null;
+            }
+
+            string currentId = !string.IsNullOrWhiteSpace(currentAudioBgmId)
+                ? currentAudioBgmId
+                : playingBgmId;
+
+            if (!avoidImmediateRepeat || counterBgmIds.Length == 1 || string.IsNullOrWhiteSpace(currentId))
+            {
+                return counterBgmIds[Random.Range(0, counterBgmIds.Length)];
+            }
+
+            for (int attempt = 0; attempt < 12; attempt++)
+            {
+                string candidate = counterBgmIds[Random.Range(0, counterBgmIds.Length)];
+                if (!string.IsNullOrWhiteSpace(candidate) &&
+                    !string.Equals(candidate, currentId, System.StringComparison.Ordinal))
+                {
+                    return candidate;
+                }
+            }
+
+            for (int i = 0; i < counterBgmIds.Length; i++)
+            {
+                string candidate = counterBgmIds[i];
+                if (!string.IsNullOrWhiteSpace(candidate) &&
+                    !string.Equals(candidate, currentId, System.StringComparison.Ordinal))
+                {
+                    return candidate;
+                }
+            }
+
+            return counterBgmIds[0];
         }
 
         private bool IsCounterAreaScene(string sceneName)

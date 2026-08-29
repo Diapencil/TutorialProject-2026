@@ -135,6 +135,8 @@ namespace SheepSheepBurger.Counter
             {
                 yield return new WaitForSeconds(remainingDelay);
             }
+
+            CounterAreaBgmDirector.RequestRandomTrackOnNextCounterEntry();
             SceneManager.LoadScene(counterSceneName);
         }
 
