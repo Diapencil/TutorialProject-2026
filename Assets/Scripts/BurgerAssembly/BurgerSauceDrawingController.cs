@@ -27,6 +27,7 @@ namespace SheepSheepBurger.BurgerAssembly
         private CookingCameraSlider pageSlider;
         private Action drawingChanged;
         private Action<string, bool> setBoardStatus;
+        private Action<IngredientType> sauceApplied;
         private SauceStrokeGraphic activeStroke;
         private SimpleShapeGraphic sauceCursorGraphic;
         private Camera pointerEventCamera;
@@ -53,7 +54,8 @@ namespace SheepSheepBurger.BurgerAssembly
             BurgerStackAssembler targetStackAssembler,
             CookingCameraSlider targetPageSlider,
             Action onDrawingChanged,
-            Action<string, bool> boardStatusSetter)
+            Action<string, bool> boardStatusSetter,
+            Action<IngredientType> sauceAppliedCallback)
         {
             boardLayerRoot = targetBoardLayerRoot != null
                 ? targetBoardLayerRoot
@@ -64,6 +66,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 throw new ArgumentNullException(nameof(targetPageSlider));
             drawingChanged = onDrawingChanged;
             setBoardStatus = boardStatusSetter;
+            sauceApplied = sauceAppliedCallback;
             Canvas canvas = boardLayerRoot.GetComponentInParent<Canvas>();
             cursorLayer = canvas != null
                 ? canvas.transform as RectTransform
@@ -461,6 +464,7 @@ namespace SheepSheepBurger.BurgerAssembly
             activeStroke.rectTransform.SetAsLastSibling();
             boardStrokes.Add(activeStroke);
             drawnStrokeCount++;
+            sauceApplied?.Invoke(selectedSauce);
             lastPoint = local;
             drawingChanged?.Invoke();
         }

@@ -98,6 +98,11 @@ namespace SheepSheepBurger.BurgerAssembly
         public PaymentResult LastPaymentResult => completionPublisher.LastPaymentResult;
 
         public event Action OnCookingTimeExpired;
+        /// <summary>첫 조리 튜토리얼 등 외부 흐름에서 조리 행동을 관찰할 때 사용합니다.</summary>
+        public event Action<IngredientType> GrillIngredientPlaced;
+        public event Action<IngredientType, PattyGrillPhase> GrillPhaseChanged;
+        public event Action<IngredientType> BoardIngredientPlaced;
+        public event Action<IngredientType> SauceApplied;
 
         public float CookingTimeRemaining => cookingTimeRemaining;
 
@@ -984,7 +989,8 @@ namespace SheepSheepBurger.BurgerAssembly
                 stackAssembler,
                 cameraSlider,
                 HandleSauceDrawingChanged,
-                SetBoardStatus);
+                SetBoardStatus,
+                type => SauceApplied?.Invoke(type));
             packagingController.Configure(editablePackagingRegion, uiFont);
             cameraSlider.ZoneChanged -= HandleCameraZoneChanged;
             cameraSlider.ZoneChanged += HandleCameraZoneChanged;
@@ -1424,6 +1430,8 @@ namespace SheepSheepBurger.BurgerAssembly
                 phaseLabel,
                 state);
             grillItems.Add(view);
+            state.PhaseChanged += phase => GrillPhaseChanged?.Invoke(type, phase);
+            GrillIngredientPlaced?.Invoke(type);
             focusedGrillItem = view;
             if (type == IngredientType.Bacon)
             {
@@ -1458,6 +1466,7 @@ namespace SheepSheepBurger.BurgerAssembly
             if (!shouldStack)
             {
                 CreateLooseBoardIngredient(type, localPosition, cookingState);
+                BoardIngredientPlaced?.Invoke(type);
                 PlayBoardIngredientPlacementSfx(type);
                 SetBoardStatus(
                     BurgerIngredientCatalog.GetDisplayName(type) + "을(를) 도마에 놓았습니다.",
@@ -1485,6 +1494,8 @@ namespace SheepSheepBurger.BurgerAssembly
             {
                 SetBoardStatus(BurgerIngredientCatalog.GetDisplayName(type) + "을(를) 버거 위에 쌓았습니다.", false);
             }
+
+            BoardIngredientPlaced?.Invoke(type);
 
             PlayBoardIngredientPlacementSfx(type);
 
@@ -1551,6 +1562,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 {
                     SetBoardStatus(BurgerIngredientCatalog.GetDisplayName(type) + "을(를) 버거 위에 쌓았습니다.", false);
                 }
+                BoardIngredientPlaced?.Invoke(type);
                 return true;
             }
 

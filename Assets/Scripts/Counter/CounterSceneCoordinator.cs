@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Action = System.Action;
 using SheepSheepBurger.Core;
 using SheepSheepBurger.Results;
 using UnityEngine;
@@ -19,6 +20,7 @@ namespace SheepSheepBurger.Counter
         private bool resolving;
 
         public bool IsResolvingOrder => resolving;
+        public event Action BurgerServed;
 
         private void OnEnable() => CounterSceneSession.BurgerSubmitted += OnBurgerSubmitted;
         private void OnDisable() => CounterSceneSession.BurgerSubmitted -= OnBurgerSubmitted;
@@ -68,9 +70,9 @@ namespace SheepSheepBurger.Counter
         private bool TryCreateOrder(out OrderInstance nextOrder)
         {
             var customers = new List<SheepSheepBurger.Core.CustomerData>();
-            foreach (var candidate in settings.AvailableCustomers) // TODO settings 수정
+            foreach (var candidate in settings.AvailableCustomers)
                 if (candidate != null) customers.Add(candidate);
-            var orders = new List<OrderData>();
+            var orders = new List<SheepSheepBurger.Core.OrderData>();
             foreach (var candidate in settings.AvailableOrders)
                 if (CanPrepareOrder(candidate)) orders.Add(candidate);
 
@@ -81,11 +83,38 @@ namespace SheepSheepBurger.Counter
                 return false;
             }
 
-            var selectedCustomer = customers[Random.Range(0, customers.Count)];
+            // customersServed는 이미 서빙을 완료한 손님 수이므로, 다음 손님 순번은 +1이다.
+            int customerNumber = dayProgress != null ? dayProgress.ServedCustomerCount + 1 : 1;
+            int dayNumber = dayProgress != null ? dayProgress.CurrentDay : 1;
+            FixedCustomerScheduleEntry fixedEntry = settings.GetFixedCustomerScheduleEntry(
+                dayNumber,
+                customerNumber);
+            SheepSheepBurger.Core.CustomerData selectedCustomer = fixedEntry?.Customer;
+
+            // 고정 손님이 지정되지 않은 순번만 기존처럼 무작위 손님을 사용한다.
+            if (selectedCustomer == null)
+            {
+                selectedCustomer = customers[Random.Range(0, customers.Count)];
+            }
+
+            SheepSheepBurger.Core.OrderData selectedOrder = fixedEntry?.FixedOrder;
+            if (selectedOrder != null && !CanPrepareOrder(selectedOrder))
+            {
+                Debug.LogError($"Fixed customer schedule has an unavailable recipe: Day {dayNumber}, Customer {customerNumber}.");
+                nextOrder = null;
+                return false;
+            }
+
+            // 고정 손님 규칙에 주문이 있으면 그 주문을 사용하고, 비어 있으면 기존 무작위 주문을 사용한다.
+            if (selectedOrder == null)
+            {
+                selectedOrder = orders[Random.Range(0, orders.Count)];
+            }
+
             nextOrder = new OrderInstance
             {
                 customer = selectedCustomer,
-                order = orders[Random.Range(0, orders.Count)],
+                order = selectedOrder,
                 spriteIndex = selectedCustomer.sprites == null || selectedCustomer.sprites.Count == 0
                     ? 0
                     : Random.Range(0, selectedCustomer.sprites.Count),
@@ -200,6 +229,7 @@ namespace SheepSheepBurger.Counter
         private void ServeBurger()
         {
             if (resolving || order == null || CounterSceneSession.CookedBurger == null) return;
+            BurgerServed?.Invoke();
             BurgerData submittedBurger = CounterSceneSession.CookedBurger;
             OrderJudgement judgement = OrderJudge.JudgeDetailed(order.order,
                                                                 submittedBurger,
