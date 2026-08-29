@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76e52d79f05fec84da88b585a329c43e, type: 3}
+  m_Name: Missing Child Burger
+  m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.Dialogue
+  orderLines:
+  - "\uC804 \uC5B4\uB824\uC11C\uBD80\uD130 \uAC00\uB09C\uD558\uAC8C \uC790\uB790\uC5B4\uC694.
+    \uC8FC\uBCC0\uC5D4 \uC544\uBB34\uAC83\uB3C4 \uC5C6\uC5C8\uC8E0. \uC544\uBB34\uAC83\uB3C4."
+  - "\uC81C \uACF5\uD5C8\uD55C \uB9C8\uC74C\uC744 \uADF8\uB300\uB85C \uBC84\uAC70\uC5D0
+    \uAD6C\uD604\uD574\uC8FC\uC138\uC694."
+  hintLine: "\uBC00\uAC00\uB8E8\uB9CC \uC8FC\uC138\uC694."
+  perfectLine: '?'
+  normalLine: "\uADF8\uB798\uB3C4 \uD558\uB098\uB294 \uC788\uB124\uC694"
+  badLine: "\uC808 \uBAA8\uC695\uD558\uB294 \uAC74\uAC00\uC694?"

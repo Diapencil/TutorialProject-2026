@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0b1c5ea158384e4490d5d4ef4bc2628, type: 3}
+  m_Name: CounterSettings
+  m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Counter.CounterSettings
+  customersPerDay: 8
+  patienceSeconds: 60
+  reactionSeconds: 2
+  exitDelaySeconds: 0.5
+  cookingSceneName: BurgerAssembly
+  gradeConfig: {fileID: 11400000, guid: 778bf514382c06942a5523ebaec0e973, type: 2}
+  availableCustomers:
+  - {fileID: 11400000, guid: 43ec81016a6938340abf0a439d5db1f5, type: 2}
+  - {fileID: 11400000, guid: d0e52180fac18fd4eb238333c8d87490, type: 2}
+  availableOrders:
+  - {fileID: 11400000, guid: 4c47f096558cc6943b940db2ed1fae53, type: 2}
+  - {fileID: 11400000, guid: 83b9d634e0c5b92469738960ff3f6f0e, type: 2}
+  - {fileID: 11400000, guid: 2ad8ce2945bef784e88f063dc3e2378c, type: 2}
+  perfectLine: "\uC644\uBCBD\uD574\uC694! \uC815\uB9D0 \uB9DB\uC788\uC5B4\uC694!"
+  normalLine: "\uC870\uAE08 \uC544\uC27D\uC9C0\uB9CC \uB9DB\uC788\uAC8C \uBA39\uC744\uAC8C\uC694."
+  badLine: "\uC81C\uAC00 \uC8FC\uBB38\uD55C \uBC84\uAC70\uAC00 \uC544\uB2CC \uAC83
+    \uAC19\uC544\uC694."

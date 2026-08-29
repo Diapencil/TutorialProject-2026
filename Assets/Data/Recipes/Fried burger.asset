@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4eb6c15b4d87b2a4da2e338b5bd6985a, type: 3}
+  m_Name: Fried Burger
+  m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.RecipeData
+  id: 13
+  recipeName: "\uD6C4\uB77C\uC774\uBC84\uAC70"
+  layers:
+  - ingredient: {fileID: 11400000, guid: 4e9590c32cef09b48b2efc1fbd675d58, type: 2}
+    quantity: 1
+    cookRequirement: 0
+  - ingredient: {fileID: 11400000, guid: b0de1025bc5310e4d90fba051ab4ac01, type: 2}
+    quantity: 1
+    cookRequirement: 2
+  - ingredient: {fileID: 11400000, guid: 363fe7aa11d99f74c816d9f0f1cea467, type: 2}
+    quantity: 1
+    cookRequirement: 2
+  - ingredient: {fileID: 11400000, guid: 2e63ad892dc1b4044b7d6c595d9e87e8, type: 2}
+    quantity: 1
+    cookRequirement: 0
+  - ingredient: {fileID: 11400000, guid: ee4177aa0f5a9924d9560b2af0015791, type: 2}
+    quantity: 1
+    cookRequirement: 0
+  - ingredient: {fileID: 11400000, guid: a9395f3a21dc52d418759082c45429ab, type: 2}
+    quantity: 1
+    cookRequirement: 0
+  - ingredient: {fileID: 11400000, guid: 87d8e63a477497c45a381bb1f2088c7c, type: 2}
+    quantity: 1
+    cookRequirement: 0
+  - ingredient: {fileID: 11400000, guid: a5fdc566181da034a906fdb43b6e5973, type: 2}
+    quantity: 1
+    cookRequirement: 0
+  - ingredient: {fileID: 11400000, guid: d1b795ac805485d42bcd8bdc11e93c6b, type: 2}
+    quantity: 1
+    cookRequirement: 0
+  - ingredient: {fileID: 11400000, guid: 151c86a4dcfc6c64bbbfa2043195c5fc, type: 2}
+    quantity: 1
+    cookRequirement: 0
+  basePrice: 130
+  unlockCondition: 

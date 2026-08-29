@@ -104,3 +104,8 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# 프로젝트 안에 프로젝트가 중첩 생성되는 사고 방지.
+# Unity의 LastUsedProjectPath가 중첩 경로를 가리키면 Unity가 그 자리에
+# 새 프로젝트를 만들어버린다. git이 절대 추적하지 않도록 막는다.
+/TutorialProject-2026

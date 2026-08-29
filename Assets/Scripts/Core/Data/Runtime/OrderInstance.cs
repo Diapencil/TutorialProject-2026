@@ -8,6 +8,7 @@ namespace SheepSheepBurger.Core
         public CustomerData customer;
         public OrderData order;
         public int spriteIndex;
+        public string selectedOrderLine;
         public int patienceRemaining;
         public bool hintUsed;
         public OrderPhase phase;

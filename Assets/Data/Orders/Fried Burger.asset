@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ea9e2b0870e2014088880a5ac7ab508, type: 3}
+  m_Name: Fried Burger
+  m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.OrderData
+  id: 5
+  recipe: {fileID: 11400000, guid: 99de3732c2f6a8449b03d139e241e17b, type: 2}
+  dialogue: {fileID: 11400000, guid: 5d0d84562a4d16b43bd7ed5f7f12be41, type: 2}

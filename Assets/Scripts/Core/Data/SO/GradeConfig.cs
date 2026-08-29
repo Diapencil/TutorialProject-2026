@@ -17,6 +17,7 @@ namespace SheepSheepBurger.Core
         public Grade grade;
         public int maxErrors;
         public int tipAmount;
+        public bool requireNoHint;
         public bool paysBasePrice;
     }
 }

@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 268ef537728d47c18dd1c0423daa1e25, type: 3}
+  m_Name: GameDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Data.GameDatabase
+  ingredients:
+  - {fileID: 11400000, guid: 4e9590c32cef09b48b2efc1fbd675d58, type: 2}
+  - {fileID: 11400000, guid: 151c86a4dcfc6c64bbbfa2043195c5fc, type: 2}
+  - {fileID: 11400000, guid: b0de1025bc5310e4d90fba051ab4ac01, type: 2}
+  - {fileID: 11400000, guid: 87d8e63a477497c45a381bb1f2088c7c, type: 2}
+  - {fileID: 11400000, guid: a9395f3a21dc52d418759082c45429ab, type: 2}
+  - {fileID: 11400000, guid: a5fdc566181da034a906fdb43b6e5973, type: 2}
+  - {fileID: 11400000, guid: d1b795ac805485d42bcd8bdc11e93c6b, type: 2}
+  - {fileID: 11400000, guid: 80b6650d616051f4a8d6017c2f2abd5b, type: 2}
+  - {fileID: 11400000, guid: ee4177aa0f5a9924d9560b2af0015791, type: 2}
+  - {fileID: 11400000, guid: 8df27fcfb27b137438426cac1253f5e3, type: 2}
+  - {fileID: 11400000, guid: 2e63ad892dc1b4044b7d6c595d9e87e8, type: 2}
+  - {fileID: 11400000, guid: 363fe7aa11d99f74c816d9f0f1cea467, type: 2}
+  - {fileID: 11400000, guid: 81903002c2f61144e95e521d93b8527c, type: 2}
+  recipes:
+  - {fileID: 11400000, guid: 89619c7190b051d4c965e137bc33e560, type: 2}
+  - {fileID: 11400000, guid: 87b5753cd7a3ca04da2f9f93ff02cf2e, type: 2}
+  - {fileID: 11400000, guid: 53513db9a1dfcb84098c53c816642c40, type: 2}
+  - {fileID: 11400000, guid: 621e5c5ade274e148b49cec7530eac9f, type: 2}
+  - {fileID: 11400000, guid: e3d639d476d719b4a94943493aa9e131, type: 2}
+  - {fileID: 11400000, guid: 89b4c74747e64094ebd5ac390bfffd58, type: 2}
+  - {fileID: 11400000, guid: 06e6de0b29a17c84b98890f59411df47, type: 2}
+  - {fileID: 11400000, guid: 7bf00ca77f3f14348bf3a82b5674fe37, type: 2}
+  - {fileID: 11400000, guid: 4f3151a7b6bf9f44589abb46774d8384, type: 2}
+  - {fileID: 11400000, guid: 91922cb707622384a90d5774d9965443, type: 2}
+  - {fileID: 11400000, guid: 2538beffbc1730f4989dc3d4e5f9ade1, type: 2}
+  - {fileID: 11400000, guid: f9c9987e04b057e4089f295bc770cb6d, type: 2}
+  - {fileID: 11400000, guid: 99de3732c2f6a8449b03d139e241e17b, type: 2}
+  orders: []
+  customers: []
+  specialCustomers: []

@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76e52d79f05fec84da88b585a329c43e, type: 3}
   m_Name: Hamburger
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.Dialogue
-  id: 2
-  lines:
+  orderLines:
   - "\uD584\uBC84\uAC70\uC5D0\uB294 \uD584\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4\uB294
     \uC0AC\uC2E4\uC744 \uC54C\uACE0 \uC788\uB098\uC694?"
   - "\uC5B4\uC82F\uBC24 \uAFC8\uC18D\uC758 \uBAA9\uC18C\uB9AC\uAC00 \uC800\uC5D0\uAC8C
@@ -21,3 +20,7 @@ MonoBehaviour:
     \uBB34\uC2A8 \uB9D0\uC77C\uAE4C\uC694?"
   hintLine: "\uCE58\uC988\uC640 \uD53C\uD074 \uD329\uC73C\uB85C \uD53C\uBD80 \uAD00\uB9AC\uB97C
     \uD558\uACE0 \uC788\uC5B4\uC694!"
+  perfectLine: "\uCEAC! \uC774\uAC8C \uC9C4\uC9DC \uD584\uBC84\uAC70\uC9C0"
+  normalLine: "\uC74C,, \uB0AB\uBC30\uB4DC"
+  badLine: "\uC6B0\uB9AC\uC9D1 \uC601\uC720\uC544\uAC00 \uC774\uAC83\uBCF4\uB2E8
+    \uB9DB\uC788\uAC8C \uB9CC\uB4E0\uB2E4"

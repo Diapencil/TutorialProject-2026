@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Wolf
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.CustomerData
   id: 1
-  availableOrders:
-  - {fileID: 11400000, guid: 4c47f096558cc6943b940db2ed1fae53, type: 2}
   customerName: "\uB291\uB300"
-  spritePath: 
+  sprites:
+  - {fileID: 7444046612802208997, guid: c39380d1a76b98c4b85b12d9f4f7f67b, type: 3}
+  appearWeight: 0
   patienceTime: 60
   attackChance: 0.1
   tipMultiplier: 1

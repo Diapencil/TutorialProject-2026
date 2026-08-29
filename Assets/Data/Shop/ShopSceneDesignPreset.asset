@@ -1,0 +1,101 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 003bef9c5c8e247739b769a6077faea1, type: 3}
+  m_Name: ShopSceneDesignPreset
+  m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Shop.ShopSceneDesignPreset
+  memo: "\uC0C1\uC810 \uC52C \uB514\uC790\uC778\uC6A9 \uD504\uB9AC\uC14B\uC785\uB2C8\uB2E4.
+    \uC55E\uB4A4 \uC21C\uC11C\uB294 \uAC12\uC774 \uD074\uC218\uB85D \uD654\uBA74
+    \uC55E\uCABD\uC5D0 \uBCF4\uC785\uB2C8\uB2E4."
+  referenceResolution: {x: 1920, y: 1080}
+  matchWidthOrHeight: 0.5
+  canvasSortingOrder: 0
+  canvasPlaneDistance: 10
+  cameraOrthographicSize: 5.4
+  cameraBackgroundColor: {r: 0.08, g: 0.08, b: 0.08, a: 1}
+  backgroundSprite: {fileID: 21300000, guid: a401bd1dc4eea4b539de0cc850909d66, type: 3}
+  buttonNormalSprite: {fileID: 21300000, guid: 97c8768b9d6154b3c8a2304b9a4f2eaf, type: 3}
+  buttonPressedSprite: {fileID: 21300000, guid: 8e0d8c14e8dfe487f95ef0c95413b7e1, type: 3}
+  slotFrameSprite: {fileID: 21300000, guid: b49661bb2857548139dd229ee42f2526, type: 3}
+  applyRectTransformLayout: 0
+  layerOrder:
+    background: -100
+    gridPanel: 0
+    debtPanel: 5
+    sideBar: 10
+    topHud: 20
+    messageBar: 30
+    gridPanelZ: 0
+    debtPanelZ: 0
+    sideBarZ: 0
+    topHudZ: 0
+    messageBarZ: 0
+    backgroundZ: 0
+  layout:
+    slotLayoutVersion: 1
+    topHudHeight: 96
+    sideBarWidth: 360
+    messageAreaHeight: 80
+    sideBarPadding: 34
+    sideBarTopPadding: 170
+    sideBarBottomPadding: 24
+    sideBarSpacing: 18
+    tabButtonHeight: 132
+    hudHorizontalPadding: 20
+    messageHorizontalPadding: 0
+    slotRowCount: 1
+    slotViewportPaddingLeft: 0
+    slotViewportPaddingRight: 0
+    slotViewportPaddingTop: 48
+    slotViewportPaddingBottom: 296
+    slotContentPaddingLeft: 72
+    slotContentPaddingRight: 72
+    slotCellSize: {x: 388, y: 560}
+    slotSpacing: {x: 52, y: 0}
+    slotScrollElasticity: 0.08
+    slotScrollSensitivity: 35
+    debtInputSize: {x: 520, y: 80}
+    debtButtonSize: {x: 320, y: 80}
+    debtTextHeight: 120
+    debtElementSpacing: 40
+    inputHorizontalPadding: 28
+  slot:
+    iconBottomAnchor: 0.53
+    nameBottomAnchor: 0.38
+    costBottomAnchor: 0.24
+    innerPadding: 28
+  text:
+    hudFontSize: 40
+    tabFontSize: 30
+    slotNameFontSize: 26
+    slotCostFontSize: 24
+    messageFontSize: 30
+    debtFontSize: 60
+    inputFontSize: 32
+  colors:
+    topHudBackground: {r: 0, g: 0, b: 0, a: 0}
+    sideBarBackground: {r: 0, g: 0, b: 0, a: 0}
+    gridPanelBackground: {r: 0, g: 0, b: 0, a: 0}
+    debtPanelBackground: {r: 0, g: 0, b: 0, a: 0}
+    messageBarBackground: {r: 0, g: 0, b: 0, a: 0}
+    tabNormal: {r: 1, g: 1, b: 1, a: 1}
+    tabHighlighted: {r: 1, g: 1, b: 1, a: 1}
+    tabPressed: {r: 1, g: 1, b: 1, a: 1}
+    tabSelected: {r: 1, g: 1, b: 1, a: 1}
+    actionButtonBackground: {r: 1, g: 1, b: 1, a: 1}
+    inputBackground: {r: 1, g: 1, b: 1, a: 1}
+    slotBackground: {r: 1, g: 1, b: 1, a: 1}
+    slotSoldOutOverlay: {r: 0, g: 0, b: 0, a: 0.6}
+    slotLockedOverlay: {r: 0.5, g: 0.5, b: 0.5, a: 0.8}
+    mainText: {r: 0.19, g: 0.13, b: 0.08, a: 1}
+    dDayText: {r: 0.64, g: 0.12, b: 0.08, a: 1}
+    messageText: {r: 0.19, g: 0.13, b: 0.08, a: 1}
+    placeholderText: {r: 0.5, g: 0.5, b: 0.5, a: 1}
