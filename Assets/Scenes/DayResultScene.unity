@@ -413,7 +413,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 276887703}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 637223468}
+        m_TargetAssemblyTypeName: DayResultManager, Assembly-CSharp
+        m_MethodName: OnNextDayButtonClicked
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &276887703
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1063,13 +1075,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c5724c2c7f8aee4cb6b0e4f20d26b2c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DayResultManager
-  titleText: {fileID: 0}
-  moneyText: {fileID: 0}
-  perfectText: {fileID: 0}
-  goodText: {fileID: 0}
-  normalText: {fileID: 0}
-  badText: {fileID: 0}
-  dDayText: {fileID: 0}
+  titleText: {fileID: 508027032}
+  moneyText: {fileID: 2064422211}
+  perfectText: {fileID: 306055379}
+  goodText: {fileID: 91034802}
+  normalText: {fileID: 388166984}
+  badText: {fileID: 867916821}
+  dDayText: {fileID: 740435496}
 --- !u!1 &692908799
 GameObject:
   m_ObjectHideFlags: 0
