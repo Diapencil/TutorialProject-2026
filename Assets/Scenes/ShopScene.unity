@@ -1177,6 +1177,7 @@ MonoBehaviour:
     completedDayStates: []
   loadSavedStateOnStart: 1
   autoSave: 1
+  startupSettings: {fileID: 0}
   debugGoldAmount: 10000
 --- !u!4 &724570569
 Transform:

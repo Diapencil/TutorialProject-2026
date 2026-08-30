@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using SheepSheepBurger.BurgerAssembly;
 using SheepSheepBurger.Counter;
 using UnityEngine;
@@ -34,9 +35,12 @@ namespace SheepSheepBurger.Core
         private RectTransform dimBottom;
         private RectTransform dimLeft;
         private RectTransform dimRight;
+        private GameObject guidanceInputBlocker;
+        private TutorialRaycastBlocker guidanceRaycastBlocker;
         private bool isGuidanceMaskVisible;
         private Canvas highlightCanvas;
         private GraphicRaycaster highlightRaycaster;
+        private readonly List<RectTransform> guidanceTargets = new List<RectTransform>(2);
         private float pausedTimeScale = 1f;
         private bool isPaused;
 
@@ -291,6 +295,19 @@ namespace SheepSheepBurger.Core
             dimLeft = CreateDimmer("TutorialDimLeft", canvasObject.transform);
             dimRight = CreateDimmer("TutorialDimRight", canvasObject.transform);
 
+            guidanceInputBlocker = new GameObject("TutorialGuidanceInputBlocker", typeof(RectTransform), typeof(Image), typeof(TutorialRaycastBlocker));
+            guidanceInputBlocker.transform.SetParent(canvasObject.transform, false);
+            var guidanceBlockerRect = (RectTransform)guidanceInputBlocker.transform;
+            guidanceBlockerRect.anchorMin = Vector2.zero;
+            guidanceBlockerRect.anchorMax = Vector2.one;
+            guidanceBlockerRect.offsetMin = Vector2.zero;
+            guidanceBlockerRect.offsetMax = Vector2.zero;
+            Image guidanceBlockerImage = guidanceInputBlocker.GetComponent<Image>();
+            guidanceBlockerImage.color = new Color(0f, 0f, 0f, 0.01f);
+            guidanceRaycastBlocker = guidanceInputBlocker.GetComponent<TutorialRaycastBlocker>();
+            guidanceRaycastBlocker.Configure(guidanceTargets);
+            guidanceInputBlocker.SetActive(false);
+
             // 화면 전체를 덮는 투명 버튼입니다. 안내 중에는 모든 게임 입력을 가로채고,
             // 어느 곳을 누르든 현재 안내를 닫습니다.
             inputBlocker = new GameObject("TutorialInputBlocker", typeof(RectTransform), typeof(Image), typeof(Button));
@@ -341,7 +358,7 @@ namespace SheepSheepBurger.Core
 
         private void ShowGuidanceMask()
         {
-            if (overlayRoot == null || !TryGetGuidanceTarget(out RectTransform target))
+            if (overlayRoot == null || !TryGetGuidanceTargets(guidanceTargets))
             {
                 return;
             }
@@ -351,7 +368,8 @@ namespace SheepSheepBurger.Core
             dimBottom.gameObject.SetActive(true);
             dimLeft.gameObject.SetActive(true);
             dimRight.gameObject.SetActive(true);
-            BringHighlightTargetForward(target);
+            guidanceInputBlocker.SetActive(true);
+            BringHighlightTargetForward(guidanceTargets[0]);
             RefreshGuidanceMask();
         }
 
@@ -364,34 +382,42 @@ namespace SheepSheepBurger.Core
             dimBottom.gameObject.SetActive(false);
             dimLeft.gameObject.SetActive(false);
             dimRight.gameObject.SetActive(false);
+            if (guidanceInputBlocker != null) guidanceInputBlocker.SetActive(false);
         }
 
         private void RefreshGuidanceMask()
         {
-            if (!TryGetGuidanceTarget(out RectTransform target))
+            if (!TryGetGuidanceTargets(guidanceTargets))
             {
                 HideGuidanceMask();
                 return;
             }
 
-            Vector3[] corners = new Vector3[4];
-            target.GetWorldCorners(corners);
-            Canvas targetCanvas = target.GetComponentInParent<Canvas>();
-            Camera targetCamera = targetCanvas != null && targetCanvas.renderMode != RenderMode.ScreenSpaceOverlay
-                ? targetCanvas.worldCamera
-                : null;
             float minX = float.MaxValue;
             float minY = float.MaxValue;
             float maxX = float.MinValue;
             float maxY = float.MinValue;
-            for (int i = 0; i < corners.Length; i++)
+
+            Vector3[] corners = new Vector3[4];
+            for (int targetIndex = 0; targetIndex < guidanceTargets.Count; targetIndex++)
             {
-                Vector2 screen = RectTransformUtility.WorldToScreenPoint(targetCamera, corners[i]);
-                RectTransformUtility.ScreenPointToLocalPointInRectangle(overlayRoot, screen, null, out Vector2 local);
-                minX = Mathf.Min(minX, local.x);
-                minY = Mathf.Min(minY, local.y);
-                maxX = Mathf.Max(maxX, local.x);
-                maxY = Mathf.Max(maxY, local.y);
+                RectTransform target = guidanceTargets[targetIndex];
+                if (target == null) continue;
+
+                target.GetWorldCorners(corners);
+                Canvas targetCanvas = target.GetComponentInParent<Canvas>();
+                Camera targetCamera = targetCanvas != null && targetCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+                    ? targetCanvas.worldCamera
+                    : null;
+                for (int i = 0; i < corners.Length; i++)
+                {
+                    Vector2 screen = RectTransformUtility.WorldToScreenPoint(targetCamera, corners[i]);
+                    RectTransformUtility.ScreenPointToLocalPointInRectangle(overlayRoot, screen, null, out Vector2 local);
+                    minX = Mathf.Min(minX, local.x);
+                    minY = Mathf.Min(minY, local.y);
+                    maxX = Mathf.Max(maxX, local.x);
+                    maxY = Mathf.Max(maxY, local.y);
+                }
             }
 
             const float padding = 24f;
@@ -404,6 +430,25 @@ namespace SheepSheepBurger.Core
             SetMaskRect(dimBottom, new Rect(bounds.xMin, bounds.yMin, bounds.width, minY - bounds.yMin));
             SetMaskRect(dimLeft, new Rect(bounds.xMin, minY, minX - bounds.xMin, maxY - minY));
             SetMaskRect(dimRight, new Rect(maxX, minY, bounds.xMax - maxX, maxY - minY));
+            guidanceRaycastBlocker?.Configure(guidanceTargets);
+        }
+
+        private bool TryGetGuidanceTargets(List<RectTransform> targets)
+        {
+            targets.Clear();
+
+            if (TryGetGuidanceTarget(out RectTransform target))
+            {
+                targets.Add(target);
+            }
+
+            if ((step == Step.Ketchup || step == Step.Mustard) &&
+                TryFindRectByName("BoardDropArea", out RectTransform boardTarget))
+            {
+                targets.Add(boardTarget);
+            }
+
+            return targets.Count > 0;
         }
 
         private void BringHighlightTargetForward(RectTransform target)
@@ -504,6 +549,50 @@ namespace SheepSheepBurger.Core
             text.color = Color.white;
             text.raycastTarget = false;
             return text;
+        }
+    }
+
+    internal sealed class TutorialRaycastBlocker : MonoBehaviour, ICanvasRaycastFilter
+    {
+        private List<RectTransform> allowedTargets;
+
+        public void Configure(List<RectTransform> targets)
+        {
+            allowedTargets = targets;
+        }
+
+        public bool IsRaycastLocationValid(Vector2 screenPoint, Camera eventCamera)
+        {
+            return !IsInsideAllowedTarget(screenPoint);
+        }
+
+        private bool IsInsideAllowedTarget(Vector2 screenPoint)
+        {
+            if (allowedTargets == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < allowedTargets.Count; i++)
+            {
+                RectTransform target = allowedTargets[i];
+                if (target == null)
+                {
+                    continue;
+                }
+
+                Canvas targetCanvas = target.GetComponentInParent<Canvas>();
+                Camera targetCamera = targetCanvas != null && targetCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+                    ? targetCanvas.worldCamera
+                    : null;
+
+                if (RectTransformUtility.RectangleContainsScreenPoint(target, screenPoint, targetCamera))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
