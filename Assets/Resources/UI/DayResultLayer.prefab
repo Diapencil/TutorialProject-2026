@@ -846,7 +846,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 278.01}
+  m_SizeDelta: {x: 0, y: 272}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!1 &4420590788066946263
 GameObject:
@@ -1103,13 +1103,13 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC0C1\uC138 \uC8FC\uBB38 \uB85C\uADF8 (2\uAC74)\n#1 \uB291\uB300 | \uD584\uBC84\uAC70\n  
-    Perfect  +18.0C  \uC6D0\uAC00 4.5C\n   \uC694\uAD6C 4 / \uC81C\uCD9C 4 | \uC624\uCC28
-    0 | \uD78C\uD2B8 X\n  \uC18C\uBE44 \uC7AC\uB8CC: \uD558\uB2E8\uBC88 x1, \uD328\uD2F0
-    x1, \uC0C1\uB2E8\uBC88 x1\n\n#2 \uAE30\uB9B0 | \uCE58\uC988\uBC84\uAC70\n   Good 
-    +12.0C  \uC6D0\uAC00 5.7C\n   \uC694\uAD6C 5 / \uC81C\uCD9C 5 | \uC624\uCC28
-    1 | \uD78C\uD2B8 O\n  \uC18C\uBE44 \uC7AC\uB8CC: \uD558\uB2E8\uBC88 x1, \uD328\uD2F0
-    x1, \uCE58\uC988 x1, \uC0C1\uB2E8\uBC88 x1\n\n"
+  m_text: "\uC0C1\uC138 \uC8FC\uBB38 \uB85C\uADF8 (2\uAC74)\r\n#1 \uB291\uB300 |
+    \uD584\uBC84\uAC70\r\n   Perfect  +18.0C  \uC6D0\uAC00 4.5C\r\n   \uC694\uAD6C
+    4 / \uC81C\uCD9C 4 | \uC624\uCC28 0 | \uD78C\uD2B8 X\r\n  \uC18C\uBE44 \uC7AC\uB8CC:
+    \uD558\uB2E8\uBC88 x1, \uD328\uD2F0 x1, \uC0C1\uB2E8\uBC88 x1\r\n\r\n#2 \uAE30\uB9B0
+    | \uCE58\uC988\uBC84\uAC70\r\n   Good  +12.0C  \uC6D0\uAC00 5.7C\r\n   \uC694\uAD6C
+    5 / \uC81C\uCD9C 5 | \uC624\uCC28 1 | \uD78C\uD2B8 O\r\n  \uC18C\uBE44 \uC7AC\uB8CC:
+    \uD558\uB2E8\uBC88 x1, \uD328\uD2F0 x1, \uCE58\uC988 x1, \uC0C1\uB2E8\uBC88 x1\r\n\r\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
   m_sharedMaterial: {fileID: 8767555812094314770, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
@@ -1505,8 +1505,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC7AC\uB8CC \uC0AC\uC6A9\n\uCD1D \uC0AC\uC6A9 42\uAC1C\n\uD558\uB2E8\uBC88
-    x8 | 8.0C\n\uD328\uD2F0 x6 | 15.0C\n\uCE58\uC988 x5 | 6.0C\n"
+  m_text: "\uC7AC\uB8CC \uC0AC\uC6A9\r\n\uCD1D \uC0AC\uC6A9 42\uAC1C\r\n\uD558\uB2E8\uBC88
+    x8 | 8.0C\r\n\uD328\uD2F0 x6 | 15.0C\r\n\uCE58\uC988 x5 | 6.0C\r\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
   m_sharedMaterial: {fileID: 8767555812094314770, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
@@ -1643,9 +1643,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC624\uB298\uC758 \uC815\uC0B0\n\uC751\uB300 \uC190\uB2D8  8\uBA85\n\uD78C\uD2B8
-    \uC0AC\uC6A9  2\uD68C\n\uCD1D\uB9E4\uCD9C     128.0C\n\uC7AC\uB8CC\uBE44    
-    36.0C\n\uC21C\uC774\uC775     92.0C\n\uD3C9\uADE0 \uBCF4\uC0C1  16.0C\n"
+  m_text: "\uC624\uB298\uC758 \uC815\uC0B0\r\n\uC751\uB300 \uC190\uB2D8  8\uBA85\r\n\uD78C\uD2B8
+    \uC0AC\uC6A9  2\uD68C\r\n\uCD1D\uB9E4\uCD9C     128.0C\r\n\uC7AC\uB8CC\uBE44    
+    36.0C\r\n\uC21C\uC774\uC775     92.0C\r\n\uD3C9\uADE0 \uBCF4\uC0C1  16.0C\r\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
   m_sharedMaterial: {fileID: 8767555812094314770, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
@@ -1672,7 +1672,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 23.85
+  m_fontSize: 24
   m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1857,8 +1857,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC8FC\uBB38 \uD488\uC9C8\nPerfect  3\nGood     3\nNormal   1\nBad     
-    1\n"
+  m_text: "\uC8FC\uBB38 \uD488\uC9C8\r\nPerfect  3\r\nGood     3\r\nNormal   1\r\nBad     
+    1\r\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
   m_sharedMaterial: {fileID: 8767555812094314770, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
@@ -2253,7 +2253,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColor: {r: 0.13, g: 0.1, b: 0.08, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
