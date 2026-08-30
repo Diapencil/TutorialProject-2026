@@ -9,6 +9,7 @@ namespace SheepSheepBurger.Counter
         public static OrderInstance ActiveOrder { get; private set; }
         public static BurgerData CookedBurger { get; private set; }
         public static bool HasConfirmedOrder { get; private set; }
+        public static bool CookingTimedOut { get; private set; }
         /// <summary>
         /// 이번 주문에서 "네?" 버튼(힌트 요청)을 눌렀는지 여부.
         /// CounterSceneUI는 Cooking↔Counter 씬 전환마다 파괴/재생성되므로,
@@ -23,6 +24,7 @@ namespace SheepSheepBurger.Counter
             ActiveOrder = null;
             CookedBurger = null;
             HasConfirmedOrder = false;
+            CookingTimedOut = false;
             HintUsed = false;
             BurgerSubmitted = null;
         }
@@ -34,6 +36,7 @@ namespace SheepSheepBurger.Counter
             ActiveOrder.selectedOrderLine = string.Empty;
             CookedBurger = null;
             HasConfirmedOrder = false;
+            CookingTimedOut = false;
             HintUsed = false;
         }
 
@@ -45,9 +48,10 @@ namespace SheepSheepBurger.Counter
             if (ActiveOrder != null) ActiveOrder.phase = OrderPhase.Cooking;
         }
 
-        public static void SubmitCookedBurger(BurgerData burger)
+        public static void SubmitCookedBurger(BurgerData burger, bool cookingTimedOut = false)
         {
             CookedBurger = burger;
+            CookingTimedOut = cookingTimedOut;
             if (ActiveOrder != null) ActiveOrder.phase = OrderPhase.Serving;
             BurgerSubmitted?.Invoke(burger);
         }
@@ -58,6 +62,7 @@ namespace SheepSheepBurger.Counter
             ActiveOrder = null;
             CookedBurger = null;
             HasConfirmedOrder = false;
+            CookingTimedOut = false;
             HintUsed = false;
         }
     }

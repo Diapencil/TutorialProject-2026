@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using SheepSheepBurger.Audio;
 using SheepSheepBurger.BurgerAssembly;
 using SheepSheepBurger.Core;
+using SheepSheepBurger.SceneFlow;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using BurgerAssemblyIngredientType = SheepSheepBurger.BurgerAssembly.IngredientType;
 using BurgerAssemblyBurgerData = SheepSheepBurger.BurgerAssembly.BurgerData;
 using CoreBurgerData = SheepSheepBurger.Core.BurgerData;
@@ -117,7 +117,10 @@ namespace SheepSheepBurger.Counter
             submitted = true;
 
             var burger = controller.LastCompletedBurger;
-            if (burger != null) CounterSceneSession.SubmitCookedBurger(ConvertToCoreBurger(burger));
+            if (burger != null)
+            {
+                CounterSceneSession.SubmitCookedBurger(ConvertToCoreBurger(burger), controller.HasCookingTimeExpired);
+            }
             StartCoroutine(ReturnToCounter());
         }
 
@@ -136,7 +139,7 @@ namespace SheepSheepBurger.Counter
                 yield return new WaitForSeconds(remainingDelay);
             }
 
-            SceneManager.LoadScene(counterSceneName);
+            SceneTransitionManager.LoadSceneSlideLeft(counterSceneName);
         }
 
         private CoreBurgerData ConvertToCoreBurger(BurgerAssemblyBurgerData burger)

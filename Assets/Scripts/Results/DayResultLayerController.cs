@@ -1,6 +1,7 @@
 using System.Text;
 using SheepSheepBurger.Core;
 using SheepSheepBurger.Counter;
+using SheepSheepBurger.SceneFlow;
 using SheepSheepBurger.Util;
 using TMPro;
 using UnityEngine;
@@ -319,7 +320,7 @@ namespace SheepSheepBurger.Results
 
             if (reloadCounterSceneOnNextDay && !string.IsNullOrWhiteSpace(nextDaySceneName))
             {
-                SceneManager.LoadScene(nextDaySceneName);
+                SceneTransitionManager.LoadSceneFade(nextDaySceneName);
             }
         }
 

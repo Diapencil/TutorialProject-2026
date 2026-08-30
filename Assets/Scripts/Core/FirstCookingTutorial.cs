@@ -98,11 +98,30 @@ namespace SheepSheepBurger.Core
             }
             else if (scene.name == "Counter" && step == Step.Serve)
             {
-                counter = FindFirstObjectByType<CounterSceneCoordinator>();
-                if (counter == null) return;
-                counter.BurgerServed += OnBurgerServed;
-                Show("포장한 버거가 준비됐어요. 버거를 손님 쪽으로 드래그해서 전달해 주세요.");
+                StartCoroutine(ShowServeStepAfterCounterReady());
             }
+        }
+
+        private System.Collections.IEnumerator ShowServeStepAfterCounterReady()
+        {
+            yield return null;
+
+            if (step != Step.Serve)
+            {
+                yield break;
+            }
+
+            counter = FindFirstObjectByType<CounterSceneCoordinator>();
+            if (counter == null)
+            {
+                yield break;
+            }
+
+            counter.BurgerServed += OnBurgerServed;
+            counter.HideCurrentOrderForTutorial();
+            Show(
+                "포장한 버거가 준비됐어요. 버거를 손님 쪽으로 드래그해서 전달해 주세요.",
+                () => counter?.RestoreCurrentOrderForTutorial());
         }
 
         private static bool ShouldSkipTutorial()

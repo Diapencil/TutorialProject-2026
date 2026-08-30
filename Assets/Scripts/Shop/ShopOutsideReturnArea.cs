@@ -1,5 +1,5 @@
+using SheepSheepBurger.SceneFlow;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -58,7 +58,7 @@ namespace SheepSheepBurger.Shop
                 return;
             }
 
-            SceneManager.LoadScene(counterSceneName);
+            SceneTransitionManager.LoadSceneSlideLeft(counterSceneName);
         }
 
         public void SetSafeViewportRect(Rect rect)

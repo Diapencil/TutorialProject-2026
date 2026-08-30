@@ -1,4 +1,5 @@
 using System;
+using SheepSheepBurger.SceneFlow;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -102,7 +103,7 @@ namespace SheepSheepBurger.Start
                 startButton.interactable = false;
             }
 
-            SceneManager.LoadScene(counterSceneName);
+            SceneTransitionManager.LoadSceneSlideLeft(counterSceneName);
         }
 
         private void RefreshCopy()

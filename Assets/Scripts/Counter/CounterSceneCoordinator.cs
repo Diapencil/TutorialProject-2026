@@ -4,8 +4,8 @@ using Action = System.Action;
 using SheepSheepBurger.Core;
 using SheepSheepBurger.RecipeBook;
 using SheepSheepBurger.Results;
+using SheepSheepBurger.SceneFlow;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace SheepSheepBurger.Counter
 {
@@ -65,7 +65,7 @@ namespace SheepSheepBurger.Counter
         {
             if (!TryCreateOrder(out order)) return;
             CounterSceneSession.BeginOrder(order);
-            RegisterOrderRecipeInBook(order.order?.recipe);
+            RefreshRecipeBookLayers(order.order?.recipe);
             SetupCustomer(playEntrance: true);
         }
 
@@ -164,7 +164,7 @@ namespace SheepSheepBurger.Counter
 
         private void RestoreReturningCustomer()
         {
-            RegisterOrderRecipeInBook(order.order?.recipe);
+            RefreshRecipeBookLayers(order.order?.recipe);
             ApplyCustomerSprite();
             customer.ShowImmediate();
 
@@ -220,7 +220,7 @@ namespace SheepSheepBurger.Counter
             if (resolving || order == null) return;
             CounterSceneSession.ConfirmOrderForCooking();
             ui.SetOrderConfirmed(true);
-            SceneManager.LoadScene(settings.CookingSceneName);
+            SceneTransitionManager.LoadSceneSlideLeft(settings.CookingSceneName);
         }
 
         private void OnBurgerSubmitted(BurgerData burger)
@@ -246,9 +246,23 @@ namespace SheepSheepBurger.Counter
             if (resolving) yield break;
             resolving = true;
             Grade grade = judgement.grade;
+            if (CounterSceneSession.CookingTimedOut && grade == Grade.Perfect)
+            {
+                grade = Grade.Good;
+                judgement.grade = grade;
+            }
 
             var reward = OrderJudge.GetReward(order.order, grade, settings.GradeConfig);
             dayProgress.RegisterCustomer(order, submittedBurger, judgement, reward);
+            if (grade == Grade.Perfect)
+            {
+                UnlockRecipeInBook(order.order?.recipe);
+            }
+            else
+            {
+                RefreshRecipeBookLayers(order.order?.recipe);
+            }
+
             bool isDayComplete = dayProgress.ServedCustomerCount >= settings.CustomersPerDay;
             ui.SetTop(dayProgress, settings.CustomersPerDay);
             ui.SetCookedBurgerAvailable(false);
@@ -267,7 +281,32 @@ namespace SheepSheepBurger.Counter
             if (!isDayComplete) CreateNextCustomer();
         }
 
-        private static void RegisterOrderRecipeInBook(RecipeData recipe)
+        public void HideCurrentOrderForTutorial()
+        {
+            if (ui != null)
+            {
+                ui.HideOrder();
+            }
+        }
+
+        public void RestoreCurrentOrderForTutorial()
+        {
+            if (order == null || ui == null)
+            {
+                return;
+            }
+
+            if (!CounterSceneSession.HasConfirmedOrder && CounterSceneSession.CookedBurger == null)
+            {
+                ui.RestoreOrder(order, CounterSceneSession.HintUsed);
+            }
+            else
+            {
+                ui.HideOrder();
+            }
+        }
+
+        private static void UnlockRecipeInBook(RecipeData recipe)
         {
             if (recipe == null)
             {
@@ -278,7 +317,7 @@ namespace SheepSheepBurger.Counter
             bool newlyUnlocked = gameManager.State.UnlockRecipe(recipe.id);
             if (newlyUnlocked)
             {
-                Debug.Log($"[도감] 주문 수령으로 새 레시피 등록: {recipe.recipeName} (id {recipe.id})");
+                Debug.Log($"[도감] Perfect 응대로 새 레시피 등록: {recipe.recipeName} (id {recipe.id})");
                 gameManager.SaveGame();
             }
 

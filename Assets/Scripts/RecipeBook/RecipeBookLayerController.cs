@@ -60,6 +60,9 @@ namespace SheepSheepBurger.RecipeBook
                  "(아래 테스트 목록은 그 위에 '항상 해금'으로 더해진다.)")]
         [SerializeField] private bool useGameStateUnlocks = true;
 
+        [Tooltip("디버그 중에는 실제 해금 시스템은 유지하되 도감에서는 모든 레시피를 해금 상태로 보여준다.")]
+        [SerializeField] private bool debugUnlockAllRecipes = true;
+
         [Tooltip("항상 해금된 것으로 칠 RecipeData.id 목록. 테스트/디버그용.\n" +
                  "실제 해금은 퍼펙트 응대 시 GameState 에 쌓인다.")]
         [SerializeField] private List<int> testUnlockedIds = new List<int>();
@@ -178,6 +181,11 @@ namespace SheepSheepBurger.RecipeBook
         /// </summary>
         private Func<int, bool> BuildDefaultPredicate()
         {
+            if (debugUnlockAllRecipes)
+            {
+                return _ => true;
+            }
+
             List<int> alwaysUnlocked = testUnlockedIds;
 
             if (useGameStateUnlocks && Application.isPlaying)
@@ -306,7 +314,7 @@ namespace SheepSheepBurger.RecipeBook
 
         private static string FormatRecipePrice(int storedPrice)
         {
-            return $"{storedPrice / 10}c";
+            return $"{storedPrice / 10}C";
         }
 
         [ContextMenu("Hide Detail")]

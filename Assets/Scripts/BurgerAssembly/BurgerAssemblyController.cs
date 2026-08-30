@@ -698,11 +698,6 @@ namespace SheepSheepBurger.BurgerAssembly
                 return false;
             }
 
-            if (!TryGetLocalPoint(boardLayerRoot, screenPosition, out Vector2 local))
-            {
-                return false;
-            }
-
             completedBurgerBoardPosition = BurgerStackRoot.anchoredPosition;
             BurgerStackRoot.SetParent(dragLayer, true);
             BurgerStackRoot.SetAsLastSibling();
@@ -733,8 +728,16 @@ namespace SheepSheepBurger.BurgerAssembly
             lastCompletedBurgerPointer = screenPosition;
             PositionCompletedBurger(screenPosition);
 
-            if (screenPosition.x >= Screen.width * CookingPrototypeRules.CompletedBurgerTransferScreenRatio &&
-                cameraSlider.DestinationZone == CookingCameraZone.Board)
+            if (screenPosition.x < Screen.width * CookingPrototypeRules.CompletedBurgerTransferScreenRatio)
+            {
+                return;
+            }
+
+            if (cameraSlider.DestinationZone == CookingCameraZone.Grill)
+            {
+                cameraSlider.MoveToBoard();
+            }
+            else if (cameraSlider.DestinationZone == CookingCameraZone.Board)
             {
                 cameraSlider.MoveToPackaging();
                 packagingController.SetBurgerDragInProgress();

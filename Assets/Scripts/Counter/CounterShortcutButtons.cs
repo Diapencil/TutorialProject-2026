@@ -1,9 +1,9 @@
 using SheepSheepBurger.Audio;
 using SheepSheepBurger.Results;
+using SheepSheepBurger.SceneFlow;
 using SheepSheepBurger.Settings;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.SceneManagement;
 
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -104,7 +104,7 @@ namespace SheepSheepBurger.Counter
                 return;
             }
 
-            SceneManager.LoadScene(shopSceneName);
+            SceneTransitionManager.LoadSceneSlideLeft(shopSceneName);
         }
 
         public void ToggleSettingsLayer()
