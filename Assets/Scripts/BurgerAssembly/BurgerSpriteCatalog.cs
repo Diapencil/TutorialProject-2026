@@ -6,6 +6,14 @@ namespace SheepSheepBurger.BurgerAssembly
     [Serializable]
     public sealed class BurgerSpriteCatalog
     {
+        private const string PattyRawSizzlePath = "BurgerAssembly/PattyAnimations/RawSizzle";
+        private const string PattyFlipPath = "BurgerAssembly/PattyAnimations/Flip";
+        private const string PattyCookedSizzlePath = "BurgerAssembly/PattyAnimations/CookedSizzle";
+
+        private Sprite[] pattyRawSizzleFrames;
+        private Sprite[] pattyFlipFrames;
+        private Sprite[] pattyCookedSizzleFrames;
+
         [Header("Shared UI")]
         [SerializeField] private Sprite rectangle;
         [SerializeField] private Sprite circle;
@@ -65,6 +73,9 @@ namespace SheepSheepBurger.BurgerAssembly
         public Sprite PattyCooked => pattyCooked;
         public Sprite PattyBurnt => pattyBurnt;
         public int PattyCookingFrameCount => pattyCookingFrames?.Length ?? 0;
+        public int PattyRawSizzleFrameCount => PattyRawSizzleFrames.Length;
+        public int PattyFlipFrameCount => PattyFlipFrames.Length;
+        public int PattyCookedSizzleFrameCount => PattyCookedSizzleFrames.Length;
         public Sprite BaconPile => baconPile;
         public Sprite BaconRaw => baconRaw;
         public Sprite BaconCooked => baconCooked;
@@ -347,6 +358,34 @@ namespace SheepSheepBurger.BurgerAssembly
                 : pattyRaw;
         }
 
+        public Sprite GetPattyRawSizzleFrame(float elapsedSeconds)
+        {
+            return GetLoopingFrame(PattyRawSizzleFrames, elapsedSeconds, pattyRaw);
+        }
+
+        public Sprite GetPattyFlipFrame(float elapsedSeconds)
+        {
+            Sprite[] frames = PattyFlipFrames;
+            if (frames.Length == 0)
+            {
+                return pattyCooked;
+            }
+
+            float normalized = Mathf.Clamp01(
+                Mathf.Max(0f, elapsedSeconds) /
+                Mathf.Max(0.0001f, CookingPrototypeRules.FlipAnimationSeconds));
+            int frameIndex = Mathf.Clamp(
+                Mathf.FloorToInt(normalized * frames.Length),
+                0,
+                frames.Length - 1);
+            return frames[frameIndex] != null ? frames[frameIndex] : pattyCooked;
+        }
+
+        public Sprite GetPattyCookedSizzleFrame(float elapsedSeconds)
+        {
+            return GetLoopingFrame(PattyCookedSizzleFrames, elapsedSeconds, pattyCooked);
+        }
+
         public Sprite GetCookedGrillIngredient(IngredientType type)
         {
             switch (type)
@@ -367,6 +406,40 @@ namespace SheepSheepBurger.BurgerAssembly
                 case IngredientType.Egg: return eggBurnt;
                 default: return null;
             }
+        }
+
+        private Sprite[] PattyRawSizzleFrames =>
+            pattyRawSizzleFrames ?? (pattyRawSizzleFrames = LoadPattyAnimationFrames(PattyRawSizzlePath));
+
+        private Sprite[] PattyFlipFrames =>
+            pattyFlipFrames ?? (pattyFlipFrames = LoadPattyAnimationFrames(PattyFlipPath));
+
+        private Sprite[] PattyCookedSizzleFrames =>
+            pattyCookedSizzleFrames ?? (pattyCookedSizzleFrames = LoadPattyAnimationFrames(PattyCookedSizzlePath));
+
+        private static Sprite GetLoopingFrame(Sprite[] frames, float elapsedSeconds, Sprite fallback)
+        {
+            if (frames == null || frames.Length == 0)
+            {
+                return fallback;
+            }
+
+            int frameIndex = Mathf.FloorToInt(
+                Mathf.Max(0f, elapsedSeconds) /
+                CookingPrototypeRules.PattyCookingAnimationFrameSeconds) % frames.Length;
+            return frames[frameIndex] != null ? frames[frameIndex] : fallback;
+        }
+
+        private static Sprite[] LoadPattyAnimationFrames(string resourcesPath)
+        {
+            Sprite[] frames = Resources.LoadAll<Sprite>(resourcesPath);
+            if (frames == null || frames.Length == 0)
+            {
+                return Array.Empty<Sprite>();
+            }
+
+            Array.Sort(frames, (left, right) => string.CompareOrdinal(left.name, right.name));
+            return frames;
         }
     }
 }

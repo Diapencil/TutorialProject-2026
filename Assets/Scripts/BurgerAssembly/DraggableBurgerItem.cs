@@ -482,20 +482,21 @@ namespace SheepSheepBurger.BurgerAssembly
             graphic.Shape = GrillIngredientType == IngredientType.Bacon
                 ? SimpleShape.Rectangle
                 : SimpleShape.Circle;
-            graphic.SourceSprite = phase == PattyGrillPhase.Overcooked
-                ? sprites.GetBurntGrillIngredient(GrillIngredientType)
-                : phase == PattyGrillPhase.Flipping || phase == PattyGrillPhase.CookingSide2 || phase == PattyGrillPhase.Done
-                    ? sprites.GetCookedGrillIngredient(GrillIngredientType)
-                    : phase == PattyGrillPhase.RawDough
-                        ? sprites.GetInitialGrillIngredient(GrillIngredientType)
-                        : sprites.GetRawGrillIngredient(GrillIngredientType);
+            graphic.SourceSprite = GetGrillSprite(sprites, phase);
             graphic.rectTransform.sizeDelta = GetGrillSize(GrillIngredientType, phase);
             graphic.color = Color.white;
 
             if (phase == PattyGrillPhase.Flipping)
             {
-                float t = Mathf.Clamp01(State.PhaseElapsed / CookingPrototypeRules.FlipAnimationSeconds);
-                graphic.rectTransform.localEulerAngles = new Vector3(0f, 0f, 180f * t);
+                if (GrillIngredientType == IngredientType.Patty && HasPattyAnimationSprites(sprites))
+                {
+                    graphic.rectTransform.localEulerAngles = Vector3.zero;
+                }
+                else
+                {
+                    float t = Mathf.Clamp01(State.PhaseElapsed / CookingPrototypeRules.FlipAnimationSeconds);
+                    graphic.rectTransform.localEulerAngles = new Vector3(0f, 0f, 180f * t);
+                }
             }
             else
             {
@@ -551,6 +552,12 @@ namespace SheepSheepBurger.BurgerAssembly
                 return;
             }
 
+            if (HasPattyAnimationSprites(sprites))
+            {
+                pattyCookingEffect.gameObject.SetActive(false);
+                return;
+            }
+
             RectTransform sourceRect = graphic.rectTransform;
             RectTransform effectRect = pattyCookingEffect.rectTransform;
             effectRect.anchoredPosition = sourceRect.anchoredPosition;
@@ -565,6 +572,32 @@ namespace SheepSheepBurger.BurgerAssembly
                 pattyCookingEffect.color = Color.white;
             }
             pattyCookingEffect.gameObject.SetActive(showEffect);
+        }
+
+        private Sprite GetGrillSprite(BurgerSpriteCatalog sprites, PattyGrillPhase phase)
+        {
+            if (GrillIngredientType == IngredientType.Patty && HasPattyAnimationSprites(sprites))
+            {
+                switch (phase)
+                {
+                    case PattyGrillPhase.CookingSide1:
+                    case PattyGrillPhase.ReadyToFlip:
+                        return sprites.GetPattyRawSizzleFrame(State.PhaseElapsed);
+                    case PattyGrillPhase.Flipping:
+                        return sprites.GetPattyFlipFrame(State.PhaseElapsed);
+                    case PattyGrillPhase.CookingSide2:
+                    case PattyGrillPhase.Done:
+                        return sprites.GetPattyCookedSizzleFrame(State.PhaseElapsed);
+                }
+            }
+
+            return phase == PattyGrillPhase.Overcooked
+                ? sprites.GetBurntGrillIngredient(GrillIngredientType)
+                : phase == PattyGrillPhase.Flipping || phase == PattyGrillPhase.CookingSide2 || phase == PattyGrillPhase.Done
+                    ? sprites.GetCookedGrillIngredient(GrillIngredientType)
+                    : phase == PattyGrillPhase.RawDough
+                        ? sprites.GetInitialGrillIngredient(GrillIngredientType)
+                        : sprites.GetRawGrillIngredient(GrillIngredientType);
         }
 
         private void EnsureCookingSmoke()
@@ -601,6 +634,13 @@ namespace SheepSheepBurger.BurgerAssembly
                 phase == PattyGrillPhase.ReadyToFlip ||
                 phase == PattyGrillPhase.Flipping ||
                 phase == PattyGrillPhase.CookingSide2;
+        }
+
+        private static bool HasPattyAnimationSprites(BurgerSpriteCatalog sprites)
+        {
+            return sprites.PattyRawSizzleFrameCount > 0 ||
+                sprites.PattyFlipFrameCount > 0 ||
+                sprites.PattyCookedSizzleFrameCount > 0;
         }
 
         public static string GetPhaseLabel(IngredientType type, PattyGrillPhase phase)
@@ -648,7 +688,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 case IngredientType.Patty:
                     return phase == PattyGrillPhase.RawDough
                         ? new Vector2(150f, 150f)
-                        : new Vector2(240f, 160f);
+                        : new Vector2(220f, 220f);
                 case IngredientType.Bacon:
                     return new Vector2(330f, 180f);
                 case IngredientType.Egg:
