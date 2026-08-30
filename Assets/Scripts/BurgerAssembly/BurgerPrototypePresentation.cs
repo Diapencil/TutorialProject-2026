@@ -88,7 +88,7 @@ namespace SheepSheepBurger.BurgerAssembly
 
     internal static class BurgerIngredientCatalog
     {
-        private const float BoardIngredientReferenceSize = 100f;
+        private const float BoardIngredientReferenceSize = 108f;
         private static readonly Vector2 BoardIngredientReference = new Vector2(
             BoardIngredientReferenceSize,
             BoardIngredientReferenceSize);
