@@ -298,10 +298,15 @@ namespace SheepSheepBurger.RecipeBook
         private void ShowDetail(CoreRecipeData recipe)
         {
             if (detailNameText != null) detailNameText.text = recipe.recipeName;
-            if (detailPriceText != null) detailPriceText.text = $"{recipe.basePrice} c";
+            if (detailPriceText != null) detailPriceText.text = FormatRecipePrice(recipe.basePrice);
             if (detailIngredientsText != null) detailIngredientsText.text = BuildIngredientText(recipe);
 
             SetDetailVisible(true);
+        }
+
+        private static string FormatRecipePrice(int storedPrice)
+        {
+            return $"{storedPrice / 10}c";
         }
 
         [ContextMenu("Hide Detail")]
