@@ -358,6 +358,12 @@ namespace SheepSheepBurger.Core
 
         private void ShowGuidanceMask()
         {
+            if (step == Step.Package)
+            {
+                HideGuidanceMask();
+                return;
+            }
+
             if (overlayRoot == null || !TryGetGuidanceTargets(guidanceTargets))
             {
                 return;
