@@ -464,7 +464,8 @@ namespace SheepSheepBurger.BurgerAssembly
                 card,
                 name,
                 trayVisual,
-                size);
+                size,
+                !BurgerIngredientCatalog.IsSauce(type));
             CookingTrayDragSource source = card.gameObject.AddComponent<CookingTrayDragSource>();
             source.Configure(
                 controller,

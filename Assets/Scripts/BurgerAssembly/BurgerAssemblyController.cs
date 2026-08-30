@@ -1038,7 +1038,8 @@ namespace SheepSheepBurger.BurgerAssembly
                     source.transform,
                     sourceName,
                     trayVisual,
-                    sourceRect.sizeDelta)
+                    sourceRect.sizeDelta,
+                    !BurgerIngredientCatalog.IsSauce(type))
                 : FindChildByName<SimpleShapeGraphic>(source.transform, sourceName + "Icon");
             if (trayIcon != null && sourceRect == null)
             {

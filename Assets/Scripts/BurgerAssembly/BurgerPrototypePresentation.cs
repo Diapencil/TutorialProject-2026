@@ -302,7 +302,8 @@ namespace SheepSheepBurger.BurgerAssembly
             Transform traySource,
             string sourceName,
             BurgerIngredientVisual visual,
-            Vector2 traySize)
+            Vector2 traySize,
+            bool usePile)
         {
             RectTransform root = FindDirectChild<RectTransform>(traySource, sourceName + "VisualPile");
             if (root == null)
@@ -317,17 +318,40 @@ namespace SheepSheepBurger.BurgerAssembly
             DestroyDirectChild(traySource, sourceName + "Icon");
 
             Vector2 iconSize = GetTraySingleIconSize(visual.Size, traySize);
-            CreateTrayPileIcon(root, sourceName + "PileBackLeft", visual, new Vector2(-22f, 17f), iconSize * 0.66f);
-            CreateTrayPileIcon(root, sourceName + "PileBackRight", visual, new Vector2(23f, 18f), iconSize * 0.62f);
-            CreateTrayPileIcon(root, sourceName + "PileFrontLeft", visual, new Vector2(-24f, -19f), iconSize * 0.7f);
-            CreateTrayPileIcon(root, sourceName + "PileFrontRight", visual, new Vector2(22f, -21f), iconSize * 0.64f);
+            if (!usePile)
+            {
+                return CreateTrayPileIcon(
+                    root,
+                    sourceName + "Icon",
+                    visual,
+                    Vector2.zero,
+                    iconSize,
+                    0f);
+            }
 
-            SimpleShapeGraphic main = CreateTrayPileIcon(
-                root,
-                sourceName + "Icon",
-                visual,
-                Vector2.zero,
-                iconSize);
+            SimpleShapeGraphic main = null;
+            Vector2 offsetScale = new Vector2(traySize.x / 100f, traySize.y / 100f);
+            for (int i = 0; i < TrayPileOffsets.Length; i++)
+            {
+                string iconName = i == TrayPileOffsets.Length - 1
+                    ? sourceName + "Icon"
+                    : sourceName + "Pile" + i.ToString("00");
+                Vector2 position = new Vector2(
+                    TrayPileOffsets[i].x * offsetScale.x,
+                    TrayPileOffsets[i].y * offsetScale.y);
+                SimpleShapeGraphic icon = CreateTrayPileIcon(
+                    root,
+                    iconName,
+                    visual,
+                    position,
+                    iconSize * TrayPileScales[i],
+                    TrayPileRotations[i]);
+                icon.color = visual.SourceSprite == null
+                    ? visual.Color
+                    : new Color(1f, 1f, 1f, TrayPileAlphas[i]);
+                main = icon;
+            }
+
             main.transform.SetAsLastSibling();
             return main;
         }
@@ -374,7 +398,8 @@ namespace SheepSheepBurger.BurgerAssembly
             string name,
             BurgerIngredientVisual visual,
             Vector2 position,
-            Vector2 size)
+            Vector2 size,
+            float rotation)
         {
             SimpleShapeGraphic icon = CreateShape(
                 name,
@@ -386,8 +411,57 @@ namespace SheepSheepBurger.BurgerAssembly
                 false,
                 visual.SourceSprite);
             icon.color = visual.SourceSprite == null ? visual.Color : Color.white;
+            icon.transform.localEulerAngles = new Vector3(0f, 0f, rotation);
             return icon;
         }
+
+        private static readonly Vector2[] TrayPileOffsets =
+        {
+            new Vector2(-37f, 20f),
+            new Vector2(-22f, 31f),
+            new Vector2(4f, 27f),
+            new Vector2(29f, 23f),
+            new Vector2(39f, 2f),
+            new Vector2(25f, -18f),
+            new Vector2(6f, -30f),
+            new Vector2(-20f, -27f),
+            new Vector2(-39f, -8f),
+            new Vector2(-28f, 4f),
+            new Vector2(-9f, 13f),
+            new Vector2(14f, 10f),
+            new Vector2(27f, -3f),
+            new Vector2(8f, -10f),
+            new Vector2(-12f, -12f),
+            new Vector2(-1f, 2f),
+            new Vector2(17f, -26f),
+            new Vector2(-31f, -22f),
+            new Vector2(32f, 32f),
+            new Vector2(0f, -1f)
+        };
+
+        private static readonly float[] TrayPileScales =
+        {
+            0.54f, 0.62f, 0.57f, 0.6f, 0.52f,
+            0.66f, 0.58f, 0.63f, 0.55f, 0.7f,
+            0.78f, 0.74f, 0.69f, 0.83f, 0.8f,
+            0.92f, 0.61f, 0.56f, 0.5f, 1f
+        };
+
+        private static readonly float[] TrayPileRotations =
+        {
+            -24f, 11f, -8f, 19f, -17f,
+            28f, -31f, 15f, 36f, -5f,
+            22f, -18f, 8f, -27f, 14f,
+            -7f, 31f, -34f, 24f, 4f
+        };
+
+        private static readonly float[] TrayPileAlphas =
+        {
+            0.74f, 0.78f, 0.75f, 0.77f, 0.72f,
+            0.82f, 0.76f, 0.8f, 0.73f, 0.84f,
+            0.88f, 0.86f, 0.85f, 0.9f, 0.89f,
+            0.94f, 0.79f, 0.74f, 0.7f, 1f
+        };
 
         private static Vector2 GetTraySingleIconSize(Vector2 visualSize, Vector2 traySize)
         {
