@@ -1033,19 +1033,29 @@ namespace SheepSheepBurger.BurgerAssembly
                 ? BurgerIngredientCatalog.GetVisual(type)
                 : trayVisual;
             RectTransform sourceRect = source.GetComponent<RectTransform>();
-            SimpleShapeGraphic trayIcon = sourceRect != null
-                ? BurgerUiFactory.RebuildTrayVisualPile(
+            SimpleShapeGraphic trayIcon = FindChildByName<SimpleShapeGraphic>(
+                source.transform,
+                sourceName + "Icon");
+            if (trayIcon == null && sourceRect != null)
+            {
+                trayIcon = BurgerUiFactory.RebuildTrayVisualPile(
                     source.transform,
                     sourceName,
                     trayVisual,
                     sourceRect.sizeDelta,
-                    !BurgerIngredientCatalog.IsSauce(type))
-                : FindChildByName<SimpleShapeGraphic>(source.transform, sourceName + "Icon");
-            if (trayIcon != null && sourceRect == null)
+                    !BurgerIngredientCatalog.IsSauce(type));
+            }
+            else if (trayIcon == null)
             {
-                trayIcon.Shape = trayVisual.Shape;
-                trayIcon.SourceSprite = trayVisual.SourceSprite;
-                trayIcon.color = trayVisual.SourceSprite == null ? trayVisual.Color : Color.white;
+                trayIcon = BurgerUiFactory.CreateShape(
+                    sourceName + "Icon",
+                    source.transform as RectTransform,
+                    trayVisual.Shape,
+                    trayVisual.Color,
+                    Vector2.zero,
+                    trayVisual.Size,
+                    false,
+                    trayVisual.SourceSprite);
             }
 
             source.Configure(
