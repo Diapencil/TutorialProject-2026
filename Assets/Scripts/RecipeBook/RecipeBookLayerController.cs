@@ -136,6 +136,18 @@ namespace SheepSheepBurger.RecipeBook
             }
         }
 
+        /// <summary>카운터에서 새 레시피가 해금됐을 때 도감 목록과 해금 표시를 즉시 동기화합니다.</summary>
+        public void RefreshUnlockedRecipe(CoreRecipeData recipe)
+        {
+            EnsureRecipeRegistered(recipe);
+            unlockPredicate = BuildDefaultPredicate();
+
+            if (IsOpen)
+            {
+                Rebuild();
+            }
+        }
+
         private void Awake()
         {
             EnsureEventSystemIfNeeded();
@@ -332,6 +344,33 @@ namespace SheepSheepBurger.RecipeBook
             }
 
             return builder.ToString();
+        }
+
+        private void EnsureRecipeRegistered(CoreRecipeData recipe)
+        {
+            if (recipe == null)
+            {
+                return;
+            }
+
+            allRecipes ??= new List<CoreRecipeData>();
+            for (int i = 0; i < allRecipes.Count; i++)
+            {
+                CoreRecipeData existing = allRecipes[i];
+                if (existing != null && existing.id == recipe.id)
+                {
+                    return;
+                }
+            }
+
+            allRecipes.Add(recipe);
+            allRecipes.Sort((a, b) =>
+            {
+                if (a == null && b == null) return 0;
+                if (a == null) return 1;
+                if (b == null) return -1;
+                return a.id.CompareTo(b.id);
+            });
         }
 
         private void RefreshProgressText()

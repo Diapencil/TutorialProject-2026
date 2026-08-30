@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Action = System.Action;
 using SheepSheepBurger.Core;
+using SheepSheepBurger.RecipeBook;
 using SheepSheepBurger.Results;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -64,6 +65,7 @@ namespace SheepSheepBurger.Counter
         {
             if (!TryCreateOrder(out order)) return;
             CounterSceneSession.BeginOrder(order);
+            RegisterOrderRecipeInBook(order.order?.recipe);
             SetupCustomer(playEntrance: true);
         }
 
@@ -162,6 +164,7 @@ namespace SheepSheepBurger.Counter
 
         private void RestoreReturningCustomer()
         {
+            RegisterOrderRecipeInBook(order.order?.recipe);
             ApplyCustomerSprite();
             customer.ShowImmediate();
 
@@ -244,16 +247,6 @@ namespace SheepSheepBurger.Counter
             resolving = true;
             Grade grade = judgement.grade;
 
-            // 퍼펙트로 응대하면 그 레시피가 도감에 해금된다.
-            if (grade == Grade.Perfect && order.order != null && order.order.recipe != null)
-            {
-                bool newlyUnlocked = GameManager.GetOrCreate().State.UnlockRecipe(order.order.recipe.id);
-                if (newlyUnlocked)
-                {
-                    Debug.Log($"[도감] 새 레시피 해금: {order.order.recipe.recipeName} (id {order.order.recipe.id})");
-                }
-            }
-
             var reward = OrderJudge.GetReward(order.order, grade, settings.GradeConfig);
             dayProgress.RegisterCustomer(order, submittedBurger, judgement, reward);
             bool isDayComplete = dayProgress.ServedCustomerCount >= settings.CustomersPerDay;
@@ -272,6 +265,38 @@ namespace SheepSheepBurger.Counter
             }
             resolving = false;
             if (!isDayComplete) CreateNextCustomer();
+        }
+
+        private static void RegisterOrderRecipeInBook(RecipeData recipe)
+        {
+            if (recipe == null)
+            {
+                return;
+            }
+
+            GameManager gameManager = GameManager.GetOrCreate();
+            bool newlyUnlocked = gameManager.State.UnlockRecipe(recipe.id);
+            if (newlyUnlocked)
+            {
+                Debug.Log($"[도감] 주문 수령으로 새 레시피 등록: {recipe.recipeName} (id {recipe.id})");
+                gameManager.SaveGame();
+            }
+
+            RefreshRecipeBookLayers(recipe);
+        }
+
+        private static void RefreshRecipeBookLayers(RecipeData recipe)
+        {
+            RecipeBookLayerController[] recipeBooks = FindObjectsByType<RecipeBookLayerController>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+            for (int i = 0; i < recipeBooks.Length; i++)
+            {
+                if (recipeBooks[i] != null)
+                {
+                    recipeBooks[i].RefreshUnlockedRecipe(recipe);
+                }
+            }
         }
     }
 }
