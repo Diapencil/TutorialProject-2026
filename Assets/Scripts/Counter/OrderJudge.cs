@@ -26,6 +26,9 @@ namespace SheepSheepBurger.Counter
 
     public static class OrderJudge
     {
+        private const int PickleIngredientId = 5;
+        private const int JalapenoIngredientId = 8;
+
         /// <summary>
         /// hintUsed가 true면 requireNoHint 등급(Perfect/Good)은 후보에서 제외되므로
         /// "네?" 버튼을 눌렀을 경우 Perfect/Good이 나올 수 없다.
@@ -81,8 +84,23 @@ namespace SheepSheepBurger.Counter
                     if (placed?.ingredient != null) Add(counts, placed.ingredient.id, -1);
 
             var errors = 0;
-            foreach (var count in counts.Values) errors += System.Math.Abs(count);
+            foreach (var count in counts)
+            {
+                if (IsExtraAllowedIngredient(count.Key))
+                {
+                    errors += System.Math.Max(0, count.Value);
+                    continue;
+                }
+
+                errors += System.Math.Abs(count.Value);
+            }
+
             return errors;
+        }
+
+        private static bool IsExtraAllowedIngredient(int ingredientId)
+        {
+            return ingredientId == PickleIngredientId || ingredientId == JalapenoIngredientId;
         }
 
         private static int CountCookStateErrors(OrderData order, BurgerData burger)

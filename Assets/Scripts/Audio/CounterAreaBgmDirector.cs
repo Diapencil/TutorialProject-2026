@@ -9,7 +9,7 @@ namespace SheepSheepBurger.Audio
     {
         [Header("카운터 영역")]
         [SerializeField] private string[] counterAreaSceneNames = { "Counter", "ShopScene" };
-        [SerializeField] private bool stopWhenLeavingCounterArea = true;
+        [SerializeField] private bool stopWhenLeavingCounterArea;
 
         [Header("하루별 BGM")]
         [SerializeField] private string[] counterBgmIds =
