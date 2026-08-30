@@ -890,6 +890,8 @@ namespace SheepSheepBurger.BurgerAssembly
                 return false;
             }
 
+            panoramaRoot.localScale = Vector3.one * BurgerAssemblyViewBuilder.ViewZoom;
+
             mainCamera = editableMainCamera != null
                 ? editableMainCamera
                 : Camera.main != null

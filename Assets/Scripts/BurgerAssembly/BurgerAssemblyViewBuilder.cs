@@ -52,13 +52,15 @@ namespace SheepSheepBurger.BurgerAssembly
     {
         internal const float ReferenceWidth = 1920f;
         internal const float ReferenceHeight = 1080f;
+        internal const float ViewCropVerticalRatio = 0.7f;
+        internal const float ViewZoom = 1f / ViewCropVerticalRatio;
         private const float CanvasWorldScale = 0.01f;
         // The source station art is 3397 x 1440. Fitting it to the reference
         // height keeps the top and bottom of the kitchen visible on wide screens.
         internal const float PanoramaWidth = ReferenceHeight * (3397f / 1440f);
-        internal const float GrillViewX = -315f;
+        internal const float GrillViewX = -315f * ViewZoom;
         internal const float BoardViewX = 0f;
-        internal const float PackagingViewX = 315f;
+        internal const float PackagingViewX = 315f * ViewZoom;
 
         private readonly BurgerAssemblyController controller;
         private readonly Action resetPrototype;
@@ -129,6 +131,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 pageStrip,
                 Vector2.zero,
                 new Vector2(PanoramaWidth, ReferenceHeight));
+            pageStrip.localScale = Vector3.one * ViewZoom;
             CreateEnvironmentBackground();
 
             view.CameraSlider = canvasObject.GetComponent<CookingCameraSlider>();
