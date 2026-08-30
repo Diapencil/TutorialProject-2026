@@ -1,4 +1,5 @@
 using SheepSheepBurger.Counter;
+using SheepSheepBurger.Results;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,7 +9,7 @@ namespace SheepSheepBurger.Audio
     public sealed class CounterAreaBgmDirector : MonoBehaviour
     {
         [Header("카운터 영역")]
-        [SerializeField] private string[] counterAreaSceneNames = { "Counter", "ShopScene" };
+        [SerializeField] private string[] counterAreaSceneNames = { "StartScene", "Counter", "ShopScene" };
         [SerializeField] private bool stopWhenLeavingCounterArea;
 
         [Header("하루별 BGM")]
@@ -85,6 +86,11 @@ namespace SheepSheepBurger.Audio
         private void PlayCounterTrackForCurrentDay()
         {
             if (counterBgmIds == null || counterBgmIds.Length == 0)
+            {
+                return;
+            }
+
+            if (DayResultLayerController.Instance != null && DayResultLayerController.Instance.IsOpen)
             {
                 return;
             }
