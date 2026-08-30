@@ -52,7 +52,7 @@ namespace SheepSheepBurger.BurgerAssembly
     {
         internal const float ReferenceWidth = 1920f;
         internal const float ReferenceHeight = 1080f;
-        internal const float ViewCropVerticalRatio = 0.7f;
+        internal const float ViewCropVerticalRatio = 0.85f;
         internal const float ViewZoom = 1f / ViewCropVerticalRatio;
         private const float CanvasWorldScale = 0.01f;
         // The source station art is 3397 x 1440. Fitting it to the reference

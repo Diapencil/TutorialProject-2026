@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using SheepSheepBurger.BurgerAssembly;
 using SheepSheepBurger.Counter;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using AssemblyIngredientType = SheepSheepBurger.BurgerAssembly.IngredientType;
@@ -577,9 +578,15 @@ namespace SheepSheepBurger.Core
         }
     }
 
-    internal sealed class TutorialRaycastBlocker : MonoBehaviour, ICanvasRaycastFilter
+    internal sealed class TutorialRaycastBlocker :
+        MonoBehaviour,
+        ICanvasRaycastFilter,
+        IBeginDragHandler,
+        IDragHandler,
+        IEndDragHandler
     {
         private List<RectTransform> allowedTargets;
+        private CookingCameraSlider cameraSlider;
 
         public void Configure(List<RectTransform> targets)
         {
@@ -589,6 +596,21 @@ namespace SheepSheepBurger.Core
         public bool IsRaycastLocationValid(Vector2 screenPoint, Camera eventCamera)
         {
             return !IsInsideAllowedTarget(screenPoint);
+        }
+
+        public void OnBeginDrag(PointerEventData eventData)
+        {
+            FindCameraSlider()?.OnBeginDrag(eventData);
+        }
+
+        public void OnDrag(PointerEventData eventData)
+        {
+            FindCameraSlider()?.OnDrag(eventData);
+        }
+
+        public void OnEndDrag(PointerEventData eventData)
+        {
+            FindCameraSlider()?.OnEndDrag(eventData);
         }
 
         private bool IsInsideAllowedTarget(Vector2 screenPoint)
@@ -618,6 +640,17 @@ namespace SheepSheepBurger.Core
             }
 
             return false;
+        }
+
+        private CookingCameraSlider FindCameraSlider()
+        {
+            if (cameraSlider != null && cameraSlider.gameObject.scene.IsValid())
+            {
+                return cameraSlider;
+            }
+
+            cameraSlider = FindFirstObjectByType<CookingCameraSlider>();
+            return cameraSlider;
         }
     }
 }
