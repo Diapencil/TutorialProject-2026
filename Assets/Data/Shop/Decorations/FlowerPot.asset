@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.DecorationData
   id: 1
   decorationName: "\uAF43 \uD654\uBD84"
-  sprite: {fileID: 21300000, guid: f118ab2379cae476c93babbafb6afda4, type: 3}
+  sprite: {fileID: -5337865498424586594, guid: 9864ec5e643944d47985b6cdb9e2511a, type: 3}
   cost: 1000
   counterPosition: {x: -300, y: -205}
