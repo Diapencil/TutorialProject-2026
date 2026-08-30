@@ -142,7 +142,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 case IngredientType.BunBottom:
                     return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Bun, new Vector2(250f, 250f), sprites.BunBottom);
                 case IngredientType.BunTop:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Bun, new Vector2(260f, 260f), sprites.BunTop);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Bun, new Vector2(247f, 247f), sprites.BunTop);
                 case IngredientType.ToppingLettuce:
                     return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#63B94D"), new Vector2(235f, 235f), sprites.Lettuce);
                 case IngredientType.ToppingTomato:
