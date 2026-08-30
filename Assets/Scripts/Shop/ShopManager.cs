@@ -477,7 +477,6 @@ namespace SheepSheepBurger.Shop
 
             float centerPadding = Mathf.Max(0f, (viewport.rect.width - grid.cellSize.x) * 0.5f);
             int roundedPadding = Mathf.RoundToInt(centerPadding);
-            grid.padding.left = Mathf.Max(grid.padding.left, roundedPadding);
             grid.padding.right = Mathf.Max(grid.padding.right, roundedPadding);
 
             LayoutRebuilder.ForceRebuildLayoutImmediate(slotScrollRect.content);

@@ -1144,6 +1144,7 @@ MonoBehaviour:
     unlockedIngredientIds: 
     unlockedRecipeIds: 
     purchasedDecorationIds: 
+    decorationPlacements: []
     upgrades: []
     encounteredSpecialCustomerIds: 
     totalCustomersServed: 0
@@ -2612,6 +2613,7 @@ MonoBehaviour:
   slotParent: {fileID: 79243951}
   slotPrefab: {fileID: 4633151829559740812, guid: c3c3820cb357a41b8a974f7bbcd1027f, type: 3}
   slotCount: 4
+  counterSceneName: Counter
   goldText: {fileID: 1736652405}
   dDayText: {fileID: 1144294590}
   messageText: {fileID: 2051362749}
