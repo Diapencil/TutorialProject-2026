@@ -74,6 +74,7 @@ namespace SheepSheepBurger.BurgerAssembly
             if (trayIcon != null)
             {
                 trayIcon.gameObject.SetActive(unlocked && !selected);
+                trayIcon.preserveAspect = false;
             }
 
             Outline outline = GetComponent<Outline>();

@@ -40,6 +40,13 @@ namespace SheepSheepBurger.Core
         private float pausedTimeScale = 1f;
         private bool isPaused;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticsForPlayMode()
+        {
+            step = Step.None;
+            initialized = false;
+        }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Create()
         {
@@ -72,7 +79,7 @@ namespace SheepSheepBurger.Core
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             Unsubscribe();
-            if (PlayerPrefs.GetInt(CompletedKey, 0) == 1 || step == Step.Finished) return;
+            if (ShouldSkipTutorial()) return;
 
             if (scene.name == "BurgerAssembly")
             {
@@ -92,6 +99,23 @@ namespace SheepSheepBurger.Core
                 counter.BurgerServed += OnBurgerServed;
                 Show("포장한 버거가 준비됐어요. 버거를 손님 쪽으로 드래그해서 전달해 주세요.");
             }
+        }
+
+        private static bool ShouldSkipTutorial()
+        {
+            if (step == Step.Finished) return true;
+            if (IsFirstDayOpening()) return false;
+            return PlayerPrefs.GetInt(CompletedKey, 0) == 1;
+        }
+
+        private static bool IsFirstDayOpening()
+        {
+            GameManager gameManager = GameManager.Instance;
+            if (gameManager == null || gameManager.State == null) return false;
+            if (gameManager.State.currentDay != 1) return false;
+
+            DayState dayState = gameManager.State.GetOrCreateCurrentDayState();
+            return dayState != null && dayState.customersServed == 0;
         }
 
         private void SubscribeCooking()

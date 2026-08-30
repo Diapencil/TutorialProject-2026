@@ -21,6 +21,11 @@ MonoBehaviour:
   availableCustomers:
   - {fileID: 11400000, guid: 43ec81016a6938340abf0a439d5db1f5, type: 2}
   - {fileID: 11400000, guid: d0e52180fac18fd4eb238333c8d87490, type: 2}
+  fixedCustomerSchedule:
+  - dayNumber: 1
+    customerNumber: 1
+    customer: {fileID: 11400000, guid: a2715f77db9e5c2429c02d297b9e0071, type: 2}
+    fixedOrder: {fileID: 11400000, guid: 094f8eb87f005cd41914959723781a62, type: 2}
   availableOrders:
   - {fileID: 11400000, guid: 4c47f096558cc6943b940db2ed1fae53, type: 2}
   - {fileID: 11400000, guid: 83b9d634e0c5b92469738960ff3f6f0e, type: 2}

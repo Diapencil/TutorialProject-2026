@@ -1040,6 +1040,13 @@ namespace SheepSheepBurger.BurgerAssembly
                 trayIcon.Shape = trayVisual.Shape;
                 trayIcon.SourceSprite = trayVisual.SourceSprite;
                 trayIcon.color = trayVisual.SourceSprite == null ? trayVisual.Color : Color.white;
+                RectTransform sourceRect = source.GetComponent<RectTransform>();
+                if (sourceRect != null)
+                {
+                    trayIcon.rectTransform.sizeDelta = GetTrayIconFillSize(sourceRect.sizeDelta);
+                }
+
+                trayIcon.preserveAspect = false;
             }
 
             source.Configure(
@@ -1055,6 +1062,13 @@ namespace SheepSheepBurger.BurgerAssembly
             {
                 traySources.Add(source);
             }
+        }
+
+        private static Vector2 GetTrayIconFillSize(Vector2 sourceSize)
+        {
+            return new Vector2(
+                Mathf.Max(1f, sourceSize.x * 0.96f),
+                Mathf.Max(1f, sourceSize.y * 0.96f));
         }
 
         private void BindSceneButton(string objectName, UnityAction action)
