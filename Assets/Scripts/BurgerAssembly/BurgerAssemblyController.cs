@@ -495,8 +495,10 @@ namespace SheepSheepBurger.BurgerAssembly
                     SetGrillStatus(
                         type == IngredientType.Egg
                             ? "계란을 익히고 있습니다."
+                            : !grillItem.State.RequiresFlip
+                                ? itemName + "을(를) 익히고 있습니다."
                             : "아직 뒤집을 수 없습니다. 1면 조리가 끝날 때까지 기다려 주세요.",
-                        type != IngredientType.Egg);
+                        type != IngredientType.Egg && grillItem.State.RequiresFlip);
                     break;
                 case PattyGrillPhase.CookingSide2:
                 case PattyGrillPhase.Flipping:

@@ -7,12 +7,20 @@ namespace SheepSheepBurger.BurgerAssembly
     public sealed class BurgerSpriteCatalog
     {
         private const string PattyRawSizzlePath = "BurgerAssembly/PattyAnimations/RawSizzle";
+        private const string PattyPressPath = "BurgerAssembly/PattyAnimations/Press";
         private const string PattyFlipPath = "BurgerAssembly/PattyAnimations/Flip";
         private const string PattyCookedSizzlePath = "BurgerAssembly/PattyAnimations/CookedSizzle";
+        private const string BaconRawSizzlePath = "BurgerAssembly/BaconAnimations/RawSizzle";
+        private const string BaconCookingPath = "BurgerAssembly/BaconAnimations/Cooking";
+        private const string BaconCookedSizzlePath = "BurgerAssembly/BaconAnimations/CookedSizzle";
 
         private Sprite[] pattyRawSizzleFrames;
+        private Sprite[] pattyPressFrames;
         private Sprite[] pattyFlipFrames;
         private Sprite[] pattyCookedSizzleFrames;
+        private Sprite[] baconRawSizzleFrames;
+        private Sprite[] baconCookingFrames;
+        private Sprite[] baconCookedSizzleFrames;
 
         [Header("Shared UI")]
         [SerializeField] private Sprite rectangle;
@@ -74,8 +82,12 @@ namespace SheepSheepBurger.BurgerAssembly
         public Sprite PattyBurnt => pattyBurnt;
         public int PattyCookingFrameCount => pattyCookingFrames?.Length ?? 0;
         public int PattyRawSizzleFrameCount => PattyRawSizzleFrames.Length;
+        public int PattyPressFrameCount => PattyPressFrames.Length;
         public int PattyFlipFrameCount => PattyFlipFrames.Length;
         public int PattyCookedSizzleFrameCount => PattyCookedSizzleFrames.Length;
+        public int BaconRawSizzleFrameCount => BaconRawSizzleFrames.Length;
+        public int BaconCookingFrameCount => BaconCookingFrames.Length;
+        public int BaconCookedSizzleFrameCount => BaconCookedSizzleFrames.Length;
         public Sprite BaconPile => baconPile;
         public Sprite BaconRaw => baconRaw;
         public Sprite BaconCooked => baconCooked;
@@ -363,27 +375,34 @@ namespace SheepSheepBurger.BurgerAssembly
             return GetLoopingFrame(PattyRawSizzleFrames, elapsedSeconds, pattyRaw);
         }
 
+        public Sprite GetPattyPressFrame(float elapsedSeconds, float durationSeconds)
+        {
+            return GetOneShotFrame(PattyPressFrames, elapsedSeconds, durationSeconds, pattyRaw);
+        }
+
         public Sprite GetPattyFlipFrame(float elapsedSeconds)
         {
-            Sprite[] frames = PattyFlipFrames;
-            if (frames.Length == 0)
-            {
-                return pattyCooked;
-            }
-
-            float normalized = Mathf.Clamp01(
-                Mathf.Max(0f, elapsedSeconds) /
-                Mathf.Max(0.0001f, CookingPrototypeRules.FlipAnimationSeconds));
-            int frameIndex = Mathf.Clamp(
-                Mathf.FloorToInt(normalized * frames.Length),
-                0,
-                frames.Length - 1);
-            return frames[frameIndex] != null ? frames[frameIndex] : pattyCooked;
+            return GetOneShotFrame(PattyFlipFrames, elapsedSeconds, CookingPrototypeRules.FlipAnimationSeconds, pattyCooked);
         }
 
         public Sprite GetPattyCookedSizzleFrame(float elapsedSeconds)
         {
             return GetLoopingFrame(PattyCookedSizzleFrames, elapsedSeconds, pattyCooked);
+        }
+
+        public Sprite GetBaconRawSizzleFrame(float elapsedSeconds)
+        {
+            return GetLoopingFrame(BaconRawSizzleFrames, elapsedSeconds, baconRaw);
+        }
+
+        public Sprite GetBaconCookingFrame(float elapsedSeconds, float durationSeconds)
+        {
+            return GetOneShotFrame(BaconCookingFrames, elapsedSeconds, durationSeconds, baconCooked);
+        }
+
+        public Sprite GetBaconCookedSizzleFrame(float elapsedSeconds)
+        {
+            return GetLoopingFrame(BaconCookedSizzleFrames, elapsedSeconds, baconCooked);
         }
 
         public Sprite GetCookedGrillIngredient(IngredientType type)
@@ -409,13 +428,25 @@ namespace SheepSheepBurger.BurgerAssembly
         }
 
         private Sprite[] PattyRawSizzleFrames =>
-            pattyRawSizzleFrames ?? (pattyRawSizzleFrames = LoadPattyAnimationFrames(PattyRawSizzlePath));
+            pattyRawSizzleFrames ?? (pattyRawSizzleFrames = LoadAnimationFrames(PattyRawSizzlePath));
+
+        private Sprite[] PattyPressFrames =>
+            pattyPressFrames ?? (pattyPressFrames = LoadAnimationFrames(PattyPressPath));
 
         private Sprite[] PattyFlipFrames =>
-            pattyFlipFrames ?? (pattyFlipFrames = LoadPattyAnimationFrames(PattyFlipPath));
+            pattyFlipFrames ?? (pattyFlipFrames = LoadAnimationFrames(PattyFlipPath));
 
         private Sprite[] PattyCookedSizzleFrames =>
-            pattyCookedSizzleFrames ?? (pattyCookedSizzleFrames = LoadPattyAnimationFrames(PattyCookedSizzlePath));
+            pattyCookedSizzleFrames ?? (pattyCookedSizzleFrames = LoadAnimationFrames(PattyCookedSizzlePath));
+
+        private Sprite[] BaconRawSizzleFrames =>
+            baconRawSizzleFrames ?? (baconRawSizzleFrames = LoadAnimationFrames(BaconRawSizzlePath));
+
+        private Sprite[] BaconCookingFrames =>
+            baconCookingFrames ?? (baconCookingFrames = LoadAnimationFrames(BaconCookingPath));
+
+        private Sprite[] BaconCookedSizzleFrames =>
+            baconCookedSizzleFrames ?? (baconCookedSizzleFrames = LoadAnimationFrames(BaconCookedSizzlePath));
 
         private static Sprite GetLoopingFrame(Sprite[] frames, float elapsedSeconds, Sprite fallback)
         {
@@ -430,7 +461,19 @@ namespace SheepSheepBurger.BurgerAssembly
             return frames[frameIndex] != null ? frames[frameIndex] : fallback;
         }
 
-        private static Sprite[] LoadPattyAnimationFrames(string resourcesPath)
+        private static Sprite GetOneShotFrame(Sprite[] frames, float elapsedSeconds, float durationSeconds, Sprite fallback)
+        {
+            if (frames == null || frames.Length == 0)
+            {
+                return fallback;
+            }
+
+            float normalized = Mathf.Clamp01(Mathf.Max(0f, elapsedSeconds) / Mathf.Max(0.0001f, durationSeconds));
+            int frameIndex = Mathf.Clamp(Mathf.FloorToInt(normalized * frames.Length), 0, frames.Length - 1);
+            return frames[frameIndex] != null ? frames[frameIndex] : fallback;
+        }
+
+        private static Sprite[] LoadAnimationFrames(string resourcesPath)
         {
             Sprite[] frames = Resources.LoadAll<Sprite>(resourcesPath);
             if (frames == null || frames.Length == 0)
