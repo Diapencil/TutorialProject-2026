@@ -298,6 +298,40 @@ namespace SheepSheepBurger.BurgerAssembly
             return graphic;
         }
 
+        public static SimpleShapeGraphic RebuildTrayVisualPile(
+            Transform traySource,
+            string sourceName,
+            BurgerIngredientVisual visual,
+            Vector2 traySize)
+        {
+            RectTransform root = FindDirectChild<RectTransform>(traySource, sourceName + "VisualPile");
+            if (root == null)
+            {
+                var rootObject = new GameObject(sourceName + "VisualPile", typeof(RectTransform));
+                root = rootObject.GetComponent<RectTransform>();
+                root.SetParent(traySource, false);
+            }
+
+            SetRect(root, Vector2.zero, traySize);
+            ClearChildren(root);
+            DestroyDirectChild(traySource, sourceName + "Icon");
+
+            Vector2 iconSize = GetTraySingleIconSize(visual.Size, traySize);
+            CreateTrayPileIcon(root, sourceName + "PileBackLeft", visual, new Vector2(-22f, 17f), iconSize * 0.66f);
+            CreateTrayPileIcon(root, sourceName + "PileBackRight", visual, new Vector2(23f, 18f), iconSize * 0.62f);
+            CreateTrayPileIcon(root, sourceName + "PileFrontLeft", visual, new Vector2(-24f, -19f), iconSize * 0.7f);
+            CreateTrayPileIcon(root, sourceName + "PileFrontRight", visual, new Vector2(22f, -21f), iconSize * 0.64f);
+
+            SimpleShapeGraphic main = CreateTrayPileIcon(
+                root,
+                sourceName + "Icon",
+                visual,
+                Vector2.zero,
+                iconSize);
+            main.transform.SetAsLastSibling();
+            return main;
+        }
+
         public static Text CreateText(
             string name,
             RectTransform parent,
@@ -333,6 +367,84 @@ namespace SheepSheepBurger.BurgerAssembly
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition = position;
             rect.sizeDelta = size;
+        }
+
+        private static SimpleShapeGraphic CreateTrayPileIcon(
+            RectTransform parent,
+            string name,
+            BurgerIngredientVisual visual,
+            Vector2 position,
+            Vector2 size)
+        {
+            SimpleShapeGraphic icon = CreateShape(
+                name,
+                parent,
+                visual.Shape,
+                visual.Color,
+                position,
+                size,
+                false,
+                visual.SourceSprite);
+            icon.color = visual.SourceSprite == null ? visual.Color : Color.white;
+            return icon;
+        }
+
+        private static Vector2 GetTraySingleIconSize(Vector2 visualSize, Vector2 traySize)
+        {
+            float iconLimit = Mathf.Min(78f, traySize.y * 0.72f);
+            float iconScale = Mathf.Min(
+                iconLimit / Mathf.Max(1f, visualSize.x),
+                iconLimit / Mathf.Max(1f, visualSize.y));
+            return visualSize * iconScale;
+        }
+
+        private static T FindDirectChild<T>(Transform parent, string childName) where T : Component
+        {
+            if (parent == null) return null;
+
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                Transform child = parent.GetChild(i);
+                if (child.name == childName) return child.GetComponent<T>();
+            }
+
+            return null;
+        }
+
+        private static void ClearChildren(Transform parent)
+        {
+            for (int i = parent.childCount - 1; i >= 0; i--)
+            {
+                DestroyObject(parent.GetChild(i).gameObject);
+            }
+        }
+
+        private static void DestroyDirectChild(Transform parent, string childName)
+        {
+            if (parent == null) return;
+
+            for (int i = parent.childCount - 1; i >= 0; i--)
+            {
+                Transform child = parent.GetChild(i);
+                if (child.name == childName)
+                {
+                    DestroyObject(child.gameObject);
+                }
+            }
+        }
+
+        private static void DestroyObject(GameObject target)
+        {
+            if (target == null) return;
+
+            if (Application.isPlaying)
+            {
+                UnityEngine.Object.Destroy(target);
+            }
+            else
+            {
+                UnityEngine.Object.DestroyImmediate(target);
+            }
         }
 
         public static Vector2 ClampInside(Rect bounds, Vector2 local, Vector2 itemSize)

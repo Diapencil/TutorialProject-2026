@@ -73,8 +73,15 @@ namespace SheepSheepBurger.BurgerAssembly
             canvasGroup.interactable = unlocked;
             if (trayIcon != null)
             {
-                trayIcon.gameObject.SetActive(unlocked && !selected);
-                trayIcon.preserveAspect = false;
+                Transform iconParent = trayIcon.transform.parent;
+                if (iconParent != null && iconParent != transform)
+                {
+                    iconParent.gameObject.SetActive(unlocked && !selected);
+                }
+                else
+                {
+                    trayIcon.gameObject.SetActive(unlocked && !selected);
+                }
             }
 
             Outline outline = GetComponent<Outline>();

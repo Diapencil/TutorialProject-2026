@@ -460,16 +460,11 @@ namespace SheepSheepBurger.BurgerAssembly
                 : trayVisual;
             RectTransform card = CreateRoundedPanel(name, parent, Color.clear, position, size, true, 0f);
             card.gameObject.AddComponent<CanvasGroup>();
-            SimpleShapeGraphic trayIcon = BurgerUiFactory.CreateShape(
-                name + "Icon",
+            SimpleShapeGraphic trayIcon = BurgerUiFactory.RebuildTrayVisualPile(
                 card,
-                trayVisual.Shape,
-                trayVisual.Color,
-                Vector2.zero,
-                GetTrayIconFillSize(size),
-                false,
-                trayVisual.SourceSprite);
-            trayIcon.preserveAspect = false;
+                name,
+                trayVisual,
+                size);
             CookingTrayDragSource source = card.gameObject.AddComponent<CookingTrayDragSource>();
             source.Configure(
                 controller,
@@ -487,13 +482,6 @@ namespace SheepSheepBurger.BurgerAssembly
             // 이미지를 다시 표시한 뒤에도 클릭과 드래그만 막히는 상태가 된다.
 
             return source;
-        }
-
-        private static Vector2 GetTrayIconFillSize(Vector2 cardSize)
-        {
-            return new Vector2(
-                Mathf.Max(1f, cardSize.x * 0.96f),
-                Mathf.Max(1f, cardSize.y * 0.96f));
         }
 
         private RectTransform CreateRoundedPanel(
