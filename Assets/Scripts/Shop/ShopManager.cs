@@ -1,7 +1,9 @@
 // 상점 화면 전체를 총괄한다. 탭 전환, 슬롯 채우기, 구매 처리, 빚 상환, 상단 HUD 갱신.
 using System.Collections.Generic;
 using System.Globalization;
+using SheepSheepBurger.Counter;
 using SheepSheepBurger.Core;
+using SheepSheepBurger.SceneFlow;
 using SheepSheepBurger.Util;
 using TMPro;
 using UnityEngine;
@@ -35,6 +37,7 @@ namespace SheepSheepBurger.Shop
         [SerializeField] private Transform slotParent;
         [SerializeField] private ShopSlotUI slotPrefab;
         [SerializeField] private int slotCount = 4;
+        [SerializeField] private string counterSceneName = "Counter";
 
         [Header("HUD")]
         [SerializeField] private TMP_Text goldText;
@@ -294,6 +297,8 @@ namespace SheepSheepBurger.Shop
                 slots[i].Setup(ShopTabType.Topping, data.id, data.icon, data.ingredientName,
                                data.unlockCost, isPurchased, true, OnSlotClicked);
             }
+
+            AdjustSlotEndPadding(lockedByDefault.Count);
         }
 
         private void RefreshUpgradeTab()
@@ -329,6 +334,8 @@ namespace SheepSheepBurger.Shop
                 slots[i].Setup(ShopTabType.Upgrade, upgrade.id, upgrade.icon, label,
                                cost, isMaxLevel, true, OnSlotClicked);
             }
+
+            AdjustSlotEndPadding(upgradeCount);
         }
 
         private void RefreshDecorationTab()
@@ -352,6 +359,8 @@ namespace SheepSheepBurger.Shop
                 slots[i].Setup(ShopTabType.Decoration, data.id, data.sprite, data.decorationName,
                                data.cost, isPurchased, true, OnSlotClicked);
             }
+
+            AdjustSlotEndPadding(decorationCount);
         }
 
         private void OnSlotClicked(ShopSlotUI slot)
@@ -448,6 +457,30 @@ namespace SheepSheepBurger.Shop
             slot.MarkPurchased();
             ClearMessage();
             SaveProgress();
+            CounterDecorationPlacementSession.Begin(data);
+            SceneTransitionManager.LoadSceneSlideLeft(counterSceneName);
+        }
+
+        private void AdjustSlotEndPadding(int visibleSlotCount)
+        {
+            if (slotScrollRect == null || slotScrollRect.content == null)
+            {
+                return;
+            }
+
+            GridLayoutGroup grid = slotScrollRect.content.GetComponent<GridLayoutGroup>();
+            RectTransform viewport = slotScrollRect.viewport;
+            if (grid == null || viewport == null || visibleSlotCount <= 0)
+            {
+                return;
+            }
+
+            float centerPadding = Mathf.Max(0f, (viewport.rect.width - grid.cellSize.x) * 0.5f);
+            int roundedPadding = Mathf.RoundToInt(centerPadding);
+            grid.padding.left = Mathf.Max(grid.padding.left, roundedPadding);
+            grid.padding.right = Mathf.Max(grid.padding.right, roundedPadding);
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(slotScrollRect.content);
         }
 
         private bool TrySpend(GameState state, int cost)

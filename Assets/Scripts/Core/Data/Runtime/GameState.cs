@@ -1,6 +1,7 @@
 // 한 판(세이브 슬롯)의 모든 진행 상태. ScriptableObject가 아닌 순수 직렬화 클래스다.
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace SheepSheepBurger.Core
 {
@@ -20,6 +21,7 @@ namespace SheepSheepBurger.Core
         public List<int> unlockedIngredientIds = new List<int>();
         public List<int> unlockedRecipeIds = new List<int>();
         public List<int> purchasedDecorationIds = new List<int>();
+        public List<DecorationPlacementState> decorationPlacements = new List<DecorationPlacementState>();
         public List<UpgradeState> upgrades = new List<UpgradeState>();
         public List<int> encounteredSpecialCustomerIds = new List<int>();
         public int totalCustomersServed = 0;
@@ -31,6 +33,7 @@ namespace SheepSheepBurger.Core
             unlockedIngredientIds ??= new List<int>();
             unlockedRecipeIds ??= new List<int>();
             purchasedDecorationIds ??= new List<int>();
+            decorationPlacements ??= new List<DecorationPlacementState>();
             upgrades ??= new List<UpgradeState>();
             encounteredSpecialCustomerIds ??= new List<int>();
             completedDayStates ??= new List<DayState>();
@@ -139,6 +142,53 @@ namespace SheepSheepBurger.Core
             }
         }
 
+        public bool TryGetDecorationPosition(int id, out Vector2 position)
+        {
+            EnsureRuntimeCollections();
+
+            if (decorationPlacements != null)
+            {
+                for (int i = 0; i < decorationPlacements.Count; i++)
+                {
+                    DecorationPlacementState placement = decorationPlacements[i];
+                    if (placement != null && placement.id == id)
+                    {
+                        position = placement.position;
+                        return true;
+                    }
+                }
+            }
+
+            position = default;
+            return false;
+        }
+
+        public void SetDecorationPosition(int id, Vector2 position)
+        {
+            EnsureRuntimeCollections();
+
+            if (decorationPlacements == null)
+            {
+                decorationPlacements = new List<DecorationPlacementState>();
+            }
+
+            for (int i = 0; i < decorationPlacements.Count; i++)
+            {
+                DecorationPlacementState placement = decorationPlacements[i];
+                if (placement != null && placement.id == id)
+                {
+                    placement.position = position;
+                    return;
+                }
+            }
+
+            decorationPlacements.Add(new DecorationPlacementState
+            {
+                id = id,
+                position = position
+            });
+        }
+
         /// <summary>해당 업그레이드의 현재 레벨. 기록이 없으면 0.</summary>
         public int GetUpgradeLevel(int upgradeId)
         {
@@ -200,5 +250,12 @@ namespace SheepSheepBurger.Core
 
             return false;
         }
+    }
+
+    [Serializable]
+    public class DecorationPlacementState
+    {
+        public int id;
+        public Vector2 position;
     }
 }

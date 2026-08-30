@@ -15,7 +15,7 @@ MonoBehaviour:
   id: 13
   ingredientName: "\uBCA0\uC774\uCEE8"
   type: 2
-  icon: {fileID: 21300000, guid: f118ab2379cae476c93babbafb6afda4, type: 3}
+  icon: {fileID: 21300000, guid: b2a10ef8bab94463b344d4ecc84c73f1, type: 3}
   unlockCost: 1000
   costPerUse: 3
   isDefaultUnlocked: 0
