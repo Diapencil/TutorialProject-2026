@@ -146,11 +146,11 @@ namespace SheepSheepBurger.BurgerAssembly
                 case IngredientType.ToppingLettuce:
                     return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#63B94D"), new Vector2(235f, 235f), sprites.Lettuce);
                 case IngredientType.ToppingTomato:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#E84B3C"), new Vector2(112f, 112f), sprites.Tomato);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#E84B3C"), new Vector2(280f, 280f), sprites.Tomato);
                 case IngredientType.ToppingCheese:
-                    return new BurgerIngredientVisual(SimpleShape.Rectangle, BurgerPrototypeTheme.Hex("#FFD84C"), new Vector2(155f, 155f), sprites.Cheese);
+                    return new BurgerIngredientVisual(SimpleShape.Rectangle, BurgerPrototypeTheme.Hex("#FFD84C"), new Vector2(310f, 310f), sprites.Cheese);
                 case IngredientType.ToppingOnion:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#B981C7"), new Vector2(135f, 100f), sprites.Onion);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#B981C7"), new Vector2(202.5f, 150f), sprites.Onion);
                 case IngredientType.ToppingPickle:
                     return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#7C9B55"), new Vector2(115f, 115f), sprites.Pickle);
                 case IngredientType.ToppingJalapeno:
