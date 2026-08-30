@@ -334,7 +334,7 @@ namespace SheepSheepBurger.Core
             dimmerObject.transform.SetParent(parent, false);
             Image image = dimmerObject.GetComponent<Image>();
             image.color = new Color(0f, 0f, 0f, 0.58f);
-            image.raycastTarget = false;
+            image.raycastTarget = true;
             dimmerObject.SetActive(false);
             return dimmerObject.GetComponent<RectTransform>();
         }
