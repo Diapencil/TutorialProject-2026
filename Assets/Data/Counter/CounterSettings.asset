@@ -30,6 +30,15 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4c47f096558cc6943b940db2ed1fae53, type: 2}
   - {fileID: 11400000, guid: 83b9d634e0c5b92469738960ff3f6f0e, type: 2}
   - {fileID: 11400000, guid: 2ad8ce2945bef784e88f063dc3e2378c, type: 2}
+  - {fileID: 11400000, guid: a8d84aa80ba68744a8a0fb8d1f365cd3, type: 2}
+  - {fileID: 11400000, guid: b175564b9b7d6904abe1e136c20f1a78, type: 2}
+  - {fileID: 11400000, guid: c96e1f87932a58e46b194121f01c8250, type: 2}
+  - {fileID: 11400000, guid: 20b0a3e533293e648be50c97c13f65ff, type: 2}
+  - {fileID: 11400000, guid: bf1b0eca618ea584d82f90abc67bfe3e, type: 2}
+  - {fileID: 11400000, guid: a7b84cd49dc16274f92b54212044cc3b, type: 2}
+  - {fileID: 11400000, guid: 68f5efc49ce29b541a08d5753d3fa444, type: 2}
+  - {fileID: 11400000, guid: 12b88934e44e2e942b232e44e813c9ed, type: 2}
+  - {fileID: 11400000, guid: 04dfb98b4b61d4c4d952f503a7e19954, type: 2}
   perfectLine: "\uC644\uBCBD\uD574\uC694! \uC815\uB9D0 \uB9DB\uC788\uC5B4\uC694!"
   normalLine: "\uC870\uAE08 \uC544\uC27D\uC9C0\uB9CC \uB9DB\uC788\uAC8C \uBA39\uC744\uAC8C\uC694."
   badLine: "\uC81C\uAC00 \uC8FC\uBB38\uD55C \uBC84\uAC70\uAC00 \uC544\uB2CC \uAC83

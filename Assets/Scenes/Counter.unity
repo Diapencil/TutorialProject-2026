@@ -289,7 +289,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -579.99994, y: -435}
+  m_AnchoredPosition: {x: 549, y: -435}
   m_SizeDelta: {x: -1726.1, y: -916.3}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &377445672
@@ -653,7 +653,7 @@ MonoBehaviour:
       m_Calls: []
   m_Sprite: {fileID: 7444046612802208997, guid: c39380d1a76b98c4b85b12d9f4f7f67b, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -993,7 +993,7 @@ GameObject:
   - component: {fileID: 737455401}
   - component: {fileID: 737455400}
   m_Layer: 0
-  m_Name: Setting Button
+  m_Name: SettingButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1252,7 +1252,7 @@ GameObject:
   - component: {fileID: 983166596}
   - component: {fileID: 983166595}
   m_Layer: 0
-  m_Name: Shop Button
+  m_Name: ShopButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3440,8 +3440,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: + 0C
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
-  m_sharedMaterial: {fileID: 8767555812094314770, guid: c2c8e5c3eee98d64690b18fe273ef49b, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 82b086a2becc65e44a789b7681e2ce5a, type: 2}
+  m_sharedMaterial: {fileID: -2366584325251309340, guid: 82b086a2becc65e44a789b7681e2ce5a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
