@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SheepSheepBurger.Core.RecipeData
   id: 12
   recipeName: "\uACC4\uB780\uD6C4\uB77C\uC774\uBC84\uAC70"
+  illustration: {fileID: 21300000, guid: 73fad4dd654224c44a86e987df85f3ab, type: 3}
   layers:
   - ingredient: {fileID: 11400000, guid: 4e9590c32cef09b48b2efc1fbd675d58, type: 2}
     quantity: 1

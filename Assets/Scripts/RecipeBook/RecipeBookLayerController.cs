@@ -27,7 +27,7 @@ namespace SheepSheepBurger.RecipeBook
     }
 
     /// <summary>
-    /// 햄버거 도감(레시피 북) 레이어. 그림 없이 텍스트만 표시한다.
+    /// 햄버거 도감(레시피 북) 레이어. 카드와 상세창에 완성 음식 이미지를 표시한다.
     ///
     /// [작업 방식] 씬이 아니라 "레이어 프리팹"으로 관리한다. (SettingsLayer / DayResultLayer 와 동일 패턴)
     ///  - Counter 씬 안에 RecipeBookLayer 오브젝트 하나를 두고 통째로 프리팹화한다.
@@ -72,8 +72,9 @@ namespace SheepSheepBurger.RecipeBook
         [SerializeField] private RecipeBookEntryView entryPrefab;
         [SerializeField] private TMP_Text progressText; // "3 / 12"
 
-        [Header("상세창 (전부 텍스트)")]
+        [Header("상세창")]
         [SerializeField] private CanvasGroup detailCanvasGroup;
+        [SerializeField] private Image detailArtwork;
         [SerializeField] private TMP_Text detailNameText;
         [SerializeField] private TMP_Text detailIngredientsText;
         [SerializeField] private TMP_Text detailPriceText;
@@ -285,7 +286,7 @@ namespace SheepSheepBurger.RecipeBook
 
                 RecipeBookEntryView entry = Instantiate(entryPrefab, entryGridPlaceholder);
                 CoreRecipeData captured = recipe;
-                entry.Bind(recipe.recipeName, unlocked, () => HandleEntrySelected(captured));
+                entry.Bind(recipe.recipeName, recipe.illustration, unlocked, () => HandleEntrySelected(captured));
                 spawnedEntries.Add(entry);
             }
 
@@ -305,6 +306,12 @@ namespace SheepSheepBurger.RecipeBook
 
         private void ShowDetail(CoreRecipeData recipe)
         {
+            if (detailArtwork != null)
+            {
+                detailArtwork.sprite = recipe.illustration;
+                detailArtwork.enabled = recipe.illustration != null;
+            }
+
             if (detailNameText != null) detailNameText.text = recipe.recipeName;
             if (detailPriceText != null) detailPriceText.text = FormatRecipePrice(recipe.basePrice);
             if (detailIngredientsText != null) detailIngredientsText.text = BuildIngredientText(recipe);

@@ -6,8 +6,8 @@ using UnityEngine.UI;
 namespace SheepSheepBurger.RecipeBook
 {
     /// <summary>
-    /// 도감 격자의 항목 1칸. (그림 없이 텍스트만)
-    ///  - 해금 : 레시피 이름
+    /// 도감 격자의 항목 1칸.
+    ///  - 해금 : 완성 음식 이미지 + 레시피 이름
     ///  - 미해금 : "???"  (버튼이 비활성이라 눌러도 반응 없음)
     ///
     /// 이 스크립트가 붙은 작은 Button 오브젝트를 프리팹으로 만들어
@@ -20,6 +20,7 @@ namespace SheepSheepBurger.RecipeBook
     {
         [Header("표시")]
         [SerializeField] private Button button;
+        [SerializeField] private Image artwork;
         [SerializeField] private TMP_Text label;
         [SerializeField] private GameObject lockedBadge; // 자물쇠 아이콘 등 (선택)
 
@@ -32,11 +33,18 @@ namespace SheepSheepBurger.RecipeBook
 
         private Action clickCallback;
 
-        public void Bind(string displayName, bool unlocked, Action onClick)
+        public void Bind(string displayName, Sprite illustration, bool unlocked, Action onClick)
         {
             clickCallback = onClick;
 
             EnsureBindings();
+
+            if (artwork != null)
+            {
+                artwork.sprite = unlocked ? illustration : null;
+                artwork.enabled = unlocked && illustration != null;
+                artwork.color = unlocked ? Color.white : lockedColor;
+            }
 
             if (label != null)
             {
@@ -80,6 +88,15 @@ namespace SheepSheepBurger.RecipeBook
             if (label == null)
             {
                 label = GetComponentInChildren<TMP_Text>();
+            }
+
+            if (artwork == null)
+            {
+                Transform artworkTransform = transform.Find("Artwork");
+                if (artworkTransform != null)
+                {
+                    artwork = artworkTransform.GetComponent<Image>();
+                }
             }
         }
     }

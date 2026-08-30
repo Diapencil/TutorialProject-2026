@@ -8,6 +8,8 @@ namespace SheepSheepBurger.Core
     {
         public int id;
         public string recipeName;
+        [Tooltip("도감 카드와 상세창에 표시할 완성 음식 이미지")]
+        public Sprite illustration;
         public List<RecipeLayer> layers;
         public int basePrice;
         // public int difficulty;

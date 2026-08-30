@@ -29,6 +29,24 @@ namespace SheepSheepBurger.EditorTools
         private const string EntryPrefabPath = PrefabsFolder + "/RecipeBookEntry.prefab";
         private const string LayerPrefabPath = PrefabsFolder + "/RecipeBookLayer.prefab";
         private const string BookIconPath = "Assets/GameAssets/RecipeBook/free-icon-book-207114.png";
+        private const string BurgerArtFolder = "Assets/GameAssets/RecipeBook/Burgers";
+
+        private static readonly Dictionary<int, string> RecipeIllustrationPaths = new Dictionary<int, string>
+        {
+            { 1, BurgerArtFolder + "/hamburger.png" },
+            { 2, BurgerArtFolder + "/forest_burger.png" },
+            { 3, BurgerArtFolder + "/three_burger.png" },
+            { 4, BurgerArtFolder + "/missing_child_burger.png" },
+            { 5, BurgerArtFolder + "/vegetarian_burger.png" },
+            { 6, BurgerArtFolder + "/vegan_burger.png" },
+            { 7, BurgerArtFolder + "/halaquin_burger.png" },
+            { 8, BurgerArtFolder + "/hot_dog.png" },
+            { 9, BurgerArtFolder + "/dujjon_burger.png" },
+            { 10, BurgerArtFolder + "/wild_burger.png" },
+            { 11, BurgerArtFolder + "/bacon_burger.png" },
+            { 12, BurgerArtFolder + "/fried_egg_burger.png" },
+            { 13, BurgerArtFolder + "/fried_burger.png" },
+        };
 
         private const int CanvasSortingOrder = 850;
         private static readonly Vector2 ReferenceResolution = new Vector2(1920f, 1080f);
@@ -49,18 +67,21 @@ namespace SheepSheepBurger.EditorTools
         {
             EnsureFolder(PrefabsFolder);
             EnsureFolder(ArtFolder);
+            EnsureFolder(BurgerArtFolder);
 
             // 폰트는 Dynamic 모드라 필요한 글자를 실행 중에 알아서 추가한다. 폰트 애셋은 건드리지 않는다.
             TMP_FontAsset font = ResolveFont();
             Sprite panelSprite = EnsureRoundedSprite("panel", 40);
             Sprite cardSprite = EnsureRoundedSprite("card", 20);
 
+            List<CoreRecipeData> recipes = FindAllCoreRecipes();
+            AssignRecipeIllustrations(recipes);
+
             GameObject entryRoot = CreateEntry(font, cardSprite);
             GameObject entryPrefab = PrefabUtility.SaveAsPrefabAsset(entryRoot, EntryPrefabPath);
             Object.DestroyImmediate(entryRoot);
             RecipeBookEntryView entryPrefabView = entryPrefab.GetComponent<RecipeBookEntryView>();
 
-            List<CoreRecipeData> recipes = FindAllCoreRecipes();
             GameObject layerRoot = CreateLayer(font, panelSprite, cardSprite, entryPrefabView, recipes);
             PrefabUtility.SaveAsPrefabAsset(layerRoot, LayerPrefabPath);
             Object.DestroyImmediate(layerRoot);
@@ -90,6 +111,12 @@ namespace SheepSheepBurger.EditorTools
             button.targetGraphic = background;
             SetButtonTint(button, background);
 
+            Image artwork = CreateImage("Artwork", root.transform, null);
+            artwork.preserveAspect = true;
+            artwork.raycastTarget = false;
+            artwork.enabled = false;
+            SetCenterTop(artwork.rectTransform, new Vector2(0f, -12f), new Vector2(144f, 144f));
+
             // 미해금일 때 카드를 어둡게 덮는 오버레이
             Image lockedBadge = CreateImage("LockedBadge", root.transform, cardSprite);
             lockedBadge.type = Image.Type.Sliced;
@@ -98,12 +125,16 @@ namespace SheepSheepBurger.EditorTools
             SetStretch(lockedBadge.rectTransform, Vector2.zero, Vector2.zero);
             lockedBadge.gameObject.SetActive(false);
 
-            TMP_Text label = CreateText("Label", root.transform, "???", 26f, font, TextAlignmentOptions.Center);
-            SetStretch(label.rectTransform, new Vector2(12f, 12f), new Vector2(-12f, -12f));
+            TMP_Text label = CreateText("Label", root.transform, "???", 22f, font, TextAlignmentOptions.Center);
+            label.enableAutoSizing = true;
+            label.fontSizeMin = 16f;
+            label.fontSizeMax = 22f;
+            SetCenterBottom(label.rectTransform, new Vector2(0f, 10f), new Vector2(148f, 46f));
 
             RecipeBookEntryView view = root.AddComponent<RecipeBookEntryView>();
             SerializedObject so = new SerializedObject(view);
             so.FindProperty("button").objectReferenceValue = button;
+            so.FindProperty("artwork").objectReferenceValue = artwork;
             so.FindProperty("label").objectReferenceValue = label;
             so.FindProperty("lockedBadge").objectReferenceValue = lockedBadge.gameObject;
             so.FindProperty("unlockedColor").colorValue = Ink;
@@ -257,8 +288,14 @@ namespace SheepSheepBurger.EditorTools
             SetCenterTop(detailPrice.rectTransform, new Vector2(0f, -112f), new Vector2(700f, 44f));
             detailPrice.color = new Color(0.45f, 0.32f, 0.12f, 1f);
 
+            Image detailArtwork = CreateImage("DetailArtwork", detail.transform, null);
+            detailArtwork.preserveAspect = true;
+            detailArtwork.raycastTarget = false;
+            detailArtwork.enabled = false;
+            SetCenter(detailArtwork.rectTransform, new Vector2(-190f, -30f), new Vector2(320f, 320f));
+
             TMP_Text detailIngredients = CreateText("DetailIngredients", detail.transform, "", 25f, font, TextAlignmentOptions.TopLeft);
-            SetCenter(detailIngredients.rectTransform, new Vector2(0f, -24f), new Vector2(640f, 320f));
+            SetCenter(detailIngredients.rectTransform, new Vector2(190f, -34f), new Vector2(300f, 310f));
             detailIngredients.color = Ink;
 
             Image detailCloseImage = CreatePanel(detail.transform, "DetailCloseButton", cardSprite, Gold);
@@ -284,6 +321,7 @@ namespace SheepSheepBurger.EditorTools
             SetRef(so, "entryPrefab", entryPrefabView);
             SetRef(so, "progressText", progressText);
             SetRef(so, "detailCanvasGroup", detailCanvasGroup);
+            SetRef(so, "detailArtwork", detailArtwork);
             SetRef(so, "detailNameText", detailName);
             SetRef(so, "detailIngredientsText", detailIngredients);
             SetRef(so, "detailPriceText", detailPrice);
@@ -309,6 +347,51 @@ namespace SheepSheepBurger.EditorTools
         }
 
         // ────────────────────────────── 스프라이트 생성 ──────────────────────────────
+
+        private static void AssignRecipeIllustrations(List<CoreRecipeData> recipes)
+        {
+            foreach (CoreRecipeData recipe in recipes)
+            {
+                if (recipe == null || !RecipeIllustrationPaths.TryGetValue(recipe.id, out string path))
+                {
+                    continue;
+                }
+
+                Sprite illustration = EnsureRecipeIllustration(path);
+                if (illustration == null)
+                {
+                    Debug.LogWarning($"[RecipeBookLayerBuilder] 레시피 이미지 로드 실패: {path}");
+                    continue;
+                }
+
+                recipe.illustration = illustration;
+                EditorUtility.SetDirty(recipe);
+            }
+        }
+
+        private static Sprite EnsureRecipeIllustration(string path)
+        {
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+            TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer != null)
+            {
+                TextureImporterSettings settings = new TextureImporterSettings();
+                importer.ReadTextureSettings(settings);
+                settings.textureType = TextureImporterType.Sprite;
+                settings.spriteMode = (int)SpriteImportMode.Single;
+                settings.spriteMeshType = SpriteMeshType.FullRect;
+                settings.spritePixelsPerUnit = 100f;
+                settings.spriteExtrude = 0;
+                settings.alphaIsTransparency = true;
+                settings.mipmapEnabled = false;
+                importer.SetTextureSettings(settings);
+                importer.maxTextureSize = 512;
+                importer.textureCompression = TextureImporterCompression.CompressedHQ;
+                importer.SaveAndReimport();
+            }
+
+            return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        }
 
         private static Sprite EnsureRoundedSprite(string key, int radius)
         {
