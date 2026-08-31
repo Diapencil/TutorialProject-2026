@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using SheepSheepBurger.Core;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -512,7 +513,12 @@ namespace SheepSheepBurger.BurgerAssembly
 
             if (phaseText != null)
             {
-                phaseText.text = GetPhaseLabel(GrillIngredientType, phase);
+                bool showPhaseLabel = FirstCookingTutorial.ShouldShowCookingPhaseLabels;
+                phaseText.gameObject.SetActive(showPhaseLabel);
+                if (showPhaseLabel)
+                {
+                    phaseText.text = GetPhaseLabel(GrillIngredientType, phase);
+                }
             }
         }
 

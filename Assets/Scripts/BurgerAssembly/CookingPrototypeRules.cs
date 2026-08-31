@@ -15,7 +15,7 @@ namespace SheepSheepBurger.BurgerAssembly
         public const float DoneToOvercookedSeconds = 5f;
         public const float CameraTweenSeconds = 0.35f;
         public const float DragThresholdPixels = 5f;
-        public const float SauceStampSpacingPixels = 3.5f;
+        public const float SauceStampSpacingPixels = 1.5f;
         public const float SauceBurgerAttachPadding = 44f;
         public const float PattyEdgeTransferScreenRatio = 0.9f;
         public const float CompletedBurgerTransferScreenRatio = 0.9f;
