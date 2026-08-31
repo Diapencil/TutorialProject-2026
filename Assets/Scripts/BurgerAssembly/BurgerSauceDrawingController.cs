@@ -255,7 +255,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 List<Vector2> nearbyBoardPoints = boardStroke.ExtractPoints(point =>
                 {
                     Vector2 relative = point - burgerBoardPosition;
-                    return bottomBunLocalRect.Contains(relative);
+                    return ContainsInEllipse(bottomBunLocalRect, relative);
                 });
                 if (nearbyBoardPoints.Count == 0)
                 {
@@ -313,6 +313,20 @@ namespace SheepSheepBurger.BurgerAssembly
             }
 
             return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
+        }
+
+        private static bool ContainsInEllipse(Rect bounds, Vector2 point)
+        {
+            if (bounds.width <= Mathf.Epsilon || bounds.height <= Mathf.Epsilon)
+            {
+                return false;
+            }
+
+            Vector2 radius = bounds.size * 0.5f;
+            Vector2 normalized = new Vector2(
+                (point.x - bounds.center.x) / radius.x,
+                (point.y - bounds.center.y) / radius.y);
+            return normalized.sqrMagnitude <= 1f;
         }
 
         internal void ResetDrawing()

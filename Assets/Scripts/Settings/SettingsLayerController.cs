@@ -1,5 +1,6 @@
 using System;
 using SheepSheepBurger.Audio;
+using SheepSheepBurger.SceneFlow;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -27,6 +28,8 @@ namespace SheepSheepBurger.Settings
         [Header("레이어 표시")]
         [SerializeField] private CanvasGroup layerCanvasGroup;
         [SerializeField] private Button settingsToggleButton;
+        [SerializeField] private Button exitToStartButton;
+        [SerializeField] private string startSceneName = "StartScene";
         [SerializeField] private bool hideOnAwake = true;
         [SerializeField] private bool createEventSystemIfMissing = true;
 
@@ -74,7 +77,8 @@ namespace SheepSheepBurger.Settings
                          Slider boundBgmSlider,
                          TMP_Text boundBgmValueText,
                          Slider boundSfxSlider,
-                         TMP_Text boundSfxValueText)
+                         TMP_Text boundSfxValueText,
+                         Button boundExitToStartButton = null)
         {
             layerCanvasGroup = boundCanvasGroup;
             settingsToggleButton = boundSettingsToggleButton;
@@ -82,6 +86,7 @@ namespace SheepSheepBurger.Settings
             bgmValueText = boundBgmValueText;
             sfxSlider = boundSfxSlider;
             sfxValueText = boundSfxValueText;
+            exitToStartButton = boundExitToStartButton;
         }
 
         private void Awake()
@@ -138,6 +143,18 @@ namespace SheepSheepBurger.Settings
         public void Toggle()
         {
             SetVisible(!IsOpen);
+        }
+
+        public void ExitToStartScene()
+        {
+            if (string.IsNullOrWhiteSpace(startSceneName))
+            {
+                Debug.LogWarning("SettingsLayerController: Start scene name is empty.", this);
+                return;
+            }
+
+            SetVisible(false);
+            SceneTransitionManager.LoadSceneFade(startSceneName);
         }
 
         public void SetVisible(bool visible)
@@ -224,23 +241,30 @@ namespace SheepSheepBurger.Settings
 
         private void HookButtons()
         {
-            if (settingsToggleButton == null)
+            if (settingsToggleButton != null)
             {
-                return;
+                settingsToggleButton.onClick.RemoveListener(Toggle);
+                settingsToggleButton.onClick.AddListener(Toggle);
             }
 
-            settingsToggleButton.onClick.RemoveListener(Toggle);
-            settingsToggleButton.onClick.AddListener(Toggle);
+            if (exitToStartButton != null)
+            {
+                exitToStartButton.onClick.RemoveListener(ExitToStartScene);
+                exitToStartButton.onClick.AddListener(ExitToStartScene);
+            }
         }
 
         private void UnhookButtons()
         {
-            if (settingsToggleButton == null)
+            if (settingsToggleButton != null)
             {
-                return;
+                settingsToggleButton.onClick.RemoveListener(Toggle);
             }
 
-            settingsToggleButton.onClick.RemoveListener(Toggle);
+            if (exitToStartButton != null)
+            {
+                exitToStartButton.onClick.RemoveListener(ExitToStartScene);
+            }
         }
 
         private void UnhookSliders()
