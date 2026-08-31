@@ -92,6 +92,10 @@ namespace SheepSheepBurger.BurgerAssembly
         private static readonly Vector2 BoardIngredientReference = new Vector2(
             BoardIngredientReferenceSize,
             BoardIngredientReferenceSize);
+        private static readonly Vector2 BoardBunSize = BoardIngredientReference;
+        private static readonly Vector2 BoardMediumToppingSize = BoardIngredientReference * 0.8f;
+        private static readonly Vector2 BoardSmallToppingSize = BoardIngredientReference * 0.5f;
+        private static readonly Vector2 BoardBaconSize = BoardIngredientReference * 0.6f;
         private static readonly Vector2 BoardSauceSize = BoardIngredientReference * (0.1f / 3f);
 
         private static readonly BurgerTrayItemDefinition[] BoardTrayItems =
@@ -142,25 +146,25 @@ namespace SheepSheepBurger.BurgerAssembly
                 case IngredientType.Patty:
                     return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.CookedPatty, BoardIngredientReference, sprites.PattyCooked);
                 case IngredientType.Bacon:
-                    return new BurgerIngredientVisual(SimpleShape.Rectangle, BurgerPrototypeTheme.Hex("#B96C5C"), BoardIngredientReference, sprites.BaconCooked);
+                    return new BurgerIngredientVisual(SimpleShape.Rectangle, BurgerPrototypeTheme.Hex("#B96C5C"), BoardBaconSize, sprites.BaconCooked);
                 case IngredientType.Egg:
                     return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#FFF1B8"), BoardIngredientReference, sprites.EggCooked);
                 case IngredientType.BunBottom:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Bun, BoardIngredientReference, sprites.BunBottom);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Bun, BoardBunSize, sprites.BunBottom);
                 case IngredientType.BunTop:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Bun, BoardIngredientReference, sprites.BunTop);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Bun, BoardBunSize, sprites.BunTop);
                 case IngredientType.ToppingLettuce:
                     return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#63B94D"), BoardIngredientReference, sprites.Lettuce);
                 case IngredientType.ToppingTomato:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#E84B3C"), BoardIngredientReference, sprites.Tomato);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#E84B3C"), BoardIngredientReference * 1.2f, sprites.Tomato);
                 case IngredientType.ToppingCheese:
-                    return new BurgerIngredientVisual(SimpleShape.Rectangle, BurgerPrototypeTheme.Hex("#FFD84C"), BoardIngredientReference, sprites.Cheese);
+                    return new BurgerIngredientVisual(SimpleShape.Rectangle, BurgerPrototypeTheme.Hex("#FFD84C"), BoardIngredientReference * 1.1f, sprites.Cheese);
                 case IngredientType.ToppingOnion:
                     return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#B981C7"), BoardIngredientReference, sprites.Onion);
                 case IngredientType.ToppingPickle:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#7C9B55"), BoardIngredientReference, sprites.Pickle);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#7C9B55"), BoardSmallToppingSize, sprites.Pickle);
                 case IngredientType.ToppingJalapeno:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#6A9B52"), BoardIngredientReference, sprites.Jalapeno);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#6A9B52"), BoardSmallToppingSize, sprites.Jalapeno);
                 case IngredientType.SauceKetchup:
                     return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.Hex("#D92E28"), BoardSauceSize, sprites.Ketchup);
                 case IngredientType.SauceMustard:
@@ -179,19 +183,19 @@ namespace SheepSheepBurger.BurgerAssembly
                     return new BurgerIngredientVisual(
                         SimpleShape.Circle,
                         BurgerPrototypeTheme.RawPatty,
-                        BoardIngredientReference,
+                        new Vector2(150f, 150f),
                         sprites.PattyBall);
                 case IngredientType.Bacon:
                     return new BurgerIngredientVisual(
                         SimpleShape.Rectangle,
                         BurgerPrototypeTheme.Hex("#E7A69D"),
-                        BoardIngredientReference,
+                        new Vector2(285f, 125f),
                         sprites.BaconPile);
                 case IngredientType.Egg:
                     return new BurgerIngredientVisual(
                         SimpleShape.Rectangle,
                         BurgerPrototypeTheme.Hex("#FFF1D8"),
-                        BoardIngredientReference,
+                        new Vector2(230f, 125f),
                         sprites.EggCarton);
                 case IngredientType.SauceKetchup:
                     return new BurgerIngredientVisual(

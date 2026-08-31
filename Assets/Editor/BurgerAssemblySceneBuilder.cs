@@ -21,7 +21,6 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
         private const string SpriteDirectory = "Assets/Sprites";
         private const string ProvidedArtDirectory = SpriteDirectory + "/ProvidedArt";
         private const string EnvironmentDirectory = SpriteDirectory + "/Environment";
-        private const string KitchenBackgroundSpritePath = EnvironmentDirectory + "/IMG_0687.GIF";
 
         [MenuItem("Sheep Sheep Burger/Build Unified Cooking Scene")]
         public static void BuildAndVerify()
@@ -67,10 +66,6 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             {
                 controller.SetSpriteCatalog(CreateSpriteCatalog());
             }
-            else
-            {
-                controller.SpriteCatalog.ConfigureEnvironment(LoadSprite(KitchenBackgroundSpritePath));
-            }
 
             InvokePrivate(controller, "BuildInterface");
             InvokePrivate(controller, "RefreshControls");
@@ -83,45 +78,6 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[BurgerAssembly] Editable cooking scene refreshed without rebuilding layout.");
-        }
-
-        [MenuItem("Sheep Sheep Burger/Restore IMG 0687 Kitchen Background")]
-        public static void RestoreKitchenBackground()
-        {
-            Scene scene = EditorSceneManager.OpenScene(AssemblyScenePath, OpenSceneMode.Single);
-            BurgerAssemblyController controller = UnityEngine.Object.FindFirstObjectByType<BurgerAssemblyController>(
-                FindObjectsInactive.Include);
-            if (controller == null)
-            {
-                throw new InvalidOperationException("BurgerAssemblyController was not found in " + AssemblyScenePath);
-            }
-
-            Sprite background = LoadSprite(KitchenBackgroundSpritePath);
-            if (controller.SpriteCatalog == null)
-            {
-                controller.SetSpriteCatalog(CreateSpriteCatalog());
-            }
-            controller.SpriteCatalog.ConfigureEnvironment(background);
-
-            SimpleShapeGraphic backgroundGraphic = UnityEngine.Object
-                .FindObjectsByType<SimpleShapeGraphic>(FindObjectsInactive.Include, FindObjectsSortMode.None)
-                .FirstOrDefault(graphic => graphic.gameObject.name == "KitchenStationBackground");
-            if (backgroundGraphic == null)
-            {
-                throw new InvalidOperationException("KitchenStationBackground was not found in " + AssemblyScenePath);
-            }
-
-            backgroundGraphic.SourceSprite = background;
-            EditorUtility.SetDirty(controller);
-            EditorUtility.SetDirty(backgroundGraphic);
-            EditorSceneManager.MarkSceneDirty(scene);
-            if (!EditorSceneManager.SaveScene(scene, AssemblyScenePath))
-            {
-                throw new InvalidOperationException("Failed to save " + AssemblyScenePath);
-            }
-
-            AssetDatabase.SaveAssets();
-            Debug.Log("[BurgerAssembly] IMG_0687 restored as the persistent kitchen background.");
         }
 
         [MenuItem("Sheep Sheep Burger/Play Background-Aligned Scene")]
@@ -216,10 +172,8 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
                 canvasScaler.referenceResolution == new Vector2(1920f, 1080f) &&
                 Mathf.Approximately(canvasScaler.matchWidthOrHeight, 1f),
                 "Cooking UI must scale from its 1920x1080 reference resolution.");
-            Image openBoxArt = RequireFind("BurgerBoxOpenArt").GetComponent<Image>();
-            Require(
-                openBoxArt != null && openBoxArt.enabled && openBoxArt.sprite != null,
-                "Packaging must show the open burger box before the burger arrives.");
+            Button packageButton = RequireFind("PackageButton").GetComponent<Button>();
+            Require(packageButton != null && !packageButton.interactable, "Packaging button must remain disabled until the actual burger reaches the tray.");
 
             GameObject rawTray = RequireFind("RawPattySource");
             CookingTrayDragSource rawSource = rawTray.GetComponent<CookingTrayDragSource>();
@@ -474,15 +428,16 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
                 "The completed burger object must be accepted by the packaging tray.");
             Require(originalStackRoot.parent == packaging.BurgerTray, "Packaging must reparent the original burger stack instead of generating a preview copy.");
             Require(!completedBurgerDragHandle.activeSelf, "A burger placed on the packaging tray must stop being draggable.");
-            Require(packaging.IsPackaged, "Dropping the burger into the box must package it automatically.");
+            Require(packageButton.interactable, "Packaging button must enable after the actual burger is placed on the tray.");
+            InvokePrivate(packaging, "PackageBurger");
+            Require(packaging.IsPackaged && !packageButton.interactable, "Packaging must complete once and disable the button.");
             Require(!originalStackRoot.gameObject.activeSelf, "Packaging must hide the original layered burger object.");
-            Image closedBoxArt = RequireFind("BurgerBoxClosingArt").GetComponent<Image>();
+            SimpleShapeGraphic packagedBurgerArt = RequireFind("PackagedBurgerArt").GetComponent<SimpleShapeGraphic>();
             Require(
-                closedBoxArt != null &&
-                closedBoxArt.enabled &&
-                closedBoxArt.sprite != null &&
-                closedBoxArt.sprite.name == "burger_box_closed",
-                "Packaging must finish on the closed-box art without generating a replacement burger image.");
+                packagedBurgerArt != null &&
+                packagedBurgerArt.gameObject.activeInHierarchy &&
+                packagedBurgerArt.SourceSprite == controller.SpriteCatalog.CompletedBurger,
+                "Packaging must replace the original stack with the supplied completed-burger image.");
             float grillGuideAlpha = RequireFind("GrillDropArea").GetComponent<SimpleShapeGraphic>().color.a;
             float boardGuideAlpha = RequireFind("BoardDropArea").GetComponent<SimpleShapeGraphic>().color.a;
             float packagingGuideAlpha = RequireFind("PackagingTray").GetComponent<SimpleShapeGraphic>().color.a;
@@ -505,7 +460,7 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
             Require(
                 controller.LastCompletedBurger == null &&
                 !packaging.HasBurger &&
-                openBoxArt.enabled &&
+                !packageButton.interactable &&
                 controller.HasCookingTimeExpired == expiredBeforeTrashReset &&
                 Mathf.Approximately(controller.CookingTimeRemaining, timeBeforeTrashReset) &&
                 cookingTimer.text == timerTextBeforeTrashReset,
@@ -704,7 +659,7 @@ namespace SheepSheepBurger.BurgerAssembly.Editor
                 LoadSprite(SpriteDirectory + "/UI/triangle.png"),
                 LoadSprite(SpriteDirectory + "/UI/rounded_rectangle.png"));
             catalog.ConfigureEnvironment(
-                LoadSprite(KitchenBackgroundSpritePath));
+                LoadSprite(EnvironmentDirectory + "/kitchen_station_reference.png"));
             catalog.ConfigureCooking(
                 LoadSprite(ProvidedArtDirectory + "/patty_ball.png"),
                 LoadSprite(ProvidedArtDirectory + "/patty_raw.png"),
