@@ -1053,30 +1053,21 @@ namespace SheepSheepBurger.BurgerAssembly
             BurgerIngredientVisual dragVisual = kind == CookingDragKind.Ingredient
                 ? BurgerIngredientCatalog.GetVisual(type)
                 : trayVisual;
-            RectTransform sourceRect = source.GetComponent<RectTransform>();
-            SimpleShapeGraphic trayIcon = FindChildByName<SimpleShapeGraphic>(
-                source.transform,
-                sourceName + "Icon");
-            if (trayIcon == null && sourceRect != null)
-            {
-                trayIcon = BurgerUiFactory.RebuildTrayVisualPile(
+            // 일반 재료 더미는 제거하고, 케첩·머스타드 소스통만 단일 아이콘으로 생성한다.
+            bool showSauceBottle = BurgerIngredientCatalog.IsSauce(type);
+            SimpleShapeGraphic trayIcon = showSauceBottle
+                ? BurgerUiFactory.RebuildTrayVisualPile(
                     source.transform,
                     sourceName,
                     trayVisual,
-                    sourceRect.sizeDelta,
-                    !BurgerIngredientCatalog.IsSauce(type));
-            }
-            else if (trayIcon == null)
+                    source.GetComponent<RectTransform>().sizeDelta,
+                    false)
+                : null;
+            if (!showSauceBottle)
             {
-                trayIcon = BurgerUiFactory.CreateShape(
-                    sourceName + "Icon",
-                    source.transform as RectTransform,
-                    trayVisual.Shape,
-                    trayVisual.Color,
-                    Vector2.zero,
-                    trayVisual.Size,
-                    false,
-                    trayVisual.SourceSprite);
+                // 기존 씬에 직렬화돼 있던 일반 재료 더미도 함께 제거한다.
+                // CookingTrayDragSource는 아이콘 참조 없이도 드래그 입력을 처리한다.
+                BurgerUiFactory.RemoveTrayVisualPile(source.transform, sourceName);
             }
 
             source.Configure(

@@ -463,12 +463,16 @@ namespace SheepSheepBurger.BurgerAssembly
                 : trayVisual;
             RectTransform card = CreateRoundedPanel(name, parent, Color.clear, position, size, true, 0f);
             card.gameObject.AddComponent<CanvasGroup>();
-            SimpleShapeGraphic trayIcon = BurgerUiFactory.RebuildTrayVisualPile(
-                card,
-                name,
-                trayVisual,
-                size,
-                !BurgerIngredientCatalog.IsSauce(type));
+            // 일반 재료 더미는 숨기되, 케첩·머스타드 소스통은 선택/드래그용
+            // 단일 아이콘으로 유지한다.
+            bool showSauceBottle = BurgerIngredientCatalog.IsSauce(type);
+            SimpleShapeGraphic trayIcon = showSauceBottle
+                ? BurgerUiFactory.RebuildTrayVisualPile(card, name, trayVisual, size, false)
+                : null;
+            if (!showSauceBottle)
+            {
+                BurgerUiFactory.RemoveTrayVisualPile(card, name);
+            }
             CookingTrayDragSource source = card.gameObject.AddComponent<CookingTrayDragSource>();
             source.Configure(
                 controller,

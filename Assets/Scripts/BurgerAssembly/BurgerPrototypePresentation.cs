@@ -90,8 +90,8 @@ namespace SheepSheepBurger.BurgerAssembly
     {
         public const float BoardIngredientReferenceSize = 108f;
         private static readonly Vector2 BoardIngredientReference = new Vector2(
-            BoardIngredientReferenceSize,
-            BoardIngredientReferenceSize);
+            BoardIngredientReferenceSize * 1.5f,
+            BoardIngredientReferenceSize * 1.5f);
         private static readonly Vector2 BoardSauceSize = BoardIngredientReference * (0.1f / 3f);
 
         private static readonly BurgerTrayItemDefinition[] BoardTrayItems =
@@ -140,7 +140,7 @@ namespace SheepSheepBurger.BurgerAssembly
             switch (type)
             {
                 case IngredientType.Patty:
-                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.CookedPatty, BoardIngredientReference, sprites.PattyCooked);
+                    return new BurgerIngredientVisual(SimpleShape.Circle, BurgerPrototypeTheme.CookedPatty, BoardIngredientReference * 0.9f, sprites.PattyCooked);
                 case IngredientType.Bacon:
                     return new BurgerIngredientVisual(SimpleShape.Rectangle, BurgerPrototypeTheme.Hex("#B96C5C"), BoardIngredientReference, sprites.BaconCooked);
                 case IngredientType.Egg:
@@ -360,6 +360,18 @@ namespace SheepSheepBurger.BurgerAssembly
 
             main.transform.SetAsLastSibling();
             return main;
+        }
+
+        /// <summary>
+        /// 트레이 드래그 소스에 자동 생성됐던 재료 더미와 단일 아이콘을 제거한다.
+        /// 소스 오브젝트와 CanvasGroup은 보존하므로 드래그 기능에는 영향을 주지 않는다.
+        /// </summary>
+        public static void RemoveTrayVisualPile(Transform traySource, string sourceName)
+        {
+            if (traySource == null || string.IsNullOrEmpty(sourceName)) return;
+
+            DestroyDirectChild(traySource, sourceName + "VisualPile");
+            DestroyDirectChild(traySource, sourceName + "Icon");
         }
 
         public static Text CreateText(
