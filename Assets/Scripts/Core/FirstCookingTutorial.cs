@@ -76,6 +76,25 @@ namespace SheepSheepBurger.Core
             step = Step.None;
         }
 
+        public static bool ShouldShowCookingPhaseLabels
+        {
+            get
+            {
+                switch (step)
+                {
+                    case Step.PlacePatty:
+                    case Step.PressPatty:
+                    case Step.WaitFirstSide:
+                    case Step.FlipPatty:
+                    case Step.WaitSecondSide:
+                    case Step.MovePattyToBoard:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        }
+
         private void OnEnable() => SceneManager.sceneLoaded += OnSceneLoaded;
         private void OnDisable() => SceneManager.sceneLoaded -= OnSceneLoaded;
 

@@ -96,7 +96,7 @@ namespace SheepSheepBurger.BurgerAssembly
         private static readonly Vector2 BoardMediumToppingSize = BoardIngredientReference * 0.8f;
         private static readonly Vector2 BoardSmallToppingSize = BoardIngredientReference * 0.5f;
         private static readonly Vector2 BoardBaconSize = BoardIngredientReference * 0.6f;
-        private static readonly Vector2 BoardSauceSize = BoardIngredientReference * 0.1f;
+        private static readonly Vector2 BoardSauceSize = BoardIngredientReference * (0.1f / 3f);
 
         private static readonly BurgerTrayItemDefinition[] BoardTrayItems =
         {
