@@ -24,6 +24,16 @@ namespace SheepSheepBurger.BurgerAssembly
 
         public RectTransform BurgerStackRoot { get; private set; }
 
+        public RectTransform BottomBunRectTransform
+        {
+            get
+            {
+                PlacedIngredientView bottomBun = placedIngredients
+                    .FirstOrDefault(view => view != null && view.IngredientType == IngredientType.BunBottom);
+                return bottomBun != null ? bottomBun.RectTransform : null;
+            }
+        }
+
         public bool IsCompleted => state.IsCompleted;
 
         public bool HasBottomBun => state.HasBottomBun;

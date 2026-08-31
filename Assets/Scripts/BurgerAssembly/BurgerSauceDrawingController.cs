@@ -238,7 +238,11 @@ namespace SheepSheepBurger.BurgerAssembly
                 HideSauceCursor();
             }
             Vector2 burgerBoardPosition = burgerRoot.anchoredPosition;
-            float padding = CookingPrototypeRules.SauceBurgerAttachPadding;
+            Rect bottomBunLocalRect = GetBottomBunLocalRect(
+                burgerRoot,
+                stackHalfWidth,
+                stackMinY,
+                stackMaxY);
 
             foreach (SauceStrokeGraphic boardStroke in boardStrokes.ToArray())
             {
@@ -251,9 +255,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 List<Vector2> nearbyBoardPoints = boardStroke.ExtractPoints(point =>
                 {
                     Vector2 relative = point - burgerBoardPosition;
-                    return Mathf.Abs(relative.x) <= stackHalfWidth + padding &&
-                        relative.y >= stackMinY - padding &&
-                        relative.y <= stackMaxY + padding;
+                    return bottomBunLocalRect.Contains(relative);
                 });
                 if (nearbyBoardPoints.Count == 0)
                 {
@@ -281,6 +283,36 @@ namespace SheepSheepBurger.BurgerAssembly
 
             drawingChanged?.Invoke();
             return CaptureBurgerStrokeData(burgerRoot);
+        }
+
+        private Rect GetBottomBunLocalRect(
+            RectTransform burgerRoot,
+            float fallbackHalfWidth,
+            float fallbackMinY,
+            float fallbackMaxY)
+        {
+            RectTransform bottomBun = stackAssembler.BottomBunRectTransform;
+            if (bottomBun == null)
+            {
+                return new Rect(
+                    -fallbackHalfWidth,
+                    fallbackMinY,
+                    fallbackHalfWidth * 2f,
+                    fallbackMaxY - fallbackMinY);
+            }
+
+            Vector3[] corners = new Vector3[4];
+            bottomBun.GetWorldCorners(corners);
+            Vector2 min = Vector2.positiveInfinity;
+            Vector2 max = Vector2.negativeInfinity;
+            for (int index = 0; index < corners.Length; index++)
+            {
+                Vector3 local = burgerRoot.InverseTransformPoint(corners[index]);
+                min = Vector2.Min(min, local);
+                max = Vector2.Max(max, local);
+            }
+
+            return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
         }
 
         internal void ResetDrawing()
