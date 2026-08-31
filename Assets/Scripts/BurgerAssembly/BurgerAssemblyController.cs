@@ -1201,6 +1201,12 @@ namespace SheepSheepBurger.BurgerAssembly
                     continue;
                 }
 
+                if (graphic.gameObject.name == "KitchenStationBackground" &&
+                    spriteCatalog?.KitchenStationBackground != null)
+                {
+                    graphic.SourceSprite = spriteCatalog.KitchenStationBackground;
+                }
+
                 SimpleShape shape = graphic.Shape;
                 graphic.Shape = shape;
                 HideOutlineWhenTransparent(graphic);
