@@ -24,8 +24,8 @@ namespace SheepSheepBurger.Counter
         [SerializeField] private List<DecorationVisual> decorationVisuals = new List<DecorationVisual>();
         [SerializeField] private ShopCatalog catalog;
         [SerializeField] private RectTransform placementRoot;
-        [SerializeField] private Vector2 defaultVisualSize = new Vector2(88f, 88f);
-        [SerializeField] private Vector2 placementPreviewSize = new Vector2(96f, 96f);
+        [SerializeField] private Vector2 defaultVisualSize = new Vector2(176f, 176f);
+        [SerializeField] private Vector2 placementPreviewSize = new Vector2(192f, 192f);
 
         private DecorationData pendingDecoration;
         private Image previewImage;
@@ -226,6 +226,32 @@ namespace SheepSheepBurger.Counter
             if (placementRoot == null)
             {
                 placementRoot = transform as RectTransform;
+            }
+
+            EnsurePlacementLayerOrder();
+        }
+
+        private void EnsurePlacementLayerOrder()
+        {
+            if (placementRoot == null || placementRoot.parent == null)
+            {
+                return;
+            }
+
+            Transform counterFront = placementRoot.parent.Find("CounterFront");
+            if (counterFront == null || counterFront == placementRoot)
+            {
+                return;
+            }
+
+            int currentIndex = placementRoot.GetSiblingIndex();
+            int counterFrontIndex = counterFront.GetSiblingIndex();
+            int targetIndex = currentIndex < counterFrontIndex
+                ? counterFrontIndex
+                : counterFrontIndex + 1;
+            if (currentIndex != targetIndex)
+            {
+                placementRoot.SetSiblingIndex(targetIndex);
             }
         }
 

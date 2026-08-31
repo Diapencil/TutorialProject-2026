@@ -287,10 +287,10 @@ namespace SheepSheepBurger.EditorTools
             rootRect.offsetMin = Vector2.zero;
             rootRect.offsetMax = Vector2.zero;
 
-            Transform background = canvas.transform.Find("Background");
-            if (background != null)
+            Transform counterFront = canvas.transform.Find("CounterFront");
+            if (counterFront != null)
             {
-                rootRect.SetSiblingIndex(background.GetSiblingIndex() + 1);
+                MoveImmediatelyAfter(rootRect, counterFront);
             }
 
             CounterDecorationPresenter presenter = root.GetComponent<CounterDecorationPresenter>();
@@ -317,8 +317,8 @@ namespace SheepSheepBurger.EditorTools
                 if (created)
                 {
                     rect.anchoredPosition = decoration.counterPosition;
-                    rect.sizeDelta = new Vector2(88f, 88f);
                 }
+                rect.sizeDelta = new Vector2(176f, 176f);
 
                 Image image = visual.GetComponent<Image>();
                 image.sprite = decoration.sprite;
@@ -338,10 +338,27 @@ namespace SheepSheepBurger.EditorTools
                 entry.FindPropertyRelative("decorationId").intValue = decorations[i].id;
                 entry.FindPropertyRelative("visual").objectReferenceValue = visuals[i];
             }
+            serialized.FindProperty("defaultVisualSize").vector2Value = new Vector2(176f, 176f);
+            serialized.FindProperty("placementPreviewSize").vector2Value = new Vector2(192f, 192f);
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
+        }
+
+        private static void MoveImmediatelyAfter(Transform moved, Transform reference)
+        {
+            if (moved == null || reference == null || moved.parent != reference.parent)
+            {
+                return;
+            }
+
+            int currentIndex = moved.GetSiblingIndex();
+            int referenceIndex = reference.GetSiblingIndex();
+            int targetIndex = currentIndex < referenceIndex
+                ? referenceIndex
+                : referenceIndex + 1;
+            moved.SetSiblingIndex(targetIndex);
         }
 
         private static Canvas FindCounterCanvas()
