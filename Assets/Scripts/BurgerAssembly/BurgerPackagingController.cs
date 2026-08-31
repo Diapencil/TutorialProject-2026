@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Linq;
 using SheepSheepBurger.Audio;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,18 +10,30 @@ namespace SheepSheepBurger.BurgerAssembly
     [DisallowMultipleComponent]
     public sealed class BurgerPackagingController : MonoBehaviour
     {
+        private const string PackagingResourcePath = "BurgerAssembly/Packaging";
+        private const string OpenBoxSpriteName = "burger_box_open";
+        private const string ClosedBoxSpriteName = "burger_box_closed";
+        private const string ClosingFramePrefix = "burger_box_closing_";
+        private const float ClosingFrameSeconds = 0.07f;
+
         private static readonly Color Border = BurgerPrototypeTheme.Border;
-        private static readonly Color Accent = BurgerPrototypeTheme.Accent;
+        private static readonly Vector2 BoxArtPosition = new Vector2(0f, 145f);
+        private static readonly Vector2 BoxArtSize = new Vector2(270f, 437.44f);
 
         private RectTransform pageRoot;
         private RectTransform burgerTray;
         private RectTransform currentBurgerRoot;
-        private Font uiFont;
-        private Button packageButton;
-        private GameObject packageWrap;
+        private Button legacyPackageButton;
+        private Image openBoxImage;
+        private Image closingBoxImage;
+        private Sprite openBoxSprite;
+        private Sprite closedBoxSprite;
+        private Sprite[] closingFrames = Array.Empty<Sprite>();
+        private Coroutine closingRoutine;
         private float burgerHalfWidth;
         private float burgerMinY;
         private float burgerMaxY;
+        private bool isClosing;
         private bool isPackaged;
 
         public RectTransform BurgerTray => burgerTray;
@@ -37,23 +51,14 @@ namespace SheepSheepBurger.BurgerAssembly
                 throw new ArgumentNullException(nameof(page));
             }
 
-            if (pageRoot == page && burgerTray != null && packageButton != null)
-            {
-                return;
-            }
-
             pageRoot = page;
-            uiFont = font;
-            if (uiFont == null)
-            {
-                uiFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            }
-
             if (!TryBindExistingInterface())
             {
                 BuildInterface();
             }
-            BindPackageButton();
+
+            EnsureBoxArt();
+            DisableLegacyPackageButton();
             ResetPackaging();
         }
 
@@ -64,47 +69,50 @@ namespace SheepSheepBurger.BurgerAssembly
             float minimumY,
             float maximumY)
         {
-            if (burgerRoot == null || burgerTray == null || HasBurger)
+            if (burgerRoot == null || burgerTray == null || HasBurger || isClosing)
             {
                 return false;
             }
 
-            ClearPackageWrap();
             currentBurgerRoot = burgerRoot;
             burgerHalfWidth = Mathf.Max(0f, halfWidth);
             burgerMinY = minimumY;
             burgerMaxY = maximumY;
             isPackaged = false;
 
+            ResetBoxVisuals();
             currentBurgerRoot.SetParent(burgerTray, false);
             currentBurgerRoot.gameObject.SetActive(true);
-            SetRect(
-                currentBurgerRoot,
-                ClampBurgerPosition(trayLocalPosition),
-                Vector2.zero);
+            SetRect(currentBurgerRoot, ClampBurgerPosition(Vector2.zero), Vector2.zero);
             currentBurgerRoot.SetAsLastSibling();
+            closingBoxImage?.transform.SetAsLastSibling();
 
-            packageButton.interactable = true;
             AudioManager.GetOrCreate().PlaySfx(AudioCueIds.PlaceInBox);
+            BeginBoxClosing();
             return true;
         }
 
         public void ResetPackaging()
         {
+            if (closingRoutine != null)
+            {
+                StopCoroutine(closingRoutine);
+                closingRoutine = null;
+            }
+
             currentBurgerRoot = null;
             burgerHalfWidth = 0f;
             burgerMinY = 0f;
             burgerMaxY = 0f;
+            isClosing = false;
             isPackaged = false;
-            ClearPackageWrap();
-            if (packageButton != null)
-            {
-                packageButton.interactable = false;
-            }
+            ResetBoxVisuals();
+            DisableLegacyPackageButton();
         }
 
         public void SetZoneEntered()
         {
+            EnsureBoxArt();
         }
 
         public void SetBurgerDragInProgress()
@@ -117,8 +125,6 @@ namespace SheepSheepBurger.BurgerAssembly
 
         private void BuildInterface()
         {
-            // The desk painted on the far right is the complete packaging area.
-            // These objects provide hit testing only and render no replacement desk.
             RectTransform boardFrame = CreateRoundedPanel(
                 "PackagingBoardFrame",
                 pageRoot,
@@ -146,98 +152,165 @@ namespace SheepSheepBurger.BurgerAssembly
                 new Vector2(330f, 230f),
                 false,
                 0f);
-
-            RectTransform buttonRect = CreateRoundedPanel(
-                "PackageButton",
-                pageRoot,
-                Accent,
-                new Vector2(730f, -230f),
-                new Vector2(180f, 68f),
-                true,
-                22f);
-            packageButton = buttonRect.gameObject.AddComponent<Button>();
-            packageButton.targetGraphic = buttonRect.GetComponent<Graphic>();
-            CreateText("PackageButtonLabel", buttonRect, "포장", 24, FontStyle.Bold, Color.white, Vector2.zero, buttonRect.sizeDelta);
         }
 
         private bool TryBindExistingInterface()
         {
             burgerTray = FindChildByName<RectTransform>(pageRoot, "PackagingTray");
-            RectTransform buttonRect = FindChildByName<RectTransform>(pageRoot, "PackageButton");
-            if (burgerTray == null || buttonRect == null)
+            if (burgerTray == null)
             {
-                burgerTray = null;
-                packageButton = null;
                 return false;
             }
 
-            packageButton = buttonRect.GetComponent<Button>();
-            if (packageButton == null)
-            {
-                packageButton = buttonRect.gameObject.AddComponent<Button>();
-            }
+            RectTransform buttonRect = FindChildByName<RectTransform>(pageRoot, "PackageButton");
+            legacyPackageButton = buttonRect != null ? buttonRect.GetComponent<Button>() : null;
             return true;
         }
 
-        private void BindPackageButton()
+        private void DisableLegacyPackageButton()
         {
-            if (packageButton == null)
+            if (legacyPackageButton == null)
             {
                 return;
             }
 
-            Graphic targetGraphic = packageButton.GetComponent<Graphic>();
-            if (targetGraphic != null)
-            {
-                targetGraphic.raycastTarget = true;
-                packageButton.targetGraphic = targetGraphic;
-            }
-            packageButton.onClick.RemoveListener(PackageBurger);
-            packageButton.onClick.AddListener(PackageBurger);
+            legacyPackageButton.onClick.RemoveAllListeners();
+            legacyPackageButton.interactable = false;
+            legacyPackageButton.gameObject.SetActive(false);
         }
 
         private void PackageBurger()
         {
-            if (!HasBurger || packageButton == null || !packageButton.interactable)
+            BeginBoxClosing();
+        }
+
+        private void BeginBoxClosing()
+        {
+            if (!HasBurger || isClosing || isPackaged)
             {
                 return;
             }
 
-            isPackaged = true;
-            packageButton.interactable = false;
-            CreatePackageWrap();
-            currentBurgerRoot.gameObject.SetActive(false);
+            EnsureBoxArt();
+            isClosing = true;
             AudioManager.GetOrCreate().PlaySfx(AudioCueIds.WrapPackage);
+
+            if (!Application.isPlaying || closingFrames.Length == 0)
+            {
+                CompletePackaging();
+                return;
+            }
+
+            closingRoutine = StartCoroutine(PlayClosingAnimation());
+        }
+
+        private IEnumerator PlayClosingAnimation()
+        {
+            closingBoxImage.enabled = true;
+            closingBoxImage.transform.SetAsLastSibling();
+            for (int i = 0; i < closingFrames.Length; i++)
+            {
+                closingBoxImage.sprite = closingFrames[i];
+                yield return new WaitForSecondsRealtime(ClosingFrameSeconds);
+            }
+
+            closingRoutine = null;
+            CompletePackaging();
+        }
+
+        private void CompletePackaging()
+        {
+            if (isPackaged)
+            {
+                return;
+            }
+
+            EnsureBoxArt();
+            openBoxImage.enabled = false;
+            closingBoxImage.sprite = closedBoxSprite != null
+                ? closedBoxSprite
+                : closingFrames.LastOrDefault();
+            closingBoxImage.enabled = closingBoxImage.sprite != null;
+            closingBoxImage.transform.SetAsLastSibling();
+
+            if (currentBurgerRoot != null)
+            {
+                currentBurgerRoot.gameObject.SetActive(false);
+            }
+
+            isClosing = false;
+            isPackaged = true;
             Packaged?.Invoke();
         }
 
-        private void CreatePackageWrap()
+        private void EnsureBoxArt()
         {
-            ClearPackageWrap();
-            Vector2 size = new Vector2(
-                Mathf.Max(420f, burgerHalfWidth * 2f + 100f),
-                Mathf.Max(280f, burgerMaxY - burgerMinY + 100f));
-            Vector2 center = currentBurgerRoot.anchoredPosition +
-                new Vector2(0f, (burgerMinY + burgerMaxY) * 0.5f);
-            RectTransform wrapRect = CreateRoundedPanel(
-                "PackageWrap",
-                burgerTray,
-                Color.clear,
-                center,
-                size,
-                false,
-                36f);
-            BurgerUiFactory.CreateShape(
-                "PackagedBurgerArt",
-                wrapRect,
-                SimpleShape.Circle,
-                Color.white,
-                new Vector2(0f, 22f),
-                new Vector2(260f, 145f),
-                false,
-                BurgerSpriteCatalog.RequireActive().CompletedBurger);
-            packageWrap = wrapRect.gameObject;
-            packageWrap.transform.SetAsLastSibling();
+            if (burgerTray == null)
+            {
+                return;
+            }
+
+            LoadBoxSprites();
+            if (openBoxImage == null)
+            {
+                openBoxImage = FindChildByName<Image>(burgerTray, "BurgerBoxOpenArt");
+            }
+            if (openBoxImage == null)
+            {
+                openBoxImage = CreateSpriteImage("BurgerBoxOpenArt", burgerTray);
+            }
+
+            if (closingBoxImage == null)
+            {
+                closingBoxImage = FindChildByName<Image>(burgerTray, "BurgerBoxClosingArt");
+            }
+            if (closingBoxImage == null)
+            {
+                closingBoxImage = CreateSpriteImage("BurgerBoxClosingArt", burgerTray);
+            }
+
+            openBoxImage.sprite = openBoxSprite;
+            openBoxImage.preserveAspect = true;
+            openBoxImage.raycastTarget = false;
+            closingBoxImage.preserveAspect = true;
+            closingBoxImage.raycastTarget = false;
+            SetRect(openBoxImage.rectTransform, BoxArtPosition, BoxArtSize);
+            SetRect(closingBoxImage.rectTransform, BoxArtPosition, BoxArtSize);
+            openBoxImage.transform.SetAsFirstSibling();
+            closingBoxImage.transform.SetAsLastSibling();
+        }
+
+        private void LoadBoxSprites()
+        {
+            if (openBoxSprite != null && closedBoxSprite != null && closingFrames.Length > 0)
+            {
+                return;
+            }
+
+            Sprite[] sprites = Resources.LoadAll<Sprite>(PackagingResourcePath);
+            openBoxSprite = sprites.FirstOrDefault(sprite => sprite.name == OpenBoxSpriteName);
+            closedBoxSprite = sprites.FirstOrDefault(sprite => sprite.name == ClosedBoxSpriteName);
+            closingFrames = sprites
+                .Where(sprite => sprite.name.StartsWith(ClosingFramePrefix, StringComparison.Ordinal))
+                .OrderBy(sprite => sprite.name, StringComparer.Ordinal)
+                .ToArray();
+        }
+
+        private void ResetBoxVisuals()
+        {
+            EnsureBoxArt();
+            if (openBoxImage != null)
+            {
+                openBoxImage.sprite = openBoxSprite;
+                openBoxImage.enabled = openBoxSprite != null;
+                openBoxImage.transform.SetAsFirstSibling();
+            }
+            if (closingBoxImage != null)
+            {
+                closingBoxImage.sprite = null;
+                closingBoxImage.enabled = false;
+                closingBoxImage.transform.SetAsLastSibling();
+            }
         }
 
         private Vector2 ClampBurgerPosition(Vector2 desired)
@@ -252,24 +325,6 @@ namespace SheepSheepBurger.BurgerAssembly
                 ? Mathf.Clamp(desired.y, minimumY, maximumY)
                 : bounds.center.y - (burgerMinY + burgerMaxY) * 0.5f;
             return new Vector2(x, y);
-        }
-
-        private void ClearPackageWrap()
-        {
-            if (packageWrap == null)
-            {
-                return;
-            }
-
-            if (Application.isPlaying)
-            {
-                Destroy(packageWrap);
-            }
-            else
-            {
-                DestroyImmediate(packageWrap);
-            }
-            packageWrap = null;
         }
 
         private RectTransform CreateRoundedPanel(
@@ -312,31 +367,15 @@ namespace SheepSheepBurger.BurgerAssembly
             return graphic;
         }
 
-        private Text CreateText(
-            string name,
-            RectTransform parent,
-            string value,
-            int size,
-            FontStyle style,
-            Color color,
-            Vector2 position,
-            Vector2 dimensions)
+        private static Image CreateSpriteImage(string name, RectTransform parent)
         {
-            var gameObject = new GameObject(name, typeof(RectTransform), typeof(Text));
+            var gameObject = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             RectTransform rect = gameObject.GetComponent<RectTransform>();
             rect.SetParent(parent, false);
-            SetRect(rect, position, dimensions);
-            Text text = gameObject.GetComponent<Text>();
-            text.font = uiFont;
-            text.fontSize = size;
-            text.fontStyle = style;
-            text.color = color;
-            text.text = value;
-            text.alignment = TextAnchor.MiddleCenter;
-            text.horizontalOverflow = HorizontalWrapMode.Wrap;
-            text.verticalOverflow = VerticalWrapMode.Overflow;
-            text.raycastTarget = false;
-            return text;
+            Image image = gameObject.GetComponent<Image>();
+            image.color = Color.white;
+            image.raycastTarget = false;
+            return image;
         }
 
         private static void SetRect(RectTransform rect, Vector2 position, Vector2 size)
@@ -365,6 +404,5 @@ namespace SheepSheepBurger.BurgerAssembly
 
             return null;
         }
-
     }
 }

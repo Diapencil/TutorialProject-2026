@@ -760,7 +760,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 case IngredientType.Patty:
                     return SquareScaledGrillSize(1f);
                 case IngredientType.Bacon:
-                    return SquareScaledGrillSize(0.6f);
+                    return SquareScaledGrillSize(1f);
                 case IngredientType.Egg:
                     return SquareScaledGrillSize(1f);
                 default:
