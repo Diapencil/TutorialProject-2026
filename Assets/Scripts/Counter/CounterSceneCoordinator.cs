@@ -245,6 +245,14 @@ namespace SheepSheepBurger.Counter
         {
             if (resolving) yield break;
             resolving = true;
+
+            // 튜토리얼의 전달 완료 안내가 먼저 닫혀야 결과 말풍선과 대사 타이핑을 시작한다.
+            // Time.timeScale이 0이어도 프레임은 진행되므로 null 대기로 안내 클릭을 기다린다.
+            while (FirstCookingTutorial.IsTutorialPanelOpen)
+            {
+                yield return null;
+            }
+
             Grade grade = judgement.grade;
             if (CounterSceneSession.CookingTimedOut && grade == Grade.Perfect)
             {

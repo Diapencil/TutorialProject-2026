@@ -20,7 +20,7 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 6d74413bd0944f088a1f6d240e415a10, type: 3}
   maxLevel: 4
   burnChancePerLevel:
-  - 0.3
-  - 0.2
-  - 0.1
+  - 1
+  - 0.7
+  - 0.4
   - 0

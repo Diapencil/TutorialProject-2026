@@ -25,6 +25,11 @@ namespace SheepSheepBurger.Core
 
         private static Step step;
         private static bool initialized;
+        private static bool isTutorialPanelOpen;
+
+        /// <summary>안내 패널이 열린 동안에는 결과 연출을 시작하지 않도록 하는 전역 상태입니다.</summary>
+        public static bool IsTutorialPanelOpen => isTutorialPanelOpen;
+
         private BurgerAssemblyController cooking;
         private CounterSceneCoordinator counter;
         private GameObject panel;
@@ -50,6 +55,7 @@ namespace SheepSheepBurger.Core
         {
             step = Step.None;
             initialized = false;
+            isTutorialPanelOpen = false;
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -90,11 +96,12 @@ namespace SheepSheepBurger.Core
             {
                 cooking = FindFirstObjectByType<BurgerAssemblyController>();
                 if (cooking == null) return;
+                cooking.SetGrillBurnProtection(true);
                 SubscribeCooking();
                 if (step == Step.None)
                 {
                     step = Step.PlacePatty;
-                    Show("첫 버거를 만들어 볼까요? 왼쪽 재료함의 패티를 그릴 위에 올려 주세요.");
+                    Show("첫 버거를 만들어 볼까요? 오른쪽 트레이에 담긴 패티볼을 그릴 위에 올려 주세요.");
                 }
             }
             else if (scene.name == "Counter" && step == Step.Serve)
@@ -164,6 +171,7 @@ namespace SheepSheepBurger.Core
         {
             if (cooking != null)
             {
+                cooking.SetGrillBurnProtection(false);
                 cooking.GrillIngredientPlaced -= OnGrillIngredientPlaced;
                 cooking.GrillPhaseChanged -= OnGrillPhaseChanged;
                 cooking.BoardIngredientPlaced -= OnBoardIngredientPlaced;
@@ -178,6 +186,7 @@ namespace SheepSheepBurger.Core
         private void OnDestroy()
         {
             Unsubscribe();
+            isTutorialPanelOpen = false;
             ResumeTime();
         }
 
@@ -235,6 +244,7 @@ namespace SheepSheepBurger.Core
         {
             if (step != Step.Package) return;
             step = Step.Serve;
+            cooking?.SetGrillBurnProtection(false);
             ResumeTime();
         }
 
@@ -244,6 +254,11 @@ namespace SheepSheepBurger.Core
             step = Step.Finished;
             PlayerPrefs.SetInt(CompletedKey, 1);
             PlayerPrefs.Save();
+
+            // 전달 직후 결과 대사 타이핑이 시작될 수 있다. 안내창이 시간을 멈추면
+            // 첫 글자만 남을 수 있으므로, 안내가 떠 있는 동안 말풍선을 숨긴다.
+            // 안내를 닫은 다음 프레임부터 결과 대사가 정상적으로 출력된다.
+            counter?.HideCurrentOrderForTutorial();
             Show("첫 버거를 손님에게 전달했습니다! 이제부터는 직접 주문을 완성해 보세요.", Finish);
         }
 
@@ -260,12 +275,14 @@ namespace SheepSheepBurger.Core
             body.text = message;
             panel.SetActive(true);
             inputBlocker.SetActive(true);
+            isTutorialPanelOpen = true;
             PauseTime();
             continueButton.onClick.RemoveAllListeners();
             continueButton.onClick.AddListener(() =>
             {
                 panel.SetActive(false);
                 inputBlocker.SetActive(false);
+                isTutorialPanelOpen = false;
                 ResumeTime();
                 afterClose?.Invoke();
                 if (step != Step.Finished)
@@ -280,6 +297,7 @@ namespace SheepSheepBurger.Core
             ResumeTime();
             if (panel != null) panel.SetActive(false);
             if (inputBlocker != null) inputBlocker.SetActive(false);
+            isTutorialPanelOpen = false;
             HideGuidanceMask();
         }
 

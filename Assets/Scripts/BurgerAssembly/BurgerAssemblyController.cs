@@ -64,6 +64,7 @@ namespace SheepSheepBurger.BurgerAssembly
         private IngredientType activeDragType;
         private RectTransform dragGhost;
         private bool emitsPattyGrease;
+        private bool grillBurnProtectionEnabled;
         private Vector2 lastPointerScreen;
         private CookableGrillItemView draggedGrillItem;
         private PlacedIngredientView draggedBoardIngredient;
@@ -105,6 +106,19 @@ namespace SheepSheepBurger.BurgerAssembly
         public event Action<IngredientType> SauceApplied;
 
         public float CookingTimeRemaining => cookingTimeRemaining;
+
+        /// <summary>
+        /// Enables or disables burning for all current and subsequently created grill items.
+        /// Used by guided play so the tutorial cannot be failed by an unattended ingredient.
+        /// </summary>
+        public void SetGrillBurnProtection(bool isProtected)
+        {
+            grillBurnProtectionEnabled = isProtected;
+            foreach (CookableGrillItemView grillItem in grillItems)
+            {
+                grillItem?.State?.SetBurnProtection(isProtected);
+            }
+        }
 
         public bool HasCookingTimeExpired => hasCookingTimeExpired;
 
@@ -1419,6 +1433,7 @@ namespace SheepSheepBurger.BurgerAssembly
                 type,
                 ShopProgressBridge.GetGrillCookTimeMultiplier(),
                 ShopProgressBridge.GetGrillBurnChance());
+            state.SetBurnProtection(grillBurnProtectionEnabled);
             Vector2 size = CookableGrillItemView.GetGrillSize(type, state.Phase);
 
             localPosition = BurgerUiFactory.ClampInside(grillDropArea.rect, localPosition, size);

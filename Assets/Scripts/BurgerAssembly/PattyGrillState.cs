@@ -20,6 +20,7 @@ namespace SheepSheepBurger.BurgerAssembly
         private float phaseElapsed;
         private readonly float cookTimeMultiplier;
         private readonly float burnChance;
+        private bool burnProtected;
 
         public PattyGrillState(
             IngredientType ingredientType = IngredientType.Patty,
@@ -51,6 +52,15 @@ namespace SheepSheepBurger.BurgerAssembly
         public bool CanDragToBoard => true;
 
         public event Action<PattyGrillPhase> PhaseChanged;
+
+        /// <summary>
+        /// Temporarily prevents this ingredient from transitioning to the burnt state.
+        /// Cooking progress continues normally.
+        /// </summary>
+        public void SetBurnProtection(bool isProtected)
+        {
+            burnProtected = isProtected;
+        }
 
         public bool TryPressDough()
         {
@@ -212,7 +222,7 @@ namespace SheepSheepBurger.BurgerAssembly
 
         private bool ShouldBurn()
         {
-            return burnChance > 0f && UnityEngine.Random.value <= burnChance;
+            return !burnProtected && burnChance > 0f && UnityEngine.Random.value <= burnChance;
         }
 
         private void TransitionTo(PattyGrillPhase nextPhase)

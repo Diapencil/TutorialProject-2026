@@ -737,12 +737,12 @@ namespace SheepSheepBurger.BurgerAssembly
                 case PattyGrillPhase.Flattened:
                     return type == IngredientType.Patty ? "패티를 눌렀습니다" : "조리 시작";
                 case PattyGrillPhase.CookingSide1:
-                    return type == IngredientType.Egg ? "계란 조리 중" : "1면 조리 중";
-                case PattyGrillPhase.ReadyToFlip: return "뒤집기 가능!\n5초 안에 탭하세요";
-                case PattyGrillPhase.Flipping: return "뒤집는 중";
-                case PattyGrillPhase.CookingSide2: return "2면 조리 중";
-                case PattyGrillPhase.Done: return "완료!\n오른쪽 끝으로 드래그";
-                case PattyGrillPhase.Overcooked: return "탔습니다\n이동 불가";
+                    return type == IngredientType.Egg ? "계란 조리 중" : "";
+                case PattyGrillPhase.ReadyToFlip: return "뒤집기 가능!";
+                case PattyGrillPhase.Flipping: return "";
+                case PattyGrillPhase.CookingSide2: return "";
+                case PattyGrillPhase.Done: return "완료!";
+                case PattyGrillPhase.Overcooked: return "";
                 default: return phase.ToString();
             }
         }
